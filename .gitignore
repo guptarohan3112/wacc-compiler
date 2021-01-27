@@ -7,3 +7,6 @@ src/antlr
 
 #ignore other junk files
 *~
+
+#ignore intellij idea repository files
+*.idea
