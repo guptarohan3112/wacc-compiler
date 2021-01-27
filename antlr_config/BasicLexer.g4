@@ -14,7 +14,8 @@ fragment DIGIT: '0'..'9' ;
 INTEGER: DIGIT+ ;
 
 //characters
-CHAR: ~('\\' | '\'' | '"') | '\\' ESCAPED_CHAR;
+CHAR_LITER: '\'' CHAR '\'' ;
+CHAR: ~('\\' | '\'' | '"') | '\\' ESCAPED_CHAR ;
 ESCAPED_CHAR: '0' | 'b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\' ;
 
 //identifiers
