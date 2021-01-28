@@ -8,6 +8,8 @@ binaryOper: PLUS | MINUS ;
 
 expr: expr binaryOper expr
 | INTEGER
+| BOOLEAN
+| STR_LITER
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES
 ;
 
