@@ -11,6 +11,12 @@ MINUS: '-' ;
 OPEN_PARENTHESES: '(' ;
 CLOSE_PARENTHESES: ')' ;
 
+//statements
+RETURN:  'return' ;
+PRINT:   'print' ;
+PRINTLN: 'println' ;
+
+
 //unary operators
 NOT: '!' ;
 LEN: 'len' ;
