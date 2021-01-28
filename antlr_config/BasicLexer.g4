@@ -1,8 +1,19 @@
 lexer grammar BasicLexer;
 
-//operators
+//Binary operators
 PLUS: '+' ;
 MINUS: '-' ;
+MULT: '*' ;
+DIV: '/' ;
+MOD: '%' ;
+GT: '>' ;
+GTE: '>=' ;
+LT: '<';
+LTE: '<=' ;
+EQ: '==' ;
+NOTEQ: '!=' ;
+AND: '&&';
+OR: '||' ;
 
 //brackets
 OPEN_PARENTHESES: '(' ;
