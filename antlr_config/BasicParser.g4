@@ -14,11 +14,15 @@ expr: unaryOper expr
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES
 ;
 
-stat: RETURN expr
+stat: FREE expr
+| RETURN expr
+| EXIT expr
 | PRINT expr
 | PRINTLN expr
-| stat SEMICOLON stat
+| IF expr THEN stat ELSE stat FI
+| WHILE expr DO stat DONE
 | BEGIN stat END
+| stat SEMICOLON stat
 ;
 
 // EOF indicates that the program must consume to the end of the input.

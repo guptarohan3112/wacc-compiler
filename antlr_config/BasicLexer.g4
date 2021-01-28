@@ -13,8 +13,18 @@ CLOSE_PARENTHESES: ')' ;
 
 //statements
 RETURN:  'return' ;
+FREE:    'free' ;
+READ:    'read' ;
 PRINT:   'print' ;
 PRINTLN: 'println' ;
+EXIT:    'exit' ;
+IF :     'if' ;
+THEN :   'then' ;
+ELSE :   'else' ;
+FI :     'fi' ;
+WHILE :  'while' ;
+DO :     'do' ;
+DONE :   'done' ;
 
 
 //unary operators
