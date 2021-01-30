@@ -1,3 +1,5 @@
+image: dbosk/makefiles
+
 stages:
     - build
     - test
