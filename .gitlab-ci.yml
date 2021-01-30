@@ -8,7 +8,7 @@ build:
     stage: build
     script:
         - rm -rf rules bin src/main/resources/antlr
-        - cd antlr_config && ./antlrBuild
+        - cd antlr_config && ./antlrBuild && cd ../
         - echo $PWD
         - find src/main/resources -name '*.java' > out.txt
         - mkdir -p bin
