@@ -2,7 +2,7 @@
 # Locations
 
 ANTLR_DIR	:= antlr_config
-SOURCE_DIR	:= src
+SOURCE_DIR	:= src/main/resources
 OUTPUT_DIR	:= bin
 
 # Tools
@@ -27,6 +27,7 @@ rules:
 	$(MKDIR) $(OUTPUT_DIR)
 	$(JAVAC) $(JFLAGS) @$@
 	$(RM) rules
+	./gradlew build
 
 clean:
 	$(RM) rules $(OUTPUT_DIR) $(SOURCE_DIR)/antlr

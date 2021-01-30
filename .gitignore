@@ -1,6 +1,7 @@
 #ignore generated binary files and auto-generated ANTLR code
 bin
 src/antlr
+src/main/resources/antlr
 
 #ignore Java class files
 *.class
@@ -9,4 +10,9 @@ src/antlr
 *~
 
 #ignore intellij idea repository files
-*.idea
+.idea
+# Ignore Gradle project-specific cache directory
+.gradle
+
+# Ignore Gradle build output directory
+build
