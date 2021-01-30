@@ -10,8 +10,9 @@ build:
         - rm -rf rules bin src/main/resources/antlr
         - cd antlr_config && ./antlrBuild
         - find src/main/resources -name '*.java' > out.txt
-        - mkdir bin
-        - java javac @out.txt
+        - mkdir -p bin
+        - javac -sourcepath src/main/resources -d bin -cp lib/antlr-4.9.1-complete.jar @out.txt
+        - rm -rf rules
         - ./gradlew build
 
 test:
