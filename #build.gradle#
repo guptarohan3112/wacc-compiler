@@ -14,8 +14,6 @@ plugins {
     id 'application'
 }
 
-gr
-
 repositories {
     // Use JCenter for resolving dependencies.
     jcenter()
