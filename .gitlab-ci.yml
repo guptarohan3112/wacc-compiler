@@ -7,9 +7,12 @@ stages:
 build:
     stage: build
     script:
-        - apt-get install openjdk-11-jre openjdk-11-jdk
-        - make clean
-        - make
+        - rm -rf rules bin src/main/resources/antlr
+        - cd antlr_config && ./antlrBuild
+        - find src/main/resources/ -name '*.java' > $@
+        - mkdir bin
+        - java javac @$@
+        - ./gradlew build
 
 test:
     script:
