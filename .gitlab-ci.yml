@@ -7,7 +7,7 @@ stages:
 build:
     stage: build
     script:
-        - apt-get install make -y --no-install-recommends
+        - apt-get install openjdk-11-jre openjdk-11-jdk
         - make clean
         - make
 
