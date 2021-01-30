@@ -1,0 +1,14 @@
+stages:
+    - build
+    - test
+
+build:
+    stage: build
+    script:
+        - make clean
+        - make
+
+test:
+    script:
+        - echo "This should print Hello World for now"
+        - ./gradlew run
