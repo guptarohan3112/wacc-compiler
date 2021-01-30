@@ -1,0 +1,22 @@
+image: openjdk:11
+
+stages:
+    - build
+    - test
+
+build:
+    stage: build
+    script:
+        - rm -rf rules bin src/main/resources/antlr
+        - cd antlr_config && ./antlrBuild && cd ../
+        - echo $PWD
+        - find src/main/resources -name '*.java' > out.txt
+        - mkdir -p bin
+        - javac -sourcepath src/main/resources -d bin -cp lib/antlr-4.9.1-complete.jar @out.txt
+        - rm -rf rules
+        - ./gradlew build
+
+test:
+    script:
+        - echo "This should print Hello World for now"
+        - ./gradlew run
