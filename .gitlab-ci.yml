@@ -9,9 +9,9 @@ build:
     script:
         - rm -rf rules bin src/main/resources/antlr
         - cd antlr_config && ./antlrBuild
-        - find src/main/resources/ -name '*.java' > $@
+        - find src/main/resources/ -name '*.java' > out.txt
         - mkdir bin
-        - java javac @$@
+        - java javac @out.txt
         - ./gradlew build
 
 test:
