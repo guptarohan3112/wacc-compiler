@@ -2,7 +2,7 @@
 # Locations
 
 ANTLR_DIR	:= antlr_config
-SOURCE_DIR	:= src
+SOURCE_DIR	:= src/main/resources
 OUTPUT_DIR	:= bin
 
 # Tools
