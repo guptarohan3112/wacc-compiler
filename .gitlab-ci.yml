@@ -5,7 +5,7 @@ stages:
 build:
     stage: build
     script:
-        - apt-get install build-essential -y --no-install-recommends
+        - apt-get install make -y --no-install-recommends
         - make clean
         - make
 
