@@ -2,7 +2,7 @@
 # Locations
 
 ANTLR_DIR	:= antlr_config
-SOURCE_DIR	:= src/main/resources
+SOURCE_DIR	:= src/main/kotlin
 OUTPUT_DIR	:= bin
 
 # Tools
@@ -23,10 +23,10 @@ all: rules
 # runs the antlr build script then attempts to compile all .java files within src
 rules:
 	cd $(ANTLR_DIR) && ./$(ANTLR) 
-	$(FIND) $(SOURCE_DIR) -name '*.java' > $@
-	$(MKDIR) $(OUTPUT_DIR)
-	$(JAVAC) $(JFLAGS) @$@
-	$(RM) rules
+# 	$(FIND) $(SOURCE_DIR) -name '*.java' > $@
+# 	$(MKDIR) $(OUTPUT_DIR)
+# 	$(JAVAC) $(JFLAGS) @$@
+# 	$(RM) rules
 	./gradlew build
 
 clean:

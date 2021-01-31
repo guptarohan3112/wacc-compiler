@@ -5,7 +5,7 @@ PARSER_FILE=BasicParser.g4
 
 BASEDIR=$(dirname $0)
 
-TARGET_DIR=../src/main/resources/antlr
+TARGET_DIR=../src/main/kotlin/antlr
 
 rm -rf $TARGET_DIR
 

@@ -12,6 +12,8 @@ plugins {
 
     // Apply the application plugin to add support for building a CLI application in Java.
     id 'application'
+
+    id 'antlr'
 }
 
 repositories {
@@ -34,9 +36,17 @@ dependencies {
 
     // Use the Kotlin JUnit integration.
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
+
+    antlr "org.antlr:antlr4:4.9.1"
+
+}
+
+sourceSets {
+    main.kotlin.srcDirs += 'src/'
+    main.java.srcDirs += 'src/'
 }
 
 application {
     // Define the main class for the application.
-    mainClass = 'wacc_05.AppKt'
+    mainClass = 'wacc_05/App'
 }
