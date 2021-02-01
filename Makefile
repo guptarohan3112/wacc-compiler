@@ -31,6 +31,7 @@ rules:
 
 clean:
 	$(RM) rules $(OUTPUT_DIR) $(SOURCE_DIR)/antlr
+	$(RM) build
 
 .PHONY: all rules clean
 
