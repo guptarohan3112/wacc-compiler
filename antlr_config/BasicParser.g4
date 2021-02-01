@@ -10,8 +10,10 @@ expr: expr binaryOper expr
 | INTEGER
 | BOOLEAN
 | STR_LITER
+| CHAR_LITER
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES
 ;
 
 // EOF indicates that the program must consume to the end of the input.
 prog: (expr)*  EOF ;
+
