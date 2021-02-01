@@ -3,10 +3,6 @@ lexer grammar BasicLexer;
 BEGIN: 'begin' ;
 END: 'end' ;
 
-//operators
-PLUS: '+' ;
-MINUS: '-' ;
-
 //brackets
 OPEN_PARENTHESES: '(' ;
 CLOSE_PARENTHESES: ')' ;
@@ -50,6 +46,21 @@ NOT: '!' ;
 LEN: 'len' ;
 ORD: 'ord' ;
 CHR: 'chr' ;
+
+//Binary operators
+PLUS: '+' ;
+MINUS: '-' ;
+MULT: '*' ;
+DIV: '/' ;
+MOD: '%' ;
+GT: '>' ;
+GTE: '>=' ;
+LT: '<';
+LTE: '<=' ;
+EQ: '==' ;
+NOTEQ: '!=' ;
+AND: '&&';
+OR: '||' ;
 
 SEMICOLON: ';' ;
 

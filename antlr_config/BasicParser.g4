@@ -6,7 +6,7 @@ options {
 
 unaryOper: NOT | MINUS | LEN | ORD | CHR;
 
-binaryOper: PLUS | MINUS ;
+binaryOper: PLUS | MINUS | MULT | DIV | MOD | GT | GTE | LT | LTE | EQ | NOTEQ | AND | OR ;
 
 expr: unaryOper expr
 | expr binaryOper expr
