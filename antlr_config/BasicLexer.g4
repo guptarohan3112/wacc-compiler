@@ -11,9 +11,12 @@ CLOSE_PARENTHESES: ')' ;
 //numbers
 fragment DIGIT: '0'..'9' ; 
 
-INTEGER: DIGIT+ ;
+INT_SIGN: '+' | '-' ;
+INTEGER: INT_SIGN? DIGIT+ ;
+BOOLEAN: 'true' | 'false' ;
+fragment STRING: CHAR* ;
 
-
+STR_LITER: '"' STRING '"' ;
 
 
 
