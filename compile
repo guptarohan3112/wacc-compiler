@@ -4,5 +4,3 @@
 # but do *not* change its name.
 
 ./gradlew run
-# with some arguments
-# puts "TODO: setup this script to call your WACC compiler"
