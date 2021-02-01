@@ -26,10 +26,10 @@ binaryOper: PLUS
 
 expr: unaryOper expr
 | expr binaryOper expr
-| INTEGER
-| BOOLEAN
-| STR_LITER
-| CHAR_LITER
+| INT_LIT
+| BOOL_LIT
+| STR_LIT
+| CHAR_LIT
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES
 ;
 
