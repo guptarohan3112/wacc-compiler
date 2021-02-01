@@ -1,32 +1,35 @@
 lexer grammar BasicLexer;
 
+// Keywords
 BEGIN: 'begin' ;
 END: 'end' ;
 
-//brackets
+// Brackets
 OPEN_PARENTHESES: '(' ;
 CLOSE_PARENTHESES: ')' ;
 
-//base-types
-fragment DIGIT: '0'..'9' ; 
+// Identifiers
+IDENT: ('_' | 'a'..'z' | 'A'..'Z') ('_' | 'a'..'z' | 'A'..'Z' | DIGIT)* ;
 
+// Integer sign
 INT_SIGN: '+' | '-' ;
-INTEGER: INT_SIGN? DIGIT+ ;
 
-BOOLEAN: 'true' | 'false' ;
-
-fragment STRING: CHAR* ;
-STR_LITER: '"' STRING '"' ;
-
-//characters
-CHAR_LITER: '\'' CHAR '\'' ;
+// Characters
 CHAR: ~('\\' | '\'' | '"') | '\\' ESCAPED_CHAR ;
 ESCAPED_CHAR: '0' | 'b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\' ;
 
-//identifiers
-IDENT: ('_' | 'a'..'z' | 'A'..'Z') ('_' | 'a'..'z' | 'A'..'Z' | DIGIT)* ;
+// Literals for base types
+fragment DIGIT: '0'..'9' ; 
+INT_LIT: INT_SIGN? DIGIT+ ;
 
-//statements
+BOOL_LIT: 'true' | 'false' ;
+
+CHAR_LIT: '\'' CHAR '\'' ;
+
+fragment STRING: CHAR* ;
+STR_LIT: '"' STRING '"' ;
+
+// Statements
 RETURN:  'return' ;
 FREE:    'free' ;
 READ:    'read' ;
@@ -41,13 +44,13 @@ WHILE :  'while' ;
 DO :     'do' ;
 DONE :   'done' ;
 
-//unary operators
+// Unary operators
 NOT: '!' ;
 LEN: 'len' ;
 ORD: 'ord' ;
 CHR: 'chr' ;
 
-//Binary operators
+// Binary operators
 PLUS: '+' ;
 MINUS: '-' ;
 MULT: '*' ;
@@ -62,9 +65,10 @@ NOTEQ: '!=' ;
 AND: '&&';
 OR: '||' ;
 
+// Semicolon
 SEMICOLON: ';' ;
 
-//comments and whitespace
+// Comments and whitespace
 COMMENT: '#' ~[\r\n]* [\r\n] -> skip ;
 WHITESPACE: (' '|'\n'|'\t'|'\r') -> skip ;
 
