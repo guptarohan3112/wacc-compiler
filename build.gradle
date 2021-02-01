@@ -25,8 +25,8 @@ dependencies {
     // Align versions of all Kotlin components
     implementation platform('org.jetbrains.kotlin:kotlin-bom')
 
-    // Use the Kotlin JDK 8 standard library.
-    implementation 'org.jetbrains.kotlin:kotlin-stdlib-jdk8'
+    // dependency for kotlin
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version'
 
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:29.0-jre'
@@ -42,8 +42,11 @@ dependencies {
 }
 
 sourceSets {
-    main.kotlin.srcDirs += 'src/'
-    main.java.srcDirs += 'src/'
+    main {
+        resources {
+            'src/'
+        }
+    }
 }
 
 application {
