@@ -1,14 +1,15 @@
 package wacc_05.ast_structure.statement
 
-class DeclarationAST : StatementAST() {
+import wacc_05.ast_structure.AssignrhsAST
 
-    private var rhs : AssignrhsAST
+class DeclarationAST(val rhs : AssignrhsAST) : StatementAST() {
 
     override fun check() {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun toString(): String {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
+        return ""
     }
 }

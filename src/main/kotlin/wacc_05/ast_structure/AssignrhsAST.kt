@@ -1,6 +1,6 @@
-package wacc_05.ast_structure.statement
+package wacc_05.ast_structure
 
-class BeginAST(val stat : StatementAST, ctx: Any): StatementAST() {
+class AssignrhsAST : AST {
 
     override fun check() {
 //        TODO("Not yet implemented")
@@ -10,6 +10,5 @@ class BeginAST(val stat : StatementAST, ctx: Any): StatementAST() {
 //        TODO("Not yet implemented")
         return ""
     }
-
 
 }

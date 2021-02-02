@@ -1,9 +1,9 @@
 package wacc_05.ast_structure.statement
 
-class PrintAST : StatementAST() {
+import wacc_05.ast_structure.expression.ExprAST
 
-    val expr : ExprAST
-    val newLine : Boolean
+class PrintAST(val expr: ExprAST,
+               val newLine: Boolean) : StatementAST() {
 
     override fun check() {
 //        TODO("Not yet implemented")

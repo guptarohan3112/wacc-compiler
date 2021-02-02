@@ -1,11 +1,11 @@
 package wacc_05.ast_structure.statement
 
-class FreeAST : StatementAST() {
+import wacc_05.ast_structure.expression.ExprAST
 
-    val expr : ExprAST
+class FreeAST(val expr : ExprAST) : StatementAST() {
 
     override fun check() {
-        TODO("Not yet implemented")
+//        TODO("Not yet implemented")
     }
 
     override fun toString(): String {

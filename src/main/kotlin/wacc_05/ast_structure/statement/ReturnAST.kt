@@ -1,8 +1,8 @@
 package wacc_05.ast_structure.statement
 
-class ReturnAST : StatementAST() {
+import wacc_05.ast_structure.expression.ExprAST
 
-    val expr : ExprAST
+class ReturnAST(val expr: ExprAST) : StatementAST() {
 
     override fun check() {
 //        TODO("Not yet implemented")

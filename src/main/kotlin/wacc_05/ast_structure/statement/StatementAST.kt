@@ -1,9 +1,8 @@
 package wacc_05.ast_structure.statement
 
-import antlr.BasicParser
 import wacc_05.ast_structure.AST
 
-abstract class StatementAST(ctx : BasicParser.StatContext) : AST {
+abstract class StatementAST() : AST {
 
 }
 
