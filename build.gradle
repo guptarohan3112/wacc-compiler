@@ -38,7 +38,6 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
 
     antlr "org.antlr:antlr4:4.9.1"
-
 }
 
 sourceSets {
@@ -46,10 +45,16 @@ sourceSets {
         resources {
             'src/'
         }
+        main.java.srcDirs += 'src/'
     }
+}
+
+// only while we are still using STD input, to be removed
+run{
+    standardInput = System.in
 }
 
 application {
     // Define the main class for the application.
-    mainClass = 'wacc_05/App'
+    mainClass = 'wacc_05/AppKt'
 }
