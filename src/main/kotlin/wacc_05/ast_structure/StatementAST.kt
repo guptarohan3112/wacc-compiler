@@ -1,6 +1,6 @@
 package wacc_05.ast_structure
 
-import wacc_05.ast_structure.expression.ExprAST
+import wacc_05.ast_structure.ExprAST
 import java.util.*
 
 sealed class StatementAST() : AST {
@@ -70,7 +70,7 @@ sealed class StatementAST() : AST {
     }
 
     data class PrintAST(val expr: ExprAST,
-                   val newLine: Boolean) : StatementAST() {
+                        val newLine: Boolean) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
