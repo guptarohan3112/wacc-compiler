@@ -1,49 +1,86 @@
 package wacc_05.ast_structure.statement
 
 import wacc_05.ast_structure.AST
+import wacc_05.ast_structure.AssignrhsAST
+import wacc_05.ast_structure.expression.ExprAST
+import java.util.*
 
-abstract class StatementAST() : AST {
+sealed class StatementAST() : AST {
+
+    data class BeginAST(val stat : StatementAST) : StatementAST(){
+
+        override fun check() {
+//        TODO("Not yet implemented")
+        }
+
+    }
+
+    data class DeclarationAST(val rhs : AssignrhsAST) : StatementAST() {
+
+        override fun check() {
+//        TODO("Not yet implemented")
+        }
+
+    }
+
+    data class ExitAST(val expr : ExprAST) : StatementAST() {
+
+        override fun check() {
+//        TODO("Not yet implemented")
+        }
+
+    }
+
+    data class FreeAST(val expr : ExprAST) : StatementAST() {
+
+        override fun check() {
+//        TODO("Not yet implemented")
+        }
+
+    }
+
+    data class IfAST(val condExpr: ExprAST,
+                val thenStat: StatementAST,
+                val elseStat: StatementAST) : StatementAST() {
+
+        override fun check() {
+//        TODO("Not yet implemented")
+        }
+
+    }
+
+    data class PrintAST(val expr: ExprAST,
+                   val newLine: Boolean) : StatementAST() {
+
+        override fun check() {
+//        TODO("Not yet implemented")
+        }
+
+    }
+
+    data class ReturnAST(val expr: ExprAST) : StatementAST() {
+
+        override fun check() {
+//        TODO("Not yet implemented")
+        }
+
+    }
+
+    data class StatementList(val statList: ArrayList<StatementAST>) : StatementAST() {
+
+        override fun check() {
+//        TODO("Not yet implemented")
+        }
+
+    }
+
+    class WhileAST(val loopExpr: ExprAST,
+                   val body: StatementAST) : StatementAST() {
+
+        override fun check() {
+//        TODO("Not yet implemented")
+        }
+
+    }
 
 }
-
-//class SkipAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-//
-//}
-//
-//// AssignAST classes go here
-//
-//class ReadAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-//
-//}
-//
-//class FreeAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-//
-//}
-//
-//class ReturnAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-//
-//}
-//
-//class ExitAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-//
-//}
-//
-//class PrintAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-//
-//}
-//
-//class PrintlnAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-//
-//}
-//
-//class IfAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-////    val expr : ExprAST = new ExprAST(ctx.expr());
-//}
-//
-//class WhileAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-//
-//}
-//
-//class BeginAST(ctx: BasicParser.StatContext) : StatementAST(ctx) {
-//
-//}

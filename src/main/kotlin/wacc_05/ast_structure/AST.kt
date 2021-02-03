@@ -4,5 +4,4 @@ interface AST {
     // Function that applies semantic checks
     fun check()
 
-    override fun toString() : String
 }
