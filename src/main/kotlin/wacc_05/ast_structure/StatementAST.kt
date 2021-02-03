@@ -86,7 +86,7 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class StatementList(val statList: ArrayList<StatementAST>) : StatementAST() {
+    data class StatListAST(val statList: ArrayList<StatementAST>) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
