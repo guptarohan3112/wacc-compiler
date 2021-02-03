@@ -5,6 +5,27 @@ import java.util.*
 
 sealed class StatementAST() : AST {
 
+    object Skip : StatementAST(){
+
+        // No semantic checks need to be done for a skip statement
+        override fun check() {
+            return
+        }
+
+    }
+
+    data class DeclAST(val typeName: String,
+                       val varname: String,
+                       val assignment: AssignrhsAST) : StatementAST() {
+
+        override fun check() {
+//            TODO("Not yet implemented")
+        }
+
+    }
+
+    // Initialisation goes here
+
     data class BeginAST(val stat : StatementAST) : StatementAST(){
 
         override fun check() {
