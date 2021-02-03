@@ -1,6 +1,6 @@
-package main.kotlin.wacc_05.symbol_table
+package wacc_05.symbol_table
 
-import main.kotlin.wacc_05.symbol_table.identifier_objects.IdentifierObject
+import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import java.util.HashMap
 
 /* Class: SymbolTable

@@ -1,17 +1,9 @@
 package wacc_05.symbol_table.identifier_objects
 
-import main.kotlin.wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.type_identifiers.TypeIdentifier
+import wacc_05.symbol_table.SymbolTable
 
 class FunctionIdentifier(
-    parentST: SymbolTable,
-    private val returnType: TypeIdentifier,
     private val name: String,
-    private val params: ParamListIdentifier?,
-    private val body: StatementIdentifier
-) : ScopedIdentifierObject(parentST) {
-
-    /*init {
-        parentST.add(name, this);
-    }*/
-}
+    private val returnType: TypeIdentifier,
+    parentST: SymbolTable
+) : ScopedIdentifierObject(parentST)
