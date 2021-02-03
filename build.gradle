@@ -45,9 +45,7 @@ sourceSets {
         resources {
             'src/'
         }
-        java {
-            'src/'
-        }
+        main.java.srcDirs += 'src/'
     }
 }
 
@@ -58,5 +56,5 @@ run{
 
 application {
     // Define the main class for the application.
-    mainClass = 'wacc_05/App'
+    mainClass = 'wacc_05/AppKt'
 }
