@@ -1,7 +1,5 @@
 package wacc_05.ast_structure
 
-import wacc_05.ast_structure.statement.StatementAST
-
 class FunctionAST(val returnType: TypeAST,
                   val fname: String,
                   val paramList: ParamListAST,

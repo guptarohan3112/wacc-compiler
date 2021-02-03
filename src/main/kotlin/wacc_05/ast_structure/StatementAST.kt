@@ -1,7 +1,5 @@
-package wacc_05.ast_structure.statement
+package wacc_05.ast_structure
 
-import wacc_05.ast_structure.AST
-import wacc_05.ast_structure.AssignrhsAST
 import wacc_05.ast_structure.expression.ExprAST
 import java.util.*
 
@@ -40,8 +38,9 @@ sealed class StatementAST() : AST {
     }
 
     data class IfAST(val condExpr: ExprAST,
-                val thenStat: StatementAST,
-                val elseStat: StatementAST) : StatementAST() {
+                     val thenStat: StatementAST,
+                     val elseStat: StatementAST
+    ) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
@@ -75,7 +74,8 @@ sealed class StatementAST() : AST {
     }
 
     class WhileAST(val loopExpr: ExprAST,
-                   val body: StatementAST) : StatementAST() {
+                   val body: StatementAST
+    ) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")

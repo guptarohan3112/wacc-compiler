@@ -1,6 +1,5 @@
 package wacc_05.ast_structure
 
-import wacc_05.ast_structure.statement.StatementAST
 import java.util.*
 
 class ProgramAST(val functionList : ArrayList<FunctionAST>,
