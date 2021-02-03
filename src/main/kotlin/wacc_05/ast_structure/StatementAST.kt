@@ -1,6 +1,5 @@
 package wacc_05.ast_structure
 
-import wacc_05.ast_structure.ExprAST
 import java.util.*
 
 sealed class StatementAST() : AST {
