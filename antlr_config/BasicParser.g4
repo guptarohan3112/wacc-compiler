@@ -34,10 +34,14 @@ assignLHS: IDENT
 
 assignRHS: expr
 | arrayLit
-| NEW_PAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES
+| newPair
 | pairElem
-| CALL IDENT OPEN_PARENTHESES argList? CLOSE_PARENTHESES
+| call
 ;
+
+newPair: NEW_PAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES ;
+
+call: CALL IDENT OPEN_PARENTHESES argList? CLOSE_PARENTHESES ;
 
 argList: expr (COMMA expr)* ;
 
