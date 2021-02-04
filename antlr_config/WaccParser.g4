@@ -1,7 +1,7 @@
-parser grammar BasicParser;
+parser grammar WaccParser;
 
 options {
-  tokenVocab=BasicLexer;
+  tokenVocab=WaccLexer;
 }
 
 prog: BEGIN (func)* stat END EOF ;

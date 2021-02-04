@@ -1,4 +1,4 @@
-lexer grammar BasicLexer;
+lexer grammar WaccLexer;
 
 // Comments and whitespace
 COMMENT: '#' ~[\r\n]* [\r\n] -> skip ;
