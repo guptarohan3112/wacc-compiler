@@ -22,6 +22,13 @@ repositories {
 }
 
 dependencies {
+
+    implementation 'org.testng:testng:7.1.0'
+    implementation 'org.testng:testng:7.1.0'
+    implementation 'junit:junit:4.12'
+    implementation 'junit:junit:4.12'
+    ext.kotlin_version= '1.4.20'
+
     // Align versions of all Kotlin components
     implementation platform('org.jetbrains.kotlin:kotlin-bom')
 
@@ -30,13 +37,18 @@ dependencies {
 
     // This dependency is used by the application.
     implementation 'com.google.guava:guava:29.0-jre'
+//    implementation 'org.junit.jupiter:junit-jupiter:5.4.2'
+//    testCompile 'junit:junit:4.12'
 
-    // Use the Kotlin test library.
-    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+//    // Use the Kotlin test library.
+//    testImplementation 'org.jetbrains.kotlin:kotlin-test'
 
     // Use the Kotlin JUnit integration.
-    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
+//    testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
 
+//    testCompile "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.4.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.4.0'
     antlr "org.antlr:antlr4:4.9.1"
 }
 
@@ -45,7 +57,8 @@ sourceSets {
         resources {
             'src/'
         }
-        main.java.srcDirs += 'src/'
+        main.java.srcDirs += 'src/main/kotlin'
+        test.java.srcDirs += 'src/test/kotlin'
     }
 }
 
@@ -54,7 +67,12 @@ run{
     standardInput = System.in
 }
 
+test {
+    useJUnitPlatform()
+}
+
 application {
     // Define the main class for the application.
     mainClass = 'wacc_05/AppKt'
+
 }

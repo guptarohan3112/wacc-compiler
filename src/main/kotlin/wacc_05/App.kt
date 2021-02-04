@@ -6,21 +6,21 @@ package wacc_05
 import antlr.BasicLexer
 import antlr.BasicParser
 import org.antlr.v4.runtime.*
-import kotlin.system.exitProcess
+import java.io.File
 
 fun main(args:Array<String>) {
-    App.runCompiler(args)
+//    App.runCompiler(args)
 }
 
 object App {
 
     @JvmStatic
-    fun runCompiler(args: Array<String>) {
+    fun runCompiler(filePath: String): Int{
 
         println("Welcome to WACC: Please enter your input below")
         println("Remember to click enter at the end of input in this temporary solution")
 
-        val inputStream = System.`in`
+        val inputStream = File(filePath).inputStream()
         val input = CharStreams.fromStream(inputStream)
 
         val lexer = BasicLexer(input)
@@ -33,6 +33,7 @@ object App {
         val tree = parser.prog()
         println(tree.toStringTree(parser))
         println("FINISHED")
+        return(0)
     }
 
 }
