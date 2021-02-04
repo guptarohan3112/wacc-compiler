@@ -18,19 +18,19 @@ object AppTest {
 
     @Test
     fun runValidTests() {
-        val testPassed: Boolean = runTestsInDir("src\\test\\valid\\", "Valid")
+        val testPassed: Boolean = runTestsInDir("src\\test\\test_cases\\valid\\", "Valid")
         assertTrue(testPassed)
     }
 
     @Test
     fun runInvalidSyntaxTests() {
-        val testPassed: Boolean = runTestsInDir("src\\test\\invalid\\syntaxErr\\", "Invalid Syntax")
+        val testPassed: Boolean = runTestsInDir("src\\test\\test_cases\\invalid\\syntaxErr\\", "Invalid Syntax")
         assertTrue(testPassed)
     }
 
     @Test
     fun runInvalidSemanticsTests() {
-        val testPassed: Boolean = runTestsInDir("src\\test\\invalid\\semanticErr\\", "Invalid Semantic")
+        val testPassed: Boolean = runTestsInDir("src\\test\\test_cases\\invalid\\semanticErr\\", "Invalid Semantic")
         assertTrue(testPassed)
     }
 
