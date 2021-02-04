@@ -4,36 +4,19 @@ options {
   tokenVocab=BasicLexer;
 }
 
-unaryOper: NOT
-| MINUS
-| LEN
-| ORD
-| CHR;
+prog: BEGIN (func)* stat END EOF ;
 
-binaryOper: PLUS
-| MINUS
-| MULT
-| DIV
-| MOD
-| GT
-| GTE
-| LT
-| LTE
-| EQ
-| NOTEQ
-| AND
-| OR ;
+func: type IDENT OPEN_PARENTHESES paramList? CLOSE_PARENTHESES IS stat END ;
 
-expr: unaryOper expr
-| expr binaryOper expr
-| INT_LIT
-| BOOL_LIT
-| STR_LIT
-| CHAR_LIT
-| OPEN_PARENTHESES expr CLOSE_PARENTHESES
-;
+paramList: param (COMMA param)* ;
 
-stat: FREE expr
+param: type IDENT ;
+
+stat: SKIP_STAT
+| type IDENT EQUALS assignRHS
+| assignLHS EQUALS assignRHS
+| READ assignLHS
+| FREE expr
 | RETURN expr
 | EXIT expr
 | PRINT expr
@@ -44,5 +27,47 @@ stat: FREE expr
 | stat SEMICOLON stat
 ;
 
-// EOF indicates that the program must consume to the end of the input.
-prog: BEGIN stat END EOF ;
+assignLHS: IDENT
+;
+
+assignRHS: expr
+;
+
+type: baseType
+;
+
+baseType: INT
+| BOOL
+| CHAR
+| STRING
+;
+
+expr: (PLUS|MINUS)? INT_LIT
+| BOOL_LIT
+| STR_LIT
+| CHAR_LIT
+| IDENT
+| unaryOper expr
+| expr binaryOper expr
+| OPEN_PARENTHESES expr CLOSE_PARENTHESES
+;
+
+unaryOper: NOT
+| MINUS
+| LEN
+| ORD
+| CHR;
+
+binaryOper: PLUS
+| MINUS
+| MULT
+| DIV
+| MOD   
+| GT
+| GTE
+| LT
+| LTE
+| EQ
+| NOTEQ
+| AND
+| OR ;
