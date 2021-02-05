@@ -12,19 +12,19 @@ paramList: param (COMMA param)* ;
 
 param: type IDENT ;
 
-stat: SKIP_STAT
-| type IDENT EQUALS assignRHS
-| assignLHS EQUALS assignRHS
-| READ assignLHS
-| FREE expr
-| RETURN expr
-| EXIT expr
-| PRINT expr
-| PRINTLN expr
-| IF expr THEN stat ELSE stat FI
-| WHILE expr DO stat DONE
-| BEGIN stat END
-| stat SEMICOLON stat
+stat: SKIP_STAT                   # statSkip
+| type IDENT EQUALS assignRHS     # statType
+| assignLHS EQUALS assignRHS      # statAssignLHS
+| READ assignLHS                  # statAssignRHS
+| FREE expr                       # statFree
+| RETURN expr                     # statReturn
+| EXIT expr                       # statExit
+| PRINT expr                      # statPrint
+| PRINTLN expr                    # statPrintln
+| IF expr THEN stat ELSE stat FI  # statIf
+| WHILE expr DO stat DONE         # statWhile
+| BEGIN stat END                  # statBeginEnd
+| stat SEMICOLON stat             # statSequential
 ;
 
 assignLHS: IDENT
