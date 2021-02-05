@@ -1,14 +1,15 @@
 package wacc_05.ast_structure
 
-class AssignrhsAST : AST {
+sealed class AssignrhsAST() : AST {
 
-    override fun check() {
-//        TODO("Not yet implemented")
-    }
+    // Expression?
 
-    override fun toString(): String {
-//        TODO("Not yet implemented")
-        return ""
+    data class NewPairAST(val expr1: ExprAST, val expr2: ExprAST) : AssignrhsAST() {
+
+        override fun check() {
+            // Not implemented
+        }
+
     }
 
 }

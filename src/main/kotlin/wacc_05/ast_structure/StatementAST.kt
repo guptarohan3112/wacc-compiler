@@ -33,7 +33,7 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class DeclarationAST(val rhs : AssignrhsAST) : StatementAST() {
+    data class InitAST(val rhs : AssignrhsAST) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
