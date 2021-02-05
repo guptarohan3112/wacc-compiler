@@ -1,5 +1,6 @@
 package wacc_05.ast_structure
 
+import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import java.util.*
 
 sealed class StatementAST : AST {
@@ -15,7 +16,8 @@ sealed class StatementAST : AST {
 
     data class DeclAST(val typeName: TypeAST,
                        val varname: String,
-                       val assignment: AssignRHSAST) : StatementAST() {
+                       val assignment: AssignRHSAST
+    ) : StatementAST() {
 
         override fun check() {
 //            TODO("Not yet implemented")
