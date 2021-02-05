@@ -2,9 +2,9 @@ package wacc_05.ast_structure
 
 import java.util.*
 
-sealed class StatementAST() : AST {
+sealed class StatementAST : AST {
 
-    object Skip : StatementAST(){
+    object SkipAST : StatementAST(){
 
         // No semantic checks need to be done for a skip statement
         override fun check() {
@@ -13,9 +13,9 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class DeclAST(val typeName: String,
+    data class DeclAST(val typeName: TypeAST,
                        val varname: String,
-                       val assignment: AssignrhsAST) : StatementAST() {
+                       val assignment: AssignRHSAST) : StatementAST() {
 
         override fun check() {
 //            TODO("Not yet implemented")
@@ -33,7 +33,7 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class DeclarationAST(val rhs : AssignrhsAST) : StatementAST() {
+    data class DeclarationAST(val rhs : AssignRHSAST) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")

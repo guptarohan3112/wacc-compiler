@@ -13,7 +13,7 @@ paramList: param (COMMA param)* ;
 param: type IDENT ;
 
 stat: SKIP_STAT                   # statSkip
-| type IDENT EQUALS assignRHS     # statType
+| type IDENT EQUALS assignRHS     # statDeclaration
 | assignLHS EQUALS assignRHS      # statAssignLHS
 | READ assignLHS                  # statAssignRHS
 | FREE expr                       # statFree
