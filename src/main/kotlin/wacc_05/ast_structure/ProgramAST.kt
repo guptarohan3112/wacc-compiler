@@ -9,4 +9,8 @@ class ProgramAST(val functionList : ArrayList<FunctionAST>,
 //        TODO("Not yet implemented")
     }
 
+    override fun toString(): String {
+//        TODO("Not yet implemented")
+        return ""
+    }
 }

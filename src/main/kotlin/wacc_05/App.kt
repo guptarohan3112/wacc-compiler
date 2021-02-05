@@ -1,7 +1,7 @@
 package wacc_05
 
-import antlr.BasicLexer
-import antlr.BasicParser
+import antlr.WaccLexer
+import antlr.WaccParser
 import org.antlr.v4.runtime.*
 import kotlin.system.exitProcess
 
@@ -20,13 +20,13 @@ object App {
         val inputStream = System.`in`
         val input = CharStreams.fromStream(inputStream)
 
-        val lexer = BasicLexer(input)
+        val lexer = WaccLexer(input)
         val errorListener = ErrorListener()
         lexer.removeErrorListeners()   // remove default ConsoleErrorListener
         lexer.addErrorListener(errorListener)
 
         val tokens = CommonTokenStream(lexer)
-        val parser = BasicParser(tokens)
+        val parser = WaccParser(tokens)
         val tree = parser.prog()
         println(tree.toStringTree(parser))
         println("FINISHED")

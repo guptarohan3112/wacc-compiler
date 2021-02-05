@@ -1,7 +1,7 @@
 #!/bin/sh
 
-LEXER_FILE=BasicLexer.g4
-PARSER_FILE=BasicParser.g4
+LEXER_FILE=WaccLexer.g4
+PARSER_FILE=WaccParser.g4
 
 BASEDIR=$(dirname $0)
 
