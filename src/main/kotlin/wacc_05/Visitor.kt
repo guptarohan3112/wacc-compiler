@@ -3,7 +3,6 @@ package wacc_05
 import antlr.WaccParser
 import antlr.WaccParserBaseVisitor
 import wacc_05.ast_structure.AST
-import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.TypeAST
@@ -25,8 +24,8 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     }
 
     override fun visitType(ctx: WaccParser.TypeContext): TypeAST {
-        // TODO
-        return TypeAST("")
+        // TODO - return purely for compilation purposes
+        return TypeAST.BaseTypeAST("")
     }
 
 }

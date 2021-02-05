@@ -1,6 +1,8 @@
 package wacc_05.ast_structure
 
-sealed class ExprAST : AST {
+import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+
+sealed class ExprAST : AssignRHSAST() {
 
     data class UnOpAST(val expr: ExprAST) : ExprAST() {
 
