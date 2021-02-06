@@ -4,7 +4,7 @@ import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 
 sealed class ExprAST : AssignRHSAST() {
 
-    data class IntLiterAST(private val value: String) : ExprAST() {
+    data class IntLiterAST(private val sign: String, private val value: String) : ExprAST() {
         override fun check() {
             TODO("Not yet implemented")
         }

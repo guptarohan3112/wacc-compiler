@@ -198,8 +198,14 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         two children exist.
      */
     override fun visitIntLit(ctx: WaccParser.IntLitContext): ExprAST.IntLiterAST {
-        // TODO - add sign parameter
-        return ExprAST.IntLiterAST(ctx.INT_LIT().text)
+        var sign = ""
+        if (ctx.PLUS() != null) {
+            sign = ctx.PLUS().text
+        }
+        if (ctx.MINUS() != null) {
+            sign = ctx.MINUS().text
+        }
+        return ExprAST.IntLiterAST(sign, ctx.INT_LIT().text)
     }
 
     /* Function: visitBoolLit()
