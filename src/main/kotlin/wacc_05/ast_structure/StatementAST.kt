@@ -1,5 +1,6 @@
 package wacc_05.ast_structure
 
+import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import java.util.*
 
@@ -14,9 +15,9 @@ sealed class StatementAST : AST {
 
     }
 
-    data class DeclAST(val typeName: TypeAST,
-                       val varname: String,
-                       val assignment: AssignRHSAST
+    data class DeclAST(private val typeName: TypeAST,
+                       private val varname: String,
+                       private val assignment: AssignRHSAST
     ) : StatementAST() {
 
         override fun check() {
@@ -27,7 +28,13 @@ sealed class StatementAST : AST {
 
     // Initialisation goes here
 
-    data class BeginAST(val stat : StatementAST) : StatementAST(){
+    data class ReadAST(private val lhs : AssignLHSAST) : StatementAST() {
+        override fun check() {
+            TODO("Not yet implemented")
+        }
+    }
+
+    data class BeginAST(private val stat : StatementAST) : StatementAST(){
 
         override fun check() {
 //        TODO("Not yet implemented")
@@ -35,7 +42,7 @@ sealed class StatementAST : AST {
 
     }
 
-    data class DeclarationAST(val rhs : AssignRHSAST) : StatementAST() {
+    data class DeclarationAST(private val rhs : AssignRHSAST) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
@@ -43,7 +50,7 @@ sealed class StatementAST : AST {
 
     }
 
-    data class ExitAST(val expr : ExprAST) : StatementAST() {
+    data class ExitAST(private val expr : ExprAST) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
@@ -51,7 +58,7 @@ sealed class StatementAST : AST {
 
     }
 
-    data class FreeAST(val expr : ExprAST) : StatementAST() {
+    data class FreeAST(private val expr : ExprAST) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
@@ -59,9 +66,9 @@ sealed class StatementAST : AST {
 
     }
 
-    data class IfAST(val condExpr: ExprAST,
-                     val thenStat: StatementAST,
-                     val elseStat: StatementAST
+    data class IfAST(private val condExpr: ExprAST,
+                     private val thenStat: StatementAST,
+                     private val elseStat: StatementAST
     ) : StatementAST() {
 
         override fun check() {
@@ -70,8 +77,8 @@ sealed class StatementAST : AST {
 
     }
 
-    data class PrintAST(val expr: ExprAST,
-                        val newLine: Boolean) : StatementAST() {
+    data class PrintAST(private val expr: ExprAST,
+                        private val newLine: Boolean) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
@@ -79,7 +86,7 @@ sealed class StatementAST : AST {
 
     }
 
-    data class ReturnAST(val expr: ExprAST) : StatementAST() {
+    data class ReturnAST(private val expr: ExprAST) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
@@ -87,7 +94,7 @@ sealed class StatementAST : AST {
 
     }
 
-    data class StatListAST(val statList: ArrayList<StatementAST>) : StatementAST() {
+    data class SequentialAST(private val stat1: StatementAST, private val stat2: StatementAST) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")
@@ -95,8 +102,8 @@ sealed class StatementAST : AST {
 
     }
 
-    class WhileAST(val loopExpr: ExprAST,
-                   val body: StatementAST
+    class WhileAST(private val loopExpr: ExprAST,
+                   private val body: StatementAST
     ) : StatementAST() {
 
         override fun check() {

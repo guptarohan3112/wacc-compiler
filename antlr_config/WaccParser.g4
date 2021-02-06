@@ -14,8 +14,8 @@ param: type IDENT ;
 
 stat: SKIP_STAT                   # statSkip
 | type IDENT EQUALS assignRHS     # statDeclaration
-| assignLHS EQUALS assignRHS      # statAssignLHS
-| READ assignLHS                  # statAssignRHS
+| assignLHS EQUALS assignRHS      # statAssign
+| READ assignLHS                  # statRead
 | FREE expr                       # statFree
 | RETURN expr                     # statReturn
 | EXIT expr                       # statExit

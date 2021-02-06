@@ -24,6 +24,24 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return StatementAST.DeclAST(visitType(ctx.type()), ctx.IDENT().text, visitAssignRHS(ctx.assignRHS()))
     }
 
+    /* Function: visitStatRead()
+       -------------------------
+       Generates a ReadAST node with the child being the AssignLHSAST resulting from calling visitAssignLHS on the
+       context's assignLHS child.
+     */
+    override fun visitStatRead(ctx: WaccParser.StatReadContext): StatementAST {
+        return StatementAST.ReadAST(visitAssignLHS(ctx.assignLHS()))
+    }
+
+    /* Function: visitStatFree()
+       -------------------------
+       Generates a FreeAST node with the child being the ExprAST resulting from calling visitExpr on the
+       context's expr child.
+     */
+    override fun visitStatFree(ctx: WaccParser.StatFreeContext): StatementAST {
+        return StatementAST.FreeAST(visitExpr(ctx.expr()))
+    }
+
     /* Function: visitAssignRHS()
        --------------------------
        Returns an AssignRHSAST node, by matching the context with each possible type of assignRHS
@@ -49,10 +67,28 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             ctx.funcCall() != null -> {
                 return visitFuncCall(ctx.funcCall())
             }
+
+            // TODO - throw suitable error
+            else -> throw Exception()
+        }
+    }
+
+    override fun visitAssignLHS(ctx: WaccParser.AssignLHSContext): AssignLHSAST {
+        when {
+            ctx.IDENT() != null -> {
+                return AssignLHSAST(ident = ctx.IDENT().text)
+            }
+            ctx.pairElem() != null -> {
+                return AssignLHSAST(pairElem = visitPairElem(ctx.pairElem()))
+            }
+            ctx.arrayElem() != null -> {
+                return AssignLHSAST(arrElem = visitArrayElem(ctx.arrayElem()))
+            }
+
+            // TODO - throw suitable error
+            else -> throw Exception()
         }
 
-        // TODO - throw suitable error
-        throw Exception()
     }
 
     override fun visitType(ctx: WaccParser.TypeContext): TypeAST {
@@ -82,6 +118,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return PairElemAST(visitExpr(ctx.expr()))
     }
 
+    override fun visitArrayElem(ctx: WaccParser.ArrayElemContext): ArrayElemAST {
+        // TODO - return purely for compilation purposes
+        return ArrayElemAST("", ArrayList())
+    }
+
     /* Function: VisitFuncCall()
         ------------------------
         Generated a FuncCallAST with function name following ctx's IDENT token, and the args are either null (ctx's
@@ -101,8 +142,8 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         Generates an ArgListAST for the 1(+) args (expressions) in the context by calling visitExpr() on these.
      */
     override fun visitArgList(ctx: WaccParser.ArgListContext): ArgListAST {
-        val exprs : MutableList<ExprAST> = ArrayList()
-        for(exprCtx in ctx.expr()) {
+        val exprs: MutableList<ExprAST> = ArrayList()
+        for (exprCtx in ctx.expr()) {
             exprs.add(visitExpr(exprCtx))
         }
         return ArgListAST(exprs as ArrayList<ExprAST>)
