@@ -41,8 +41,6 @@ sealed class StatementAST() : AST {
 
     }
 
-    // Initialisation goes here
-
     data class BeginAST(val stat : StatementAST) : StatementAST(){
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
@@ -52,7 +50,8 @@ sealed class StatementAST() : AST {
     }
 
     // Not sure about this one, will implement check method later
-    data class InitAST(val rhs : AssignrhsAST) : StatementAST() {
+    // Will include assignLHSAST field- changes have been made in visitor_methods class
+    data class InitAST(val rhs: AssignrhsAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             TODO("Not yet implemented")
