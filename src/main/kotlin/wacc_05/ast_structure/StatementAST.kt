@@ -1,14 +1,14 @@
 package wacc_05.ast_structure
 
+import wacc_05.symbol_table.SymbolTable
 import java.util.*
 
 sealed class StatementAST() : AST {
 
     object Skip : StatementAST(){
 
-        // No semantic checks need to be done for a skip statement
-        override fun check() {
-            return
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
@@ -17,8 +17,8 @@ sealed class StatementAST() : AST {
                        val varname: String,
                        val assignment: AssignrhsAST) : StatementAST() {
 
-        override fun check() {
-//            TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
@@ -27,32 +27,32 @@ sealed class StatementAST() : AST {
 
     data class BeginAST(val stat : StatementAST) : StatementAST(){
 
-        override fun check() {
-//        TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
 
     data class InitAST(val rhs : AssignrhsAST) : StatementAST() {
 
-        override fun check() {
-//        TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
 
     data class ExitAST(val expr : ExprAST) : StatementAST() {
 
-        override fun check() {
-//        TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
 
     data class FreeAST(val expr : ExprAST) : StatementAST() {
 
-        override fun check() {
-//        TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
@@ -62,8 +62,8 @@ sealed class StatementAST() : AST {
                      val elseStat: StatementAST
     ) : StatementAST() {
 
-        override fun check() {
-//        TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
@@ -71,34 +71,34 @@ sealed class StatementAST() : AST {
     data class PrintAST(val expr: ExprAST,
                         val newLine: Boolean) : StatementAST() {
 
-        override fun check() {
-//        TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
 
     data class ReturnAST(val expr: ExprAST) : StatementAST() {
 
-        override fun check() {
-//        TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
 
     data class StatListAST(val statList: ArrayList<StatementAST>) : StatementAST() {
 
-        override fun check() {
-//        TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
 
-    class WhileAST(val loopExpr: ExprAST,
+    data class WhileAST(val loopExpr: ExprAST,
                    val body: StatementAST
     ) : StatementAST() {
 
-        override fun check() {
-//        TODO("Not yet implemented")
+        override fun check(st: SymbolTable) {
+            TODO("Not yet implemented")
         }
 
     }
