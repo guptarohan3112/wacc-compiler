@@ -44,11 +44,47 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
     /* Function: visitStatFree()
        -------------------------
-       Generates a FreeAST node with the child being the ExprAST resulting from calling visitExpr on the
+       Generates a FreeAST node with the child being the ExprAST resulting from calling visitExpr() on the
        context's expr child.
      */
     override fun visitStatFree(ctx: WaccParser.StatFreeContext): StatementAST {
         return StatementAST.FreeAST(visitExpr(ctx.expr()))
+    }
+
+    /* Function: visitStatReturn()
+       -------------------------
+       Generates a ReturnAST node with the child being the ExprAST resulting from calling visitExpr() on ctx's
+       expr child.
+     */
+    override fun visitStatReturn(ctx: WaccParser.StatReturnContext): StatementAST {
+        return StatementAST.ReturnAST(visitExpr(ctx.expr()))
+    }
+
+    /* Function: visitStatExit()
+       -------------------------
+       Generates an ExitAST node with the child being the ExprAST resulting from calling visitExpr() on ctx's
+       expr child.
+     */
+    override fun visitStatExit(ctx: WaccParser.StatExitContext): StatementAST {
+        return StatementAST.ExitAST(visitExpr(ctx.expr()))
+    }
+
+    /* Function: visitStatPrint()
+       -------------------------
+       Generates a PrintAST node with the child being the ExprAST resulting from calling visitExpr() on ctx's
+       expr child.
+     */
+    override fun visitStatPrint(ctx: WaccParser.StatPrintContext): StatementAST {
+        return StatementAST.PrintAST(visitExpr(ctx.expr()), false)
+    }
+
+    /* Function: visitStatPrintln()
+       -------------------------
+       Generates a PrintAST node with the child being the ExprAST resulting from calling visitExpr() on ctx's
+       expr child.
+     */
+    override fun visitStatPrintln(ctx: WaccParser.StatPrintlnContext): StatementAST {
+        return StatementAST.PrintAST(visitExpr(ctx.expr()), true)
     }
 
     /* Function: visitAssignRHS()
