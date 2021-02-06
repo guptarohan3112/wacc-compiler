@@ -3,7 +3,7 @@ package wacc_05
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import kotlin.system.exitProcess
 
-class SemanticErrorMessages {
+class SemanticErrorHandler() {
 
     companion object {
         val SEMANTIC_ERROR = 200
@@ -24,8 +24,8 @@ class SemanticErrorMessages {
         exitProcess(SEMANTIC_ERROR)
     }
 
-    fun typeMismatch(exprname: String, expected: TypeIdentifier, actual: TypeIdentifier) {
-        println("Semantic error: The expected type of ${exprname} is ${expected.toString()}, but the actual type is ${actual.toString()}")
+    fun typeMismatch(expected: TypeIdentifier, actual: TypeIdentifier) {
+        println("Semantic error: Could not match the expected type of ${expected} to the actual type of ${actual}")
         exitProcess(SEMANTIC_ERROR)
     }
 

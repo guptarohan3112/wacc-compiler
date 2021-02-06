@@ -1,5 +1,6 @@
 package wacc_05.ast_structure
 
+import wacc_05.SemanticErrorHandler
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
@@ -20,7 +21,7 @@ sealed class ExprAST() : AST {
             }
         }
 
-        override fun check(st: SymbolTable) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
 //            TODO("Not yet implemented")
         }
 
@@ -41,7 +42,7 @@ sealed class ExprAST() : AST {
             }
         }
 
-        override fun check(st: SymbolTable) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
 //            TODO("Not yet implemented")
         }
 

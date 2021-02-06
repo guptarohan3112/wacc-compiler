@@ -1,5 +1,6 @@
 package wacc_05.ast_structure
 
+import wacc_05.SemanticErrorHandler
 import wacc_05.symbol_table.SymbolTable
 
 sealed class AssignrhsAST() : AST {
@@ -8,7 +9,7 @@ sealed class AssignrhsAST() : AST {
 
     data class NewPairAST(val expr1: ExprAST, val expr2: ExprAST) : AssignrhsAST() {
 
-        override fun check(st: SymbolTable) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
 //            TODO("Not yet implemented")
         }
 
