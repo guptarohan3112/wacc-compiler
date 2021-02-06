@@ -2,7 +2,7 @@
 # Locations
 
 ANTLR_DIR	:= antlr_config
-SOURCE_DIR	:= src/main/kotlin
+SOURCE_DIR	:= src/main/java
 OUTPUT_DIR	:= bin
 
 # Tools
