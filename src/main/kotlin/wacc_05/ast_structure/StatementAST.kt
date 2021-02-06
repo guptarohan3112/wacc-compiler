@@ -23,7 +23,12 @@ sealed class StatementAST : AST {
         override fun check() {
 //            TODO("Not yet implemented")
         }
+    }
 
+    data class AssignAST(private val lhs: AssignLHSAST, private val rhs : AssignRHSAST) : StatementAST() {
+        override fun check() {
+            TODO("Not yet implemented")
+        }
     }
 
     // Initialisation goes here
@@ -35,14 +40,6 @@ sealed class StatementAST : AST {
     }
 
     data class BeginAST(private val stat : StatementAST) : StatementAST(){
-
-        override fun check() {
-//        TODO("Not yet implemented")
-        }
-
-    }
-
-    data class DeclarationAST(private val rhs : AssignRHSAST) : StatementAST() {
 
         override fun check() {
 //        TODO("Not yet implemented")

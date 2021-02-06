@@ -24,6 +24,15 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return StatementAST.DeclAST(visitType(ctx.type()), ctx.IDENT().text, visitAssignRHS(ctx.assignRHS()))
     }
 
+    /* Function: visitStatAssign()
+       ----------------------------
+       Generates an AssignAST node using the assignLHS and assignRHS from the context and relevant visitX() calls
+       where necessary.
+     */
+    override fun visitStatAssign(ctx: WaccParser.StatAssignContext): StatementAST {
+        return StatementAST.AssignAST(visitAssignLHS(ctx.assignLHS()), visitAssignRHS(ctx.assignRHS()))
+    }
+
     /* Function: visitStatRead()
        -------------------------
        Generates a ReadAST node with the child being the AssignLHSAST resulting from calling visitAssignLHS on the
@@ -50,22 +59,21 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     override fun visitAssignRHS(ctx: WaccParser.AssignRHSContext): AssignRHSAST {
         // we use the when statement to check which type of assignRHS we have and generate a child AST
         // node accordingly
-        when {
+        return when {
             ctx.expr() != null -> {
-                // assign RHS is an expr
-                return visitExpr(ctx.expr())
+                visitExpr(ctx.expr())
             }
             ctx.arrayLit() != null -> {
-                return visitArrayLit(ctx.arrayLit())
+                visitArrayLit(ctx.arrayLit())
             }
             ctx.newPair() != null -> {
-                return visitNewPair(ctx.newPair())
+                visitNewPair(ctx.newPair())
             }
             ctx.pairElem() != null -> {
-                return visitPairElem(ctx.pairElem())
+                visitPairElem(ctx.pairElem())
             }
             ctx.funcCall() != null -> {
-                return visitFuncCall(ctx.funcCall())
+                visitFuncCall(ctx.funcCall())
             }
 
             // TODO - throw suitable error
@@ -73,16 +81,23 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         }
     }
 
+    /* Function: visitAssignLHS()
+        -------------------------
+        Generates an AssignLHSAST node by matching the context with each possible type of assignLHS, or
+        throws an error if this fails.
+     */
     override fun visitAssignLHS(ctx: WaccParser.AssignLHSContext): AssignLHSAST {
-        when {
+        // we use the when statement to check which type of assignLHS we have and generate a child AST
+        // node accordingly
+        return when {
             ctx.IDENT() != null -> {
-                return AssignLHSAST(ident = ctx.IDENT().text)
+                AssignLHSAST(ident = ctx.IDENT().text)
             }
             ctx.pairElem() != null -> {
-                return AssignLHSAST(pairElem = visitPairElem(ctx.pairElem()))
+                AssignLHSAST(pairElem = visitPairElem(ctx.pairElem()))
             }
             ctx.arrayElem() != null -> {
-                return AssignLHSAST(arrElem = visitArrayElem(ctx.arrayElem()))
+                AssignLHSAST(arrElem = visitArrayElem(ctx.arrayElem()))
             }
 
             // TODO - throw suitable error
