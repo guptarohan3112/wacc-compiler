@@ -1,13 +1,32 @@
 package wacc_05.symbol_table.identifier_objects
 
 sealed class TypeIdentifier : IdentifierObject() {
-    object BoolIdentifier : TypeIdentifier()
 
-    object CharIdentifier : TypeIdentifier()
+    companion object {
+        val BOOLEAN = "boolean"
+        val CHARACTER = "character"
+        val INTEGER = "integer"
+    }
+
+    object BoolIdentifier : TypeIdentifier() {
+        override fun toString(): String {
+            return BOOLEAN
+        }
+    }
+
+    object CharIdentifier : TypeIdentifier() {
+        override fun toString(): String {
+            return CHARACTER
+        }
+    }
 
     data class IntIdentifier(private val min : Int = Int.MIN_VALUE, private val max : Int = Int.MAX_VALUE) : TypeIdentifier() {
         public fun valid(value : Int) : Boolean {
             return value in min until max
+        }
+
+        override fun toString(): String {
+            return INTEGER
         }
     }
 
