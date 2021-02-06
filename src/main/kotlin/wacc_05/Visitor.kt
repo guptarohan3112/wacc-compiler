@@ -192,11 +192,20 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return TypeAST.BaseTypeAST("")
     }
 
+    /* Function: visitNewPair()
+   ------------------------
+   Returns a NewPairAST node, by matching the context with each of the two expr children. It assumes these
+   two children exist.
+     */
     override fun visitIntLit(ctx: WaccParser.IntLitContext): ExprAST.IntLiterAST {
         // TODO - add sign parameter
         return ExprAST.IntLiterAST(ctx.INT_LIT().text)
     }
 
+    /* Function: visitBoolLot()
+   ------------------------
+   Returns a BoolLiterAST node
+     */
     override fun visitBoolLit(ctx: WaccParser.BoolLitContext): ExprAST.BoolLiterAST {
         return ExprAST.BoolLiterAST(ctx.BOOL_LIT().text)
     }
@@ -284,33 +293,33 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         // node accordingly
         return when {
             ctx.intLit() != null -> {
-                return visitIntLit(ctx.intLit())
+                visitIntLit(ctx.intLit())
             }
             ctx.boolLit() != null -> {
-                return visitBoolLit(ctx.boolLit())
+                visitBoolLit(ctx.boolLit())
             }
             ctx.charLit() != null -> {
-                return visitCharLit(ctx.charLit())
+                visitCharLit(ctx.charLit())
             }
             ctx.strLit() != null -> {
-                return visitStrLit(ctx.strLit())
+                visitStrLit(ctx.strLit())
             }
             ctx.PAIR_LIT() != null -> {
-                return ExprAST.PairLiterAST(value = ctx.PAIR_LIT().text)
+                ExprAST.PairLiterAST(value = ctx.PAIR_LIT().text)
             }
             ctx.IDENT() != null -> {
-                return ExprAST.IdentAST(value = ctx.IDENT().text)
+                ExprAST.IdentAST(value = ctx.IDENT().text)
             }
             ctx.arrayElem() != null -> {
-                return visitArrayElem(ctx.arrayElem())
+                visitArrayElem(ctx.arrayElem())
             }
             ctx.unaryOper() != null -> {
                 // TODO : this is a hacky solution, why is ctx.expr a list in the first place?
-                return ExprAST.UnOpAST(visitExpr(ctx.expr()[0]), ctx.unaryOper().text)
+                ExprAST.UnOpAST(visitExpr(ctx.expr()[0]), ctx.unaryOper().text)
             }
             ctx.OPEN_PARENTHESES() != null -> {
                 // TODO: See above
-                return visitExpr(ctx.expr()[0])
+                visitExpr(ctx.expr()[0])
             }
             // TODO - throw suitable error
             else -> throw Exception()
