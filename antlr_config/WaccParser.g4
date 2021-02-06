@@ -34,10 +34,14 @@ assignLHS: IDENT
 
 assignRHS: expr
 | arrayLit
-| NEW_PAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES
+| newPair
 | pairElem
-| CALL IDENT OPEN_PARENTHESES argList? CLOSE_PARENTHESES
+| funcCalL
 ;
+
+newPair: NEW_PAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES ;
+
+funcCalL: CALL IDENT OPEN_PARENTHESES argList? CLOSE_PARENTHESES ;
 
 argList: expr (COMMA expr)* ;
 
@@ -46,9 +50,11 @@ pairElem: FST expr
 ;
 
 type: baseType
-| type OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
+| arrayType
 | pairType
 ;
+
+arrayType: (baseType | pairType) OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET ;
 
 baseType: INT
 | BOOL
@@ -63,11 +69,11 @@ pairElemType: baseType
 | PAIR
 ;
 
-expr: (PLUS|MINUS)? INT_LIT
-| BOOL_LIT
-| CHAR_LIT
-| STR_LIT
-| pairLit
+expr: intLit
+| boolLit
+| charLit
+| strLit
+| PAIR_LIT
 | IDENT
 | arrayElem
 | unaryOper expr
@@ -99,4 +105,12 @@ arrayElem: IDENT (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)+ ;
 
 arrayLit: OPEN_SQUARE_BRACKET (expr (COMMA expr)*)? CLOSE_SQUARE_BRACKET ;
 
-pairLit: NULL ;
+intLit: (PLUS|MINUS)? INT_LIT ;
+
+boolLit : BOOL_LIT ;
+
+charLit: CHAR_LIT ;
+
+strLit: STR_LIT ;
+
+
