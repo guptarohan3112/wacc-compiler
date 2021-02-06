@@ -17,7 +17,7 @@ class ErrorListener : BaseErrorListener() {
         if (msg != null && !msg.isEmpty()) {
             println(msg)
         }
-//        exitProcess(SYNTAX_ERROR)
+        // exitProcess(SYNTAX_ERROR)
     }
 
 
