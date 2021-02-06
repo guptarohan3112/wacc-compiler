@@ -46,11 +46,12 @@ sealed class StatementAST() : AST {
     data class BeginAST(val stat : StatementAST) : StatementAST(){
 
         override fun check(st: SymbolTable) {
-            TODO("Not yet implemented")
+            stat.check(st)
         }
 
     }
 
+    // Not sure about this one, will implement check method later
     data class InitAST(val rhs : AssignrhsAST) : StatementAST() {
 
         override fun check(st: SymbolTable) {
@@ -62,7 +63,7 @@ sealed class StatementAST() : AST {
     data class ExitAST(val expr : ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable) {
-            TODO("Not yet implemented")
+            expr.check(st)
         }
 
     }
@@ -70,7 +71,7 @@ sealed class StatementAST() : AST {
     data class FreeAST(val expr : ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable) {
-            TODO("Not yet implemented")
+            expr.check(st)
         }
 
     }
@@ -81,7 +82,18 @@ sealed class StatementAST() : AST {
     ) : StatementAST() {
 
         override fun check(st: SymbolTable) {
-            TODO("Not yet implemented")
+            condExpr.check(st)
+            // Making the assumption that boolean identifiers have a key of "boolean".
+            // Eventually look up in top level symbol table
+            val boolType: TypeIdentifier = st.lookupAll("boolean") as TypeIdentifier
+            if (condExpr.getType() != boolType) {
+                //Error- not allowed to have condition expression that does not evaluate to a boolean
+            } else {
+                val then_st = SymbolTable(st)
+                val else_st = SymbolTable(st)
+                thenStat.check(then_st)
+                elseStat.check(else_st)
+            }
         }
 
     }
