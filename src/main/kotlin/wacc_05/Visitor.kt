@@ -7,6 +7,27 @@ import wacc_05.ast_structure.assignment_ast.*
 
 class Visitor : WaccParserBaseVisitor<AST>() {
 
+    /* Function: visitProg()
+        ----------------------------
+        Generates a SkipAST node without referencing the context as the context is not required.
+     */
+    override fun visitProg(ctx: WaccParser.ProgContext): ProgramAST {
+        val funcs: MutableList<FunctionAST> = ArrayList()
+        for (funcCtx in ctx.func()) {
+            funcs.add(visitFunc(funcCtx))
+        }
+        return ProgramAST(funcs as ArrayList<FunctionAST>, visitStat(ctx.stat()), )
+    }
+
+    /* Function: visitProg()
+        ----------------------------
+        Generates a SkipAST node without referencing the context as the context is not required.
+     */
+    override fun visitFunc(ctx: WaccParser.FuncContext): FunctionAST {
+        // TODO: visit param list, get return type, get statement body etc. Currently just to avoid other errors!
+        return FunctionAST("", ctx.IDENT().text, ParamListAST(ArrayList()), StatementAST.SkipAST)
+    }
+
     /* Function: visitStat()
        ---------------------
        A function to be used when we have a StatContext but do not know its subtype (StatSkip, ... etc.)
