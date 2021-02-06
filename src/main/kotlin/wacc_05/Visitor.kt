@@ -7,6 +7,17 @@ import wacc_05.ast_structure.assignment_ast.*
 
 class Visitor : WaccParserBaseVisitor<AST>() {
 
+    /* Function: visitStat()
+       ---------------------
+       A function to be used when we have a StatContext but do not know its subtype (StatSkip, ... etc.)
+       Param ctx - the context we want to visit but do not know its specific type
+       Returns the StatementAST resulting from visiting the given ctx
+     */
+    private fun visitStat(ctx: WaccParser.StatContext): StatementAST {
+        // visit() would return AST! but since we override all stat methods here we can safely cast to StatementAST.
+        return visit(ctx) as StatementAST
+    }
+
     /* Function: visitStatSkip()
     ----------------------------
         Generates a SkipAST node without referencing the context as the context is not required.
@@ -85,6 +96,40 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitStatPrintln(ctx: WaccParser.StatPrintlnContext): StatementAST {
         return StatementAST.PrintAST(visitExpr(ctx.expr()), true)
+    }
+
+    /* Function: visitStatIf()
+        ----------------------
+        Returns an IfAST node with children corresponding to calls to visitExpr() and visitStat(). Assumes there are
+        2 stat children (one for the if branch and one for the else branch.)
+     */
+    override fun visitStatIf(ctx: WaccParser.StatIfContext): StatementAST {
+        return StatementAST.IfAST(visitExpr(ctx.expr()), visitStat(ctx.stat(0)), visitStat(ctx.stat(1)))
+    }
+
+    /* Function: visitStatWhile()
+       --------------------------
+       Returns a WhileAST node with children corresponding to calls to visitExpr() and visitStat().
+     */
+    override fun visitStatWhile(ctx: WaccParser.StatWhileContext): StatementAST {
+        return StatementAST.WhileAST(visitExpr(ctx.expr()), visitStat(ctx.stat()))
+    }
+
+    /* Function: visitStatBeginEnd()
+       -----------------------------
+       Returns a BeginAST node which has one child, corresponding to a call to visitStat().
+     */
+    override fun visitStatBeginEnd(ctx: WaccParser.StatBeginEndContext): StatementAST {
+        return StatementAST.BeginAST(visitStat(ctx.stat()))
+    }
+
+    /* Function: visitStatSequential()
+       -------------------------------
+       Returns a SequentialAST node with children corresponding to two calls to visitStat(). Assumes that ctx has
+       two stat children.
+     */
+    override fun visitStatSequential(ctx: WaccParser.StatSequentialContext): StatementAST {
+        return StatementAST.SequentialAST(visitStat(ctx.stat(0)), visitStat(ctx.stat(1)))
     }
 
     /* Function: visitAssignRHS()
