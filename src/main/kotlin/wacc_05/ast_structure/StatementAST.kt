@@ -77,8 +77,7 @@ sealed class StatementAST() : AST {
 
     data class IfAST(val condExpr: ExprAST,
                      val thenStat: StatementAST,
-                     val elseStat: StatementAST
-    ) : StatementAST() {
+                     val elseStat: StatementAST) : StatementAST() {
 
         override fun check(st: SymbolTable) {
             condExpr.check(st)
@@ -131,7 +130,8 @@ sealed class StatementAST() : AST {
 
         override fun check(st: SymbolTable) {
             loopExpr.check(st)
-            val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
+            // Would be nice to have access to top level st
+            val boolType: TypeIdentifier = st.lookupAll("boolean") as TypeIdentifier
             if (boolType != loopExpr.getType()) {
                 // Error: loop expression does not evaluate to a boolean
             } else {
