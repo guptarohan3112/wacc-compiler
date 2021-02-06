@@ -1,6 +1,5 @@
 package wacc_05.ast_structure
 
-import com.google.errorprone.annotations.Var
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
@@ -102,7 +101,7 @@ sealed class StatementAST() : AST {
                         val newLine: Boolean) : StatementAST() {
 
         override fun check(st: SymbolTable) {
-            TODO("Not yet implemented")
+            expr.check(st)
         }
 
     }
@@ -110,7 +109,9 @@ sealed class StatementAST() : AST {
     data class ReturnAST(val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable) {
-            TODO("Not yet implemented")
+            expr.check(st)
+            val returnType: TypeIdentifier = expr.getType()
+            // Check if the return type is the same as the return type of method you are returning from
         }
 
     }
@@ -118,17 +119,25 @@ sealed class StatementAST() : AST {
     data class StatListAST(val statList: ArrayList<StatementAST>) : StatementAST() {
 
         override fun check(st: SymbolTable) {
-            TODO("Not yet implemented")
+            for (stat in statList) {
+                stat.check(st)
+            }
         }
 
     }
 
     data class WhileAST(val loopExpr: ExprAST,
-                   val body: StatementAST
-    ) : StatementAST() {
+                        val body: StatementAST) : StatementAST() {
 
         override fun check(st: SymbolTable) {
-            TODO("Not yet implemented")
+            loopExpr.check(st)
+            val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
+            if (boolType != loopExpr.getType()) {
+                // Error: loop expression does not evaluate to a boolean
+            } else {
+                val body_st = SymbolTable(st)
+                body.check(body_st)
+            }
         }
 
     }
