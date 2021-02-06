@@ -147,6 +147,24 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return TypeAST.BaseTypeAST("")
     }
 
+    override fun visitIntLit(ctx: WaccParser.IntLitContext): ExprAST.IntLiterAST {
+        // TODO - add sign parameter
+        return ExprAST.IntLiterAST(ctx.INT_LIT().text)
+    }
+
+    override fun visitBoolLit(ctx: WaccParser.BoolLitContext): ExprAST.BoolLiterAST {
+        return ExprAST.BoolLiterAST(ctx.BOOL_LIT().text)
+    }
+
+    override fun visitCharLit(ctx: WaccParser.CharLitContext): ExprAST.CharLiterAST {
+        return ExprAST.CharLiterAST(ctx.CHAR_LIT().text)
+    }
+
+    override fun visitStrLit(ctx: WaccParser.StrLitContext): ExprAST.StrLiterAST {
+        return ExprAST.StrLiterAST(ctx.STR_LIT().text)
+    }
+
+
     override fun visitArrayLit(ctx: WaccParser.ArrayLitContext): ArrayLiterAST {
         // TODO - return purely for compilation purposes
         return ArrayLiterAST(ArrayList())
@@ -169,9 +187,20 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return PairElemAST(visitExpr(ctx.expr()))
     }
 
-    override fun visitArrayElem(ctx: WaccParser.ArrayElemContext): ArrayElemAST {
-        // TODO - return purely for compilation purposes
-        return ArrayElemAST("", ArrayList())
+
+    /* Function: VisitArrayElem()
+        ------------------------
+        Returns a ArrayElemAST node, by matching each of the expression children in the context and adding to internal
+        ArrayList. Also matches IDENT token to get id of the ArrayElem
+     */
+
+    override fun visitArrayElem(ctx: WaccParser.ArrayElemContext): ExprAST.ArrayElemAST {
+        val ctxs: List<WaccParser.ExprContext> = ctx.expr()
+        val exprs: ArrayList<ExprAST> = ArrayList()
+        for (context in ctxs) {
+            exprs.add(visitExpr(context))
+        }
+        return ExprAST.ArrayElemAST(ctx.IDENT().text, exprs)
     }
 
     /* Function: VisitFuncCall()
@@ -200,8 +229,46 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return ArgListAST(exprs as ArrayList<ExprAST>)
     }
 
-    override fun visitExpr(ctx: WaccParser.ExprContext?): ExprAST {
-        // TODO - return purely for compilation purposes
-        return ExprAST.IntLiterAST(0)
+    /* Function: visitExpr()
+    -----------------------
+    Generates an ExprAST node depending on the type of the context. Calls respective visitor of each type to
+    produce AST node, except for in simple cases like IDENT, where the AST node can be generated directly.
+     */
+    override fun visitExpr(ctx: WaccParser.ExprContext): ExprAST {
+        // we use the when statement to check which type of expr we have and generate a child AST
+        // node accordingly
+        return when {
+            ctx.intLit() != null -> {
+                return visitIntLit(ctx.intLit())
+            }
+            ctx.boolLit() != null -> {
+                return visitBoolLit(ctx.boolLit())
+            }
+            ctx.charLit() != null -> {
+                return visitCharLit(ctx.charLit())
+            }
+            ctx.strLit() != null -> {
+                return visitStrLit(ctx.strLit())
+            }
+            ctx.PAIR_LIT() != null -> {
+                return ExprAST.PairLiterAST(value = ctx.PAIR_LIT().text)
+            }
+            ctx.IDENT() != null -> {
+                return ExprAST.IdentAST(value = ctx.IDENT().text)
+            }
+            ctx.arrayElem() != null -> {
+                return visitArrayElem(ctx.arrayElem())
+            }
+            ctx.unaryOper() != null -> {
+                // TODO : this is a hacky solution, why is ctx.expr a list in the first place?
+                return ExprAST.UnOpAST(visitExpr(ctx.expr()[0]), ctx.unaryOper().text)
+            }
+            ctx.OPEN_PARENTHESES() != null -> {
+                // TODO: See above
+                return visitExpr(ctx.expr()[0])
+            }
+            // TODO - throw suitable error
+            else -> throw Exception()
+        }
     }
 }

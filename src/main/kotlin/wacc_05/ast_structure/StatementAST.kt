@@ -16,7 +16,7 @@ sealed class StatementAST : AST {
     }
 
     data class DeclAST(private val typeName: TypeAST,
-                       private val varname: String,
+                       private val varName: String,
                        private val assignment: AssignRHSAST
     ) : StatementAST() {
 
