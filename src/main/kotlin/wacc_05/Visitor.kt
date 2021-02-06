@@ -193,35 +193,37 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     }
 
     /* Function: visitNewPair()
-   ------------------------
-   Returns a NewPairAST node, by matching the context with each of the two expr children. It assumes these
-   two children exist.
+        ------------------------
+        Returns a NewPairAST node, by matching the context with each of the two expr children. It assumes these
+        two children exist.
      */
     override fun visitIntLit(ctx: WaccParser.IntLitContext): ExprAST.IntLiterAST {
         // TODO - add sign parameter
         return ExprAST.IntLiterAST(ctx.INT_LIT().text)
     }
 
-    /* Function: visitBoolLot()
-   ------------------------
-   Returns a BoolLiterAST node
+    /* Function: visitBoolLit()
+        ------------------------
+        Returns a BoolLiterAST node with the value of the literal as a string
      */
     override fun visitBoolLit(ctx: WaccParser.BoolLitContext): ExprAST.BoolLiterAST {
         return ExprAST.BoolLiterAST(ctx.BOOL_LIT().text)
     }
 
+    /* Function: visitCharLit()
+        ------------------------
+        Returns a CharLiterAST node with the value of the literal as a string
+     */
     override fun visitCharLit(ctx: WaccParser.CharLitContext): ExprAST.CharLiterAST {
         return ExprAST.CharLiterAST(ctx.CHAR_LIT().text)
     }
 
+    /* Function: visitStrLot()
+        ------------------------
+        Returns a StrLiterAST node with the value of the literal as a string
+     */
     override fun visitStrLit(ctx: WaccParser.StrLitContext): ExprAST.StrLiterAST {
         return ExprAST.StrLiterAST(ctx.STR_LIT().text)
-    }
-
-
-    override fun visitArrayLit(ctx: WaccParser.ArrayLitContext): ArrayLiterAST {
-        // TODO - return purely for compilation purposes
-        return ArrayLiterAST(ArrayList())
     }
 
     /* Function: visitNewPair()
@@ -241,6 +243,20 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return PairElemAST(visitExpr(ctx.expr()))
     }
 
+
+    /* Function: visitArrayLit()
+        ------------------------
+        Returns a ArrayLiterAST node, by matching each of the expression children in the context and adding to internal
+        ArrayList.
+     */
+    override fun visitArrayLit(ctx: WaccParser.ArrayLitContext): ArrayLiterAST {
+        val ctxs: List<WaccParser.ExprContext> = ctx.expr()
+        val exprs: ArrayList<ExprAST> = ArrayList()
+        for (context in ctxs) {
+            exprs.add(visitExpr(context))
+        }
+        return ArrayLiterAST(exprs)
+    }
 
     /* Function: VisitArrayElem()
         ------------------------
@@ -284,9 +300,9 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     }
 
     /* Function: visitExpr()
-    -----------------------
-    Generates an ExprAST node depending on the type of the context. Calls respective visitor of each type to
-    produce AST node, except for in simple cases like IDENT, where the AST node can be generated directly.
+        -----------------------
+        Generates an ExprAST node depending on the type of the context. Calls respective visitor of each type to
+        produce AST node, except for in simple cases like IDENT, where the AST node can be generated directly.
      */
     override fun visitExpr(ctx: WaccParser.ExprContext): ExprAST {
         // we use the when statement to check which type of expr we have and generate a child AST
