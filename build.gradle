@@ -42,10 +42,8 @@ dependencies {
 
 sourceSets {
     main {
-        resources {
-            'src/'
-        }
-        main.java.srcDirs += 'src/'
+        main.kotlin.srcDirs += 'src/main/kotlin/'
+        main.java.srcDirs += 'src/main/java/'
     }
 }
 
