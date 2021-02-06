@@ -256,12 +256,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         ArrayList.
      */
     override fun visitArrayLit(ctx: WaccParser.ArrayLitContext): ArrayLiterAST {
-        val ctxs: List<WaccParser.ExprContext> = ctx.expr()
-        val exprs: ArrayList<ExprAST> = ArrayList()
-        for (context in ctxs) {
-            exprs.add(visitExpr(context))
+        val exprs: MutableList<ExprAST> = ArrayList()
+        for (exprCtx in ctx.expr()) {
+            exprs.add(visitExpr(exprCtx))
         }
-        return ArrayLiterAST(exprs)
+        return ArrayLiterAST(exprs as ArrayList<ExprAST>)
     }
 
     /* Function: VisitArrayElem()
@@ -271,12 +270,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
 
     override fun visitArrayElem(ctx: WaccParser.ArrayElemContext): ExprAST.ArrayElemAST {
-        val ctxs: List<WaccParser.ExprContext> = ctx.expr()
-        val exprs: ArrayList<ExprAST> = ArrayList()
-        for (context in ctxs) {
-            exprs.add(visitExpr(context))
+        val exprs: MutableList<ExprAST> = ArrayList()
+        for (exprCtx in ctx.expr()) {
+            exprs.add(visitExpr(exprCtx))
         }
-        return ExprAST.ArrayElemAST(ctx.IDENT().text, exprs)
+        return ExprAST.ArrayElemAST(ctx.IDENT().text, exprs as ArrayList<ExprAST>)
     }
 
     /* Function: VisitFuncCall()
