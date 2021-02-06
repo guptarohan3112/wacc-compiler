@@ -9,6 +9,8 @@ src/main/resources/antlr
 #ignore other junk files
 *~
 
+#ignore generated ANTLR java files (avoid accidental commit)
+src/main/java/antlr
 #ignore intellij idea repository files
 .idea
 # Ignore Gradle project-specific cache directory
