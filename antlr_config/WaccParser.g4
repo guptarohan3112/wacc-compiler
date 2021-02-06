@@ -36,12 +36,12 @@ assignRHS: expr
 | arrayLit
 | newPair
 | pairElem
-| funcCalL
+| funcCall
 ;
 
 newPair: NEW_PAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES ;
 
-funcCalL: CALL IDENT OPEN_PARENTHESES argList? CLOSE_PARENTHESES ;
+funcCall: CALL IDENT OPEN_PARENTHESES argList? CLOSE_PARENTHESES ;
 
 argList: expr (COMMA expr)* ;
 
