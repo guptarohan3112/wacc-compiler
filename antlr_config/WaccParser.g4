@@ -69,7 +69,11 @@ pairElemType: baseType
 | PAIR
 ;
 
-expr: intLit
+expr: nonBinExpr
+| binExpr
+;
+
+nonBinExpr: intLit
 | boolLit
 | charLit
 | strLit
@@ -77,15 +81,18 @@ expr: intLit
 | IDENT
 | arrayElem
 | unaryOper expr
-| expr binaryOper expr
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES
 ;
+
+binExpr: nonBinExpr binaryOper nonBinExpr ;
 
 unaryOper: NOT
 | MINUS
 | LEN
 | ORD
 | CHR;
+
+binOp: expr binaryOper expr ;
 
 binaryOper: PLUS
 | MINUS
