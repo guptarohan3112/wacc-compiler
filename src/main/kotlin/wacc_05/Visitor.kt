@@ -456,11 +456,9 @@ class Visitor : WaccParserBaseVisitor<AST>() {
                 visitArrayElem(ctx.arrayElem())
             }
             ctx.unaryOper() != null -> {
-                // TODO : this is a hacky solution, why is ctx.expr a list in the first place?
                 ExprAST.UnOpAST(visitExpr(ctx.expr(0)), ctx.unaryOper().text)
             }
             ctx.OPEN_PARENTHESES() != null -> {
-                // TODO: See above
                 visitExpr(ctx.expr(0))
             }
             ctx.MULT() != null -> {
