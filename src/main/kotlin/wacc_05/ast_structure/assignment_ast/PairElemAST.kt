@@ -7,7 +7,7 @@ import wacc_05.symbol_table.SymbolTable
 class PairElemAST(private val elem: ExprAST) : AssignRHSAST() {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-        TODO("Not yet implemented")
+        elem.check(st, errorHandler)
     }
 
 }
