@@ -21,13 +21,15 @@ sealed class TypeIdentifier : IdentifierObject() {
     }
 
     data class IntIdentifier(private val min : Int = Int.MIN_VALUE, private val max : Int = Int.MAX_VALUE) : TypeIdentifier() {
-        public fun valid(value : Int) : Boolean {
+
+        fun valid(value : Int) : Boolean {
             return value in min until max
         }
 
         override fun toString(): String {
             return INTEGER
         }
+
     }
 
     data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) : TypeIdentifier()

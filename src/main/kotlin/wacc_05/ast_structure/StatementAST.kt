@@ -90,7 +90,7 @@ sealed class StatementAST : AST {
             condExpr.check(st, errorHandler)
             // Making the assumption that boolean identifiers have a key of "boolean".
             // Eventually look up in top level symbol table
-            val boolType: TypeIdentifier = st.lookupAll("boolean") as TypeIdentifier
+            val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
             if (condExpr.getType() != boolType) {
                 errorHandler.typeMismatch(boolType, condExpr.getType())
             } else {
@@ -138,7 +138,7 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             loopExpr.check(st, errorHandler)
             // Would be nice to have access to top level st
-            val boolType: TypeIdentifier = st.lookupAll("boolean") as TypeIdentifier
+            val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
             if (boolType != loopExpr.getType()) {
                 errorHandler.typeMismatch(boolType, loopExpr.getType())
             } else {

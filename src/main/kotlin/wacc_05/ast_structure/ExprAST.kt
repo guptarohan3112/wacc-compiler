@@ -99,9 +99,9 @@ sealed class ExprAST : AssignRHSAST() {
         override fun getType(): TypeIdentifier {
             return when (UnaryOp) {
                 "not" -> TypeIdentifier.BoolIdentifier
-                "chr" -> TypeIdentifier.CharIdentifier
                 "len" -> TypeIdentifier.IntIdentifier(-1, 1)
                 "ord" -> TypeIdentifier.IntIdentifier(0, 256)
+                else -> TypeIdentifier.CharIdentifier
             }
         }
 

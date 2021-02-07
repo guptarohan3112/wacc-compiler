@@ -1,5 +1,6 @@
 package wacc_05.symbol_table
 
+import wacc_05.ast_structure.TypeAST
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import java.util.HashMap
 
@@ -42,7 +43,7 @@ class SymbolTable(private val parentST: SymbolTable?) {
      * Param name - the identifier we wish to look up
      * Returns the corresponding identifier object if found or null otherwise
      */
-    fun lookupAll(name: String): IdentifierObject? {
-        return lookup(name) ?: parentST?.lookupAll(name)
+    fun lookupAll(name: TypeAST): IdentifierObject? {
+        return lookup(name.toString()) ?: parentST?.lookupAll(name)
     }
 }
