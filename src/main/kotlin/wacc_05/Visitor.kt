@@ -208,15 +208,92 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
     }
 
+    /* Function: visitType()
+        ------------------------
+        Returns a TypeAST node, by matching the context with the relevant type and then calling its
+        respective visit() function
+     */
     override fun visitType(ctx: WaccParser.TypeContext): TypeAST {
-        // TODO - return purely for compilation purposes
-        return TypeAST.BaseTypeAST("")
+
+        return when {
+            ctx.baseType() != null -> {
+                visitBaseType(ctx.baseType())
+            }
+            ctx.arrayType() != null -> {
+                visitArrayType(ctx.arrayType())
+            }
+            ctx.pairType() != null -> {
+                visitPairType(ctx.pairType())
+            }
+
+            // TODO - throw suitable error
+            else -> throw Exception()
+        }
     }
 
-    /* Function: visitNewPair()
+    /* Function: visitBaseType()
         ------------------------
-        Returns a NewPairAST node, by matching the context with each of the two expr children. It assumes these
-        two children exist.
+        Returns a TypeAST node, by matching the context with the relevant type and then calling its
+        respective visit() function
+     */
+    override fun visitBaseType(ctx: WaccParser.BaseTypeContext): TypeAST.BaseTypeAST {
+        return TypeAST.BaseTypeAST(ctx.text)
+    }
+
+    /* Function: visitArrayType()
+        ------------------------
+        Returns a TypeAST node, by matching the context with the relevant type and then calling its
+        respective visit() function
+     */
+    override fun visitArrayType(ctx: WaccParser.ArrayTypeContext): TypeAST.ArrayTypeAST {
+        return when {
+            ctx.baseType() != null -> {
+                TypeAST.ArrayTypeAST(visitBaseType(ctx.baseType()))
+            }
+            ctx.pairType() != null -> {
+                TypeAST.ArrayTypeAST(visitPairType(ctx.pairType()))
+            }
+
+            // TODO - throw suitable error
+            else -> throw Exception()
+        }
+
+    }
+
+    /* Function: visitPairType()
+        ------------------------
+        Returns a TypeAST node, by matching the context with the relevant type and then calling its
+        respective visit() function
+     */
+    override fun visitPairType(ctx: WaccParser.PairTypeContext): TypeAST.PairTypeAST {
+        return TypeAST.PairTypeAST(visitPairElemType(ctx.pairElemType(0)), visitPairElemType(ctx.pairElemType(1)))
+    }
+
+    /* Function: visitPairElemType()
+        ------------------------
+        Returns a TypeAST node, by matching the context with the relevant type and then calling its
+        respective visit() function
+     */
+    override fun visitPairElemType(ctx: WaccParser.PairElemTypeContext): TypeAST.PairElemTypeAST {
+        return when {
+            ctx.type() != null -> {
+                TypeAST.PairElemTypeAST(type = visitType(ctx.type()))
+            }
+            ctx.baseType() != null -> {
+                TypeAST.PairElemTypeAST(type = visitBaseType(ctx.baseType()))
+            }
+            ctx.PAIR() != null -> {
+                TypeAST.PairElemTypeAST(pair = ctx.PAIR().text, type = null)
+            }
+
+            // TODO - throw suitable error
+            else -> throw Exception()
+        }
+    }
+
+    /* Function: visitIntLit()
+        ------------------------
+        Returns a IntLiterAST node, by matching the sign token and the value of the literal as a string
      */
     override fun visitIntLit(ctx: WaccParser.IntLitContext): ExprAST.IntLiterAST {
         var sign = ""

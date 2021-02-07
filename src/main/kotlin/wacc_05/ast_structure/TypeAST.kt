@@ -13,7 +13,7 @@ sealed class TypeAST : AST {
         }
     }
 
-    data class PairElemTypeAST(private val pair: String? = null, private val type : TypeAST) : AST {
+    data class PairElemTypeAST(private val pair: String? = null, private val type : TypeAST?) : AST {
         override fun check() {
             TODO("Not yet implemented")
         }
