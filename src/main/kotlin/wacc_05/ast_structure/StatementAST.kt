@@ -126,8 +126,11 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             expr.check(st, errorHandler)
             val returnType: TypeIdentifier = expr.getType()
-            st.lookup(returnType.toString())
-            // Check if the return type is the same as the return type of method you are returning from
+            // the value below is guaranteed to not be null due to the nature of returnType.toString()
+            val funcReturnType: TypeIdentifier? = st.lookup(returnType.toString()) as TypeIdentifier?
+            if (funcReturnType == null) {
+                errorHandler.invalidReturnType()
+            }
         }
 
     }

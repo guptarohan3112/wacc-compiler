@@ -38,4 +38,8 @@ class SemanticErrorHandler() {
         println("Semantic error: The function ${fName} is expecting ${expected} argument(s), but is given ${actual}")
     }
 
+    fun invalidReturnType() {
+        println("Semantic error: This return statement is of the wrong return type for the function")
+    }
+
 }

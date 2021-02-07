@@ -33,11 +33,10 @@ class FunctionAST(
             FunctionIdentifier(funcName, returnType as TypeIdentifier, ArrayList(), funcST)
         st.add(funcName, funcIdent)
 
+        // The return type is added as a explicit entry to the symbol table for the function scope
         funcST.add(returnType.toString(), returnType)
 
-        if (paramList != null) {
-            paramList.check(funcST, errorHandler)
-        }
+        paramList?.check(funcST, errorHandler)
 
         body.check(funcST, errorHandler)
 

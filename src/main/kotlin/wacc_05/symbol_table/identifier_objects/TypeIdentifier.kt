@@ -3,9 +3,9 @@ package wacc_05.symbol_table.identifier_objects
 sealed class TypeIdentifier : IdentifierObject() {
 
     companion object {
-        val BOOLEAN = "boolean"
-        val CHARACTER = "character"
-        val INTEGER = "integer"
+        val BOOLEAN = "bool"
+        val CHARACTER = "char"
+        val INTEGER = "int"
     }
 
     object BoolIdentifier : TypeIdentifier() {
