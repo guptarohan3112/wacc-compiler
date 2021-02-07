@@ -15,19 +15,27 @@ class SemanticErrorHandler() {
         exitProcess(SEMANTIC_ERROR)
     }
 
-    fun invalidType(typename: String) {
-        println("Semantic error: ${typename} is not a valid type")
+    fun invalidType(typeName: String) {
+        println("Semantic error: ${typeName} is not a valid type")
         exitProcess(SEMANTIC_ERROR)
     }
 
-    fun repeatVariableDeclaration(varname: String) {
-        println("Semantic error: ${varname} has already been declared earlier on in the current scope.")
+    fun invalidFunction(funcName: String) {
+        println("Semantic error: ${funcName} is not a valid function that has been predefined")
+    }
+
+    fun repeatVariableDeclaration(varName: String) {
+        println("Semantic error: ${varName} has already been declared earlier on in the current scope.")
         exitProcess(SEMANTIC_ERROR)
     }
 
     fun typeMismatch(expected: TypeIdentifier, actual: TypeIdentifier) {
         println("Semantic error: Could not match the expected type of ${expected} to the actual type of ${actual}")
         exitProcess(SEMANTIC_ERROR)
+    }
+
+    fun argNumberError(fName: String, expected: Int, actual: Int) {
+        println("Semantic error: The function ${fName} is expecting ${expected} argument(s), but is given ${actual}")
     }
 
 }

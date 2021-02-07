@@ -7,4 +7,13 @@ class FunctionIdentifier(
     private val returnType: TypeIdentifier,
     private val params: ArrayList<ParamIdentifier>,
     parentST: SymbolTable
-) : ScopedIdentifierObject(parentST)
+) : ScopedIdentifierObject(parentST) {
+
+    fun getReturnType() : TypeIdentifier {
+        return returnType
+    }
+
+    fun getParams() : ArrayList<ParamIdentifier> {
+        return params
+    }
+}
