@@ -7,7 +7,9 @@ import java.util.*
 class ParamListAST(val paramList : ArrayList<ParamAST>): AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-//        TODO("Not yet implemented")
+        for (param in paramList){
+            param.check(st, errorHandler)
+        }
     }
 
 }

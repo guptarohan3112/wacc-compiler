@@ -8,7 +8,17 @@ class ProgramAST(val functionList : ArrayList<FunctionAST>,
                  val statementList : ArrayList<StatementAST>) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-//        TODO("Not yet implemented")
+
+        for (func in functionList) {
+            func.check(st, errorHandler)
+        }
+
+        // TODO this could just pass in statementList and do:
+        //  statementList.check(st, errorHandler)
+        for (stat in statementList) {
+            stat.check(st, errorHandler)
+        }
+
     }
 
 }

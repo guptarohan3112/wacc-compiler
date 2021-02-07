@@ -20,7 +20,7 @@ class SemanticErrorHandler() {
     }
 
     fun repeatVariableDeclaration(varname: String) {
-        println("Semantic error: ${varname} has already been declared earlier on in the program")
+        println("Semantic error: ${varname} has already been declared earlier on in the current scope.")
         exitProcess(SEMANTIC_ERROR)
     }
 
