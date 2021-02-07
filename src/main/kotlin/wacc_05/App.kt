@@ -32,6 +32,9 @@ object App {
 
         val tree = parser.prog()
         println(tree.toStringTree(parser))
+
+        val visitor = Visitor()
+        visitor.visit(tree)
         println("FINISHED")
     }
 
