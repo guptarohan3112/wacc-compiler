@@ -6,17 +6,19 @@ import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class ParamAST(val type: TypeAST,
-               val name: String) : AST {
+class ParamAST(
+    val type: TypeAST,
+    val name: String
+) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
 
-        val typeIdent: IdentifierObject? = st.lookupAll(type)
+        val typeIdent: IdentifierObject? = st.lookupAll(type.toString())
 
         if (typeIdent == null) {
-            errorHandler.invalidIdentifier(type)
+            errorHandler.invalidIdentifier(type.toString())
         } else if (typeIdent !is TypeIdentifier) {
-            errorHandler.invalidType(type)
+            errorHandler.invalidType(type.toString())
         }
 
         val paramIdent = ParamIdentifier(typeIdent as TypeIdentifier, name)

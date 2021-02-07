@@ -4,10 +4,12 @@ import wacc_05.SemanticErrorHandler
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
-class FunctionAST(val returnType: TypeAST,
-                  val funcName: String,
-                  val paramList: ParamListAST?,
-                  val body: StatementAST): AST {
+class FunctionAST(
+    val returnType: TypeAST,
+    val funcName: String,
+    val paramList: ParamListAST?,
+    val body: StatementAST
+) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
 
@@ -19,7 +21,7 @@ class FunctionAST(val returnType: TypeAST,
         if (returnType == null) {
             errorHandler.invalidIdentifier(returnType.toString())
         } else if (returnType !is TypeIdentifier) {
-            errorHandler.invalidType(returnType)
+            errorHandler.invalidType(returnType.toString())
         } else if (func != null) {
             // TODO do we need a specific repeatFunctionDeclaration? (I think this is fine)
             errorHandler.repeatVariableDeclaration(funcName)
@@ -27,10 +29,15 @@ class FunctionAST(val returnType: TypeAST,
 
         val funcST = SymbolTable(st)
 
-        val funcIdent = FunctionIdentifier(funcName, returnType as TypeIdentifier, ArrayList(), funcST)
+        val funcIdent =
+            FunctionIdentifier(funcName, returnType as TypeIdentifier, ArrayList(), funcST)
         st.add(funcName, funcIdent)
 
-        paramList.check(funcST, errorHandler)
+        funcST.add(returnType.toString(), returnType)
+
+        if (paramList != null) {
+            paramList.check(funcST, errorHandler)
+        }
 
         body.check(funcST, errorHandler)
 

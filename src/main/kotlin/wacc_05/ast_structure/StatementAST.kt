@@ -18,18 +18,20 @@ sealed class StatementAST : AST {
 
     }
 
-    data class DeclAST(private val typeName: TypeAST,
-                       private val varName: String,
-                       private val assignment: AssignRHSAST) : StatementAST() {
+    data class DeclAST(
+        private val typeName: TypeAST,
+        private val varName: String,
+        private val assignment: AssignRHSAST
+    ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            val typeIdent: IdentifierObject? = st.lookupAll(typeName)
+            val typeIdent: IdentifierObject? = st.lookupAll(typeName.toString())
             val variable: IdentifierObject? = st.lookup(varName)
 
             if (typeIdent == null) {
-                errorHandler.invalidIdentifier(typeName)
+                errorHandler.invalidIdentifier(typeName.toString())
             } else if (typeIdent !is TypeIdentifier) {
-                errorHandler.invalidType(typeName)
+                errorHandler.invalidType(typeName.toString())
             }
 
             if (variable != null) {
@@ -41,8 +43,10 @@ sealed class StatementAST : AST {
         }
     }
 
-    data class AssignAST(private val lhs: AssignLHSAST,
-                         private val rhs: AssignRHSAST) : StatementAST() {
+    data class AssignAST(
+        private val lhs: AssignLHSAST,
+        private val rhs: AssignRHSAST
+    ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             TODO("Not yet implemented")
@@ -82,9 +86,11 @@ sealed class StatementAST : AST {
 
     }
 
-    data class IfAST(val condExpr: ExprAST,
-                     val thenStat: StatementAST,
-                     val elseStat: StatementAST) : StatementAST() {
+    data class IfAST(
+        val condExpr: ExprAST,
+        val thenStat: StatementAST,
+        val elseStat: StatementAST
+    ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             condExpr.check(st, errorHandler)
@@ -103,8 +109,10 @@ sealed class StatementAST : AST {
 
     }
 
-    data class PrintAST(private val expr: ExprAST,
-                        private val newLine: Boolean) : StatementAST() {
+    data class PrintAST(
+        private val expr: ExprAST,
+        private val newLine: Boolean
+    ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             expr.check(st, errorHandler)
@@ -117,6 +125,7 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             expr.check(st, errorHandler)
             val returnType: TypeIdentifier = expr.getType()
+            st.lookup(returnType.toString())
             // Check if the return type is the same as the return type of method you are returning from
         }
 
@@ -132,8 +141,10 @@ sealed class StatementAST : AST {
 
     }
 
-    data class WhileAST(val loopExpr: ExprAST,
-                        val body: StatementAST) : StatementAST() {
+    data class WhileAST(
+        val loopExpr: ExprAST,
+        val body: StatementAST
+    ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             loopExpr.check(st, errorHandler)

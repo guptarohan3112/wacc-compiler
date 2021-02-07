@@ -8,9 +8,9 @@ import wacc_05.ast_structure.assignment_ast.*
 class Visitor : WaccParserBaseVisitor<AST>() {
 
     /* Function: visitProg()
-        ----------------------------
-        Generates a ProgramAST node, calling visitFunc() and visitStat() to get the children.
-     */
+       ----------------------------
+       Generates a ProgramAST node, calling visitFunc() and visitStat() to get the children.
+    */
     override fun visitProg(ctx: WaccParser.ProgContext): ProgramAST {
         val funcs: MutableList<FunctionAST> = ArrayList()
         for (funcCtx in ctx.func()) {

@@ -4,10 +4,10 @@ import wacc_05.SemanticErrorHandler
 import wacc_05.symbol_table.SymbolTable
 import java.util.*
 
-class ParamListAST(val paramList : ArrayList<ParamAST>): AST {
+class ParamListAST(val paramList: ArrayList<ParamAST>) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-        for (param in paramList){
+        for (param in paramList) {
             param.check(st, errorHandler)
         }
     }

@@ -29,7 +29,7 @@ sealed class TypeAST : AST {
         }
     }
 
-    data class PairElemTypeAST(private val pair: String? = null, private val type : TypeAST?) : AST {
+    data class PairElemTypeAST(private val pair: String? = null, private val type: TypeAST?) : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             TODO("Not yet implemented")
@@ -40,7 +40,10 @@ sealed class TypeAST : AST {
         }
     }
 
-    data class PairTypeAST(private val fstType: PairElemTypeAST, private val sndType: PairElemTypeAST) : TypeAST() {
+    data class PairTypeAST(
+        private val fstType: PairElemTypeAST,
+        private val sndType: PairElemTypeAST
+    ) : TypeAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             TODO("Not yet implemented")
