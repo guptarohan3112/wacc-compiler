@@ -5,7 +5,7 @@ import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
 
-class AssignLHSAST(private val ident : String?) : AST {
+class AssignLHSAST(private val ident: String?) : AST {
     // we have to store these instead of making them extend AssignLHSAST
     // due to the possibility of ident
     private var arrElem: ExprAST.ArrayElemAST? = null
@@ -20,6 +20,8 @@ class AssignLHSAST(private val ident : String?) : AST {
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-        TODO("Not yet implemented")
+        if (arrElem != null) {
+            arrElem!!.check(st, errorHandler)
+        } else pairElem?.check(st, errorHandler)
     }
 }

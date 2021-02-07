@@ -7,7 +7,9 @@ import wacc_05.symbol_table.SymbolTable
 class ArrayLiterAST(private val elems: ArrayList<ExprAST>) : AssignRHSAST() {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-        TODO("Not yet implemented")
+        for (elem in elems) {
+            elem.check(st, errorHandler)
+        }
     }
 
 }
