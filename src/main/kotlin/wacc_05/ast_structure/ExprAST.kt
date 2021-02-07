@@ -62,8 +62,9 @@ sealed class ExprAST : AssignRHSAST() {
     }
 
     data class BinOpAST(
-        val expr1: ExprAST,
-        val expr2: ExprAST
+        private val expr1: ExprAST,
+        private val expr2: ExprAST,
+        private val operator: String
         ) : ExprAST() {
 
         override fun check() {

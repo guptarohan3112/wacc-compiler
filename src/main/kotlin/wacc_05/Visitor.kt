@@ -356,11 +356,53 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             }
             ctx.unaryOper() != null -> {
                 // TODO : this is a hacky solution, why is ctx.expr a list in the first place?
-                ExprAST.UnOpAST(visitExpr(ctx.expr()[0]), ctx.unaryOper().text)
+                ExprAST.UnOpAST(visitExpr(ctx.expr(0)), ctx.unaryOper().text)
             }
             ctx.OPEN_PARENTHESES() != null -> {
                 // TODO: See above
-                visitExpr(ctx.expr()[0])
+                visitExpr(ctx.expr(0))
+            }
+            ctx.MULT() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MULT().text)
+            }
+            ctx.DIV() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.DIV().text)
+            }
+            ctx.MOD() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MOD().text)
+            }
+            ctx.PLUS() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.PLUS().text)
+            }
+            ctx.MINUS() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MINUS().text)
+            }
+            ctx.PLUS() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.PLUS().text)
+            }
+            ctx.GT() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.GT().text)
+            }
+            ctx.GTE() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.GTE().text)
+            }
+            ctx.LT() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.LT().text)
+            }
+            ctx.LTE() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.LTE().text)
+            }
+            ctx.EQ() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.EQ().text)
+            }
+            ctx.NOTEQ() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.NOTEQ().text)
+            }
+            ctx.AND() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.AND().text)
+            }
+            ctx.OR() != null -> {
+                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.OR().text)
             }
             // TODO - throw suitable error
             else -> throw Exception()
