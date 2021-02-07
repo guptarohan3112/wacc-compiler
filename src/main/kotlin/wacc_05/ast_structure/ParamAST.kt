@@ -11,7 +11,6 @@ class ParamAST(val type: String,
                val name: String) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-        // TODO how do we make a type ident object from type?
 
         val typeIdent: IdentifierObject? = st.lookupAll(type)
 
