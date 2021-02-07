@@ -5,6 +5,9 @@ import antlr.WaccParserBaseVisitor
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 
+
+// TODO: param, paramlist, func
+
 class Visitor : WaccParserBaseVisitor<AST>() {
 
     /* Function: visitProg()
@@ -16,7 +19,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         for (funcCtx in ctx.func()) {
             funcs.add(visitFunc(funcCtx))
         }
-        return ProgramAST(funcs as ArrayList<FunctionAST>, visitStat(ctx.stat()), )
+        return ProgramAST(funcs as ArrayList, visitStat(ctx.stat()))
     }
 
     /* Function: visitProg()
@@ -24,8 +27,33 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         Generates a SkipAST node without referencing the context as the context is not required.
      */
     override fun visitFunc(ctx: WaccParser.FuncContext): FunctionAST {
-        // TODO: visit param list, get return type, get statement body etc. Currently just to avoid other errors!
-        return FunctionAST("", ctx.IDENT().text, ParamListAST(ArrayList()), StatementAST.SkipAST)
+        val paramList: ParamListAST? = if (ctx.paramList() == null) {
+            null
+        } else {
+            visitParamList(ctx.paramList())
+        }
+        return FunctionAST(visitType(ctx.type()), ctx.IDENT().text, paramList, visitStat(ctx.stat()))
+    }
+
+    /* Function: visitParamList()
+       --------------------------
+       Generates a ParamListAST, using the context to create a list of ParamASTs as its children
+     */
+    override fun visitParamList(ctx: WaccParser.ParamListContext): ParamListAST {
+        val params: MutableList<ParamAST> = ArrayList()
+        for (param in ctx.param()) {
+            params.add(visitParam(param))
+        }
+
+        return ParamListAST(params as ArrayList)
+    }
+
+    /* Function: visitParam()
+       ----------------------
+       Generates a ParamAST node, using the IDENT from the context and calling visitType() to retrieve the type.
+     */
+    override fun visitParam(ctx: WaccParser.ParamContext): ParamAST {
+        return ParamAST(visitType(ctx.type()), ctx.IDENT().text)
     }
 
     /* Function: visitStat()
