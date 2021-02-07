@@ -10,12 +10,12 @@ class SemanticErrorHandler() {
         val SEMANTIC_ERROR = 200
     }
 
-    fun invalidIdentifier(name: TypeAST) {
+    fun invalidIdentifier(name: String) {
         println("Semantic error: ${name} is an unknown element in the context of this program")
         exitProcess(SEMANTIC_ERROR)
     }
 
-    fun invalidType(typename: TypeAST) {
+    fun invalidType(typename: String) {
         println("Semantic error: ${typename} is not a valid type")
         exitProcess(SEMANTIC_ERROR)
     }

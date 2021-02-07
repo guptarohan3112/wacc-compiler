@@ -43,7 +43,7 @@ class SymbolTable(private val parentST: SymbolTable?) {
      * Param name - the identifier we wish to look up
      * Returns the corresponding identifier object if found or null otherwise
      */
-    fun lookupAll(name: TypeAST): IdentifierObject? {
+    fun lookupAll(name: String): IdentifierObject? {
         return lookup(name.toString()) ?: parentST?.lookupAll(name)
     }
 }

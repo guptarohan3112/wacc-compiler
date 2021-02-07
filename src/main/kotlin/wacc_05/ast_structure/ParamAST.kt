@@ -5,9 +5,8 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-class ParamAST(val type: String,
+class ParamAST(val type: TypeAST,
                val name: String) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
@@ -27,4 +26,5 @@ class ParamAST(val type: String,
     override fun toString(): String {
         return name
     }
+
 }

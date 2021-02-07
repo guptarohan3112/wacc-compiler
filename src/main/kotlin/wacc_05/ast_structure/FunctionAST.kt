@@ -4,22 +4,22 @@ import wacc_05.SemanticErrorHandler
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
-class FunctionAST(val returnTypeName: String,
+class FunctionAST(val returnType: TypeAST,
                   val funcName: String,
-                  val paramList: ParamListAST,
+                  val paramList: ParamListAST?,
                   val body: StatementAST): AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
 
         // look up return type in symbol table and check valid identifier
-        val returnType: IdentifierObject? = st.lookupAll(returnTypeName)
+        val returnType: IdentifierObject? = st.lookupAll(returnType.toString())
         val func: IdentifierObject? = st.lookup(funcName)
 
         // assuming all types can be returned, do we need to check this?
         if (returnType == null) {
-            errorHandler.invalidIdentifier(returnTypeName)
+            errorHandler.invalidIdentifier(returnType.toString())
         } else if (returnType !is TypeIdentifier) {
-            errorHandler.invalidType(returnTypeName)
+            errorHandler.invalidType(returnType)
         } else if (func != null) {
             // TODO do we need a specific repeatFunctionDeclaration? (I think this is fine)
             errorHandler.repeatVariableDeclaration(funcName)
