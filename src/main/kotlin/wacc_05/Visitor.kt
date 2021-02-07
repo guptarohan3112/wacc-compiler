@@ -9,23 +9,49 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
     /* Function: visitProg()
         ----------------------------
-        Generates a SkipAST node without referencing the context as the context is not required.
+        Generates a ProgramAST node, calling visitFunc() and visitStat() to get the children.
      */
     override fun visitProg(ctx: WaccParser.ProgContext): ProgramAST {
         val funcs: MutableList<FunctionAST> = ArrayList()
         for (funcCtx in ctx.func()) {
             funcs.add(visitFunc(funcCtx))
         }
-        return ProgramAST(funcs as ArrayList<FunctionAST>, visitStat(ctx.stat()), )
+        return ProgramAST(funcs as ArrayList, visitStat(ctx.stat()))
     }
 
-    /* Function: visitProg()
+    /* Function: visitFunc()
         ----------------------------
-        Generates a SkipAST node without referencing the context as the context is not required.
+        Generates a FunctionAST node, calling visitType() to get the type, using the context's IDENT token,
+        calling visitParamList() if the paramList of ctx is not null, and visitStat() to get the statement child.
      */
     override fun visitFunc(ctx: WaccParser.FuncContext): FunctionAST {
-        // TODO: visit param list, get return type, get statement body etc. Currently just to avoid other errors!
-        return FunctionAST("", ctx.IDENT().text, ParamListAST(ArrayList()), StatementAST.SkipAST)
+        val paramList: ParamListAST? = if (ctx.paramList() == null) {
+            null
+        } else {
+            visitParamList(ctx.paramList())
+        }
+        return FunctionAST(visitType(ctx.type()), ctx.IDENT().text, paramList, visitStat(ctx.stat()))
+    }
+
+    /* Function: visitParamList()
+       --------------------------
+       Generates a ParamListAST, using the context to create a list of ParamASTs as its children
+     */
+    override fun visitParamList(ctx: WaccParser.ParamListContext): ParamListAST {
+        val params: MutableList<ParamAST> = ArrayList()
+        for (param in ctx.param()) {
+            params.add(visitParam(param))
+        }
+
+        return ParamListAST(params as ArrayList)
+    }
+
+    /* Function: visitParam()
+       ----------------------
+       Generates a ParamAST node, using the IDENT from the context and calling visitType() to retrieve the type.
+     */
+    override fun visitParam(ctx: WaccParser.ParamContext): ParamAST {
+        return ParamAST(visitType(ctx.type()), ctx.IDENT().text)
     }
 
     /* Function: visitStat()
