@@ -233,8 +233,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
     /* Function: visitBaseType()
         ------------------------
-        Returns a TypeAST node, by matching the context with the relevant type and then calling its
-        respective visit() function
+        Returns a BaseTypeAST node with the actual type as a string field
      */
     override fun visitBaseType(ctx: WaccParser.BaseTypeContext): TypeAST.BaseTypeAST {
         return TypeAST.BaseTypeAST(ctx.text)
@@ -242,7 +241,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
     /* Function: visitArrayType()
         ------------------------
-        Returns a TypeAST node, by matching the context with the relevant type and then calling its
+        Returns a ArrayTypeAST node, by matching the context with the relevant type and then calling its
         respective visit() function
      */
     override fun visitArrayType(ctx: WaccParser.ArrayTypeContext): TypeAST.ArrayTypeAST {
@@ -257,13 +256,12 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             // TODO - throw suitable error
             else -> throw Exception()
         }
-
     }
 
     /* Function: visitPairType()
         ------------------------
-        Returns a TypeAST node, by matching the context with the relevant type and then calling its
-        respective visit() function
+        Returns a PairTypeAST node with children corresponding to two calls to visitPairElemType().
+        Assumes that ctx has two PairElemType children.
      */
     override fun visitPairType(ctx: WaccParser.PairTypeContext): TypeAST.PairTypeAST {
         return TypeAST.PairTypeAST(visitPairElemType(ctx.pairElemType(0)), visitPairElemType(ctx.pairElemType(1)))
@@ -271,8 +269,8 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
     /* Function: visitPairElemType()
         ------------------------
-        Returns a TypeAST node, by matching the context with the relevant type and then calling its
-        respective visit() function
+        Returns a PairElemTypeAST node, by matching the context with the relevant type and then calling its
+        respective visit() function, or in the case of a PAIR token, creating the node directly
      */
     override fun visitPairElemType(ctx: WaccParser.PairElemTypeContext): TypeAST.PairElemTypeAST {
         return when {
