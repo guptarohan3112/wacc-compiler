@@ -12,19 +12,19 @@ paramList: param (COMMA param)* ;
 
 param: type IDENT ;
 
-stat: SKIP_STAT
-| type IDENT EQUALS assignRHS
-| assignLHS EQUALS assignRHS
-| READ assignLHS
-| FREE expr
-| RETURN expr
-| EXIT expr
-| PRINT expr
-| PRINTLN expr
-| IF expr THEN stat ELSE stat FI
-| WHILE expr DO stat DONE
-| BEGIN stat END
-| stat SEMICOLON stat
+stat: SKIP_STAT                   # statSkip
+| type IDENT EQUALS assignRHS     # statDeclaration
+| assignLHS EQUALS assignRHS      # statAssign
+| READ assignLHS                  # statRead
+| FREE expr                       # statFree
+| RETURN expr                     # statReturn
+| EXIT expr                       # statExit
+| PRINT expr                      # statPrint
+| PRINTLN expr                    # statPrintln
+| IF expr THEN stat ELSE stat FI  # statIf
+| WHILE expr DO stat DONE         # statWhile
+| BEGIN stat END                  # statBeginEnd
+| stat SEMICOLON stat             # statSequential
 ;
 
 assignLHS: IDENT
@@ -34,10 +34,14 @@ assignLHS: IDENT
 
 assignRHS: expr
 | arrayLit
-| NEW_PAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES
+| newPair
 | pairElem
-| CALL IDENT OPEN_PARENTHESES argList? CLOSE_PARENTHESES
+| funcCall
 ;
+
+newPair: NEW_PAIR OPEN_PARENTHESES expr COMMA expr CLOSE_PARENTHESES ;
+
+funcCall: CALL IDENT OPEN_PARENTHESES argList? CLOSE_PARENTHESES ;
 
 argList: expr (COMMA expr)* ;
 
@@ -46,9 +50,11 @@ pairElem: FST expr
 ;
 
 type: baseType
-| type OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
+| arrayType
 | pairType
 ;
+
+arrayType: (baseType | pairType) OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET ;
 
 baseType: INT
 | BOOL
@@ -63,15 +69,20 @@ pairElemType: baseType
 | PAIR
 ;
 
-expr: (PLUS|MINUS)? INT_LIT
-| BOOL_LIT
-| CHAR_LIT
-| STR_LIT
-| pairLit
+expr: intLit
+| boolLit
+| charLit
+| strLit
+| PAIR_LIT
 | IDENT
 | arrayElem
 | unaryOper expr
-| expr binaryOper expr
+| expr (MULT | DIV | MOD) expr
+| expr (PLUS | MINUS) expr
+| expr (GT | GTE | LT | LTE) expr
+| expr (EQ | NOTEQ) expr
+| expr AND expr
+| expr OR expr
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES
 ;
 
@@ -81,22 +92,16 @@ unaryOper: NOT
 | ORD
 | CHR;
 
-binaryOper: PLUS
-| MINUS
-| MULT
-| DIV
-| MOD   
-| GT
-| GTE
-| LT
-| LTE
-| EQ
-| NOTEQ
-| AND
-| OR ;
-
 arrayElem: IDENT (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)+ ;
 
 arrayLit: OPEN_SQUARE_BRACKET (expr (COMMA expr)*)? CLOSE_SQUARE_BRACKET ;
 
-pairLit: NULL ;
+intLit: (PLUS|MINUS)? INT_LIT ;
+
+boolLit : BOOL_LIT ;
+
+charLit: CHAR_LIT ;
+
+strLit: STR_LIT ;
+
+

@@ -5,11 +5,12 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
-import java.util.*
+import wacc_05.ast_structure.assignment_ast.AssignLHSAST
+import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 
-sealed class StatementAST() : AST {
+sealed class StatementAST : AST {
 
-    object Skip : StatementAST() {
+    object SkipAST : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             return
@@ -17,13 +18,13 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class DeclAST(val typeName: String,
-                       val varname: String,
-                       val assignment: AssignrhsAST) : StatementAST() {
+    data class DeclAST(private val typeName: TypeAST,
+                       private val varName: String,
+                       private val assignment: AssignRHSAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             val typeIdent: IdentifierObject? = st.lookupAll(typeName)
-            val variable: IdentifierObject? = st.lookup(varname)
+            val variable: IdentifierObject? = st.lookup(varName)
 
             if (typeIdent == null) {
                 errorHandler.invalidIdentifier(typeName)
@@ -32,26 +33,16 @@ sealed class StatementAST() : AST {
             }
 
             if (variable != null) {
-                errorHandler.repeatVariableDeclaration(varname)
+                errorHandler.repeatVariableDeclaration(varName)
             } else {
-                val varIdent = VariableIdentifier(varname, typeIdent as TypeIdentifier)
-                st.add(varname, varIdent)
+                val varIdent = VariableIdentifier(varName, typeIdent as TypeIdentifier)
+                st.add(varName, varIdent)
             }
         }
-
     }
 
-    data class BeginAST(val stat : StatementAST) : StatementAST(){
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            stat.check(st, errorHandler)
-        }
-
-    }
-
-    // Not sure about this one, will implement check method later
-    // Will include assignLHSAST field- changes have been made in visitor_methods class
-    data class InitAST(val rhs: AssignrhsAST) : StatementAST() {
+    data class AssignAST(private val lhs: AssignLHSAST,
+                         private val rhs: AssignRHSAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             TODO("Not yet implemented")
@@ -59,7 +50,23 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class ExitAST(val expr : ExprAST) : StatementAST() {
+    data class BeginAST(val stat: StatementAST) : StatementAST() {
+
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            stat.check(st, errorHandler)
+        }
+
+    }
+
+    data class ReadAST(private val lhs: AssignLHSAST) : StatementAST() {
+
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            TODO("Not yet implemented")
+        }
+
+    }
+
+    data class ExitAST(private val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             expr.check(st, errorHandler)
@@ -67,7 +74,7 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class FreeAST(val expr : ExprAST) : StatementAST() {
+    data class FreeAST(private val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             expr.check(st, errorHandler)
@@ -96,8 +103,8 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class PrintAST(val expr: ExprAST,
-                        val newLine: Boolean) : StatementAST() {
+    data class PrintAST(private val expr: ExprAST,
+                        private val newLine: Boolean) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             expr.check(st, errorHandler)
@@ -105,7 +112,7 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class ReturnAST(val expr: ExprAST) : StatementAST() {
+    data class ReturnAST(private val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             expr.check(st, errorHandler)
@@ -115,12 +122,12 @@ sealed class StatementAST() : AST {
 
     }
 
-    data class StatListAST(val statList: ArrayList<StatementAST>) : StatementAST() {
+    data class SequentialAST(private val stat1: StatementAST, private val stat2: StatementAST) :
+        StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            for (stat in statList) {
-                stat.check(st, errorHandler)
-            }
+            stat1.check(st, errorHandler)
+            stat2.check(st, errorHandler)
         }
 
     }
@@ -138,8 +145,8 @@ sealed class StatementAST() : AST {
                 val body_st = SymbolTable(st)
                 body.check(body_st, errorHandler)
             }
-        }
 
+        }
     }
 
 }

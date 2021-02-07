@@ -2,22 +2,106 @@ package wacc_05.ast_structure
 
 import wacc_05.SemanticErrorHandler
 import wacc_05.symbol_table.SymbolTable
+import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-sealed class ExprAST() : AST {
+sealed class ExprAST : AssignRHSAST() {
 
-    abstract fun getType(): TypeIdentifier
+    abstract fun getType() : TypeIdentifier
 
-    data class UnOpAST(val expr: ExprAST,
-                       val op: uOp) : ExprAST() {
+    data class IntLiterAST(private val sign: String, private val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
-            return when (op) {
-                uOp.NOT -> TypeIdentifier.BoolIdentifier
-                uOp.CHR -> TypeIdentifier.CharIdentifier
-                // This should be changed to have valid min and max values
-                uOp.LEN -> TypeIdentifier.IntIdentifier(-1, 1)
-                uOp.ORD -> TypeIdentifier.IntIdentifier(0, 256)
+            // To be changed
+            return TypeIdentifier.IntIdentifier(-1, 1)
+        }
+
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            TODO("Not yet implemented")
+        }
+    }
+
+    data class BoolLiterAST(private val value: String) : ExprAST() {
+
+        override fun getType(): TypeIdentifier {
+            return TypeIdentifier.BoolIdentifier
+        }
+
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            TODO("Not yet implemented")
+        }
+    }
+
+    data class CharLiterAST(private val value: String) : ExprAST() {
+
+        override fun getType(): TypeIdentifier {
+            return TypeIdentifier.CharIdentifier
+        }
+
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            TODO("Not yet implemented")
+        }
+    }
+
+    data class StrLiterAST(private val value: String) : ExprAST() {
+
+        override fun getType(): TypeIdentifier {
+            TODO("Not yet implemented")
+        }
+
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            TODO("Not yet implemented")
+        }
+    }
+
+    data class PairLiterAST(private val value: String) : ExprAST() {
+
+        override fun getType(): TypeIdentifier {
+            TODO("Not yet implemented")
+        }
+
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+//            TODO("Not yet implemented")
+        }
+    }
+
+    data class IdentAST(private val value: String) : ExprAST() {
+
+        override fun getType(): TypeIdentifier {
+            TODO("Not yet implemented")
+        }
+
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+//            TODO("Not yet implemented")
+        }
+    }
+
+    data class ArrayElemAST(
+        private val ident: String,
+        private val exprs: ArrayList<ExprAST>
+    ) : ExprAST() {
+
+        override fun getType(): TypeIdentifier {
+            return TypeIdentifier.ArrayIdentifier(exprs[0].getType(), exprs.size)
+        }
+
+        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            TODO("Not yet implemented")
+        }
+
+    }
+
+    data class UnOpAST(
+        private val expr: ExprAST,
+        private val UnaryOp: String
+    ) : ExprAST() {
+
+        override fun getType(): TypeIdentifier {
+            return when (UnaryOp) {
+                "not" -> TypeIdentifier.BoolIdentifier
+                "chr" -> TypeIdentifier.CharIdentifier
+                "len" -> TypeIdentifier.IntIdentifier(-1, 1)
+                "ord" -> TypeIdentifier.IntIdentifier(0, 256)
             }
         }
 
@@ -25,29 +109,24 @@ sealed class ExprAST() : AST {
 //            TODO("Not yet implemented")
         }
 
-        enum class uOp {
-            NOT, LEN, ORD, CHR // MINUS '-'
-        }
     }
 
-    data class BinOpAST(val expr1: ExprAST,
-                        val expr2: ExprAST,
-                        val op: bOp) : ExprAST() {
+    data class BinOpAST(
+        private val expr1: ExprAST,
+        private val expr2: ExprAST,
+        private val operator: String
+    ) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
-            return when (op) {
+            return when (operator) {
                 // Need valid min and max integers to put here
-                bOp.ADD, bOp.MOD, bOp.DIV, bOp.MULT, bOp.SUB -> TypeIdentifier.IntIdentifier(-1, 1)
+                "add", "mod", "div", "mult", "sub" -> TypeIdentifier.IntIdentifier(-1, 1)
                 else -> TypeIdentifier.BoolIdentifier
             }
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
 //            TODO("Not yet implemented")
-        }
-
-        enum class bOp {
-            MULT, DIV, MOD, ADD, SUB, GT, GTE, LT, LTE, EQ, NEQ, AND, OR
         }
 
     }

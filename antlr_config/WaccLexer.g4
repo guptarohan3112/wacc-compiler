@@ -15,6 +15,7 @@ NEW_PAIR: 'newpair' ;
 PAIR:     'pair' ;
 FST:      'fst' ;
 SND:      'snd' ;
+PAIR_LIT: 'null' ;
 
 // Statements
 SKIP_STAT: 'skip' ;
@@ -77,8 +78,6 @@ INT_SIGN: '+' | '-' ;
 
 // Identifiers
 IDENT: ('_' | 'a'..'z' | 'A'..'Z') ('_' | 'a'..'z' | 'A'..'Z' | DIGIT)* ;
-
-NULL: 'null' ;
 
 fragment DIGIT: '0'..'9' ;
 fragment CHARACTER: ~('\\' | '\'' | '"') | '\\' ESCAPED_CHAR ;
