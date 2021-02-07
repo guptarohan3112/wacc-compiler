@@ -5,14 +5,11 @@ import antlr.WaccParserBaseVisitor
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 
-
-// TODO: param, paramlist, func
-
 class Visitor : WaccParserBaseVisitor<AST>() {
 
     /* Function: visitProg()
         ----------------------------
-        Generates a SkipAST node without referencing the context as the context is not required.
+        Generates a ProgramAST node, calling visitFunc() and visitStat() to get the children.
      */
     override fun visitProg(ctx: WaccParser.ProgContext): ProgramAST {
         val funcs: MutableList<FunctionAST> = ArrayList()
@@ -22,9 +19,10 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return ProgramAST(funcs as ArrayList, visitStat(ctx.stat()))
     }
 
-    /* Function: visitProg()
+    /* Function: visitFunc()
         ----------------------------
-        Generates a SkipAST node without referencing the context as the context is not required.
+        Generates a FunctionAST node, calling visitType() to get the type, using the context's IDENT token,
+        calling visitParamList() if the paramList of ctx is not null, and visitStat() to get the statement child.
      */
     override fun visitFunc(ctx: WaccParser.FuncContext): FunctionAST {
         val paramList: ParamListAST? = if (ctx.paramList() == null) {
