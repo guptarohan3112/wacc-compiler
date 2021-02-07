@@ -69,11 +69,7 @@ pairElemType: baseType
 | PAIR
 ;
 
-expr: nonBinExpr
-| binExpr
-;
-
-nonBinExpr: intLit
+expr: intLit
 | boolLit
 | charLit
 | strLit
@@ -81,32 +77,20 @@ nonBinExpr: intLit
 | IDENT
 | arrayElem
 | unaryOper expr
+| expr (MULT | DIV | MOD) expr
+| expr (PLUS | MINUS) expr
+| expr (GT | GTE | LT | LTE) expr
+| expr (EQ | NOTEQ) expr
+| expr AND expr
+| expr OR expr
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES
 ;
-
-binExpr: nonBinExpr binaryOper nonBinExpr ;
 
 unaryOper: NOT
 | MINUS
 | LEN
 | ORD
 | CHR;
-
-binOp: expr binaryOper expr ;
-
-binaryOper: PLUS
-| MINUS
-| MULT
-| DIV
-| MOD   
-| GT
-| GTE
-| LT
-| LTE
-| EQ
-| NOTEQ
-| AND
-| OR ;
 
 arrayElem: IDENT (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)+ ;
 
