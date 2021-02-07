@@ -49,7 +49,8 @@ sealed class StatementAST : AST {
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            TODO("Not yet implemented")
+            lhs.check(st, errorHandler)
+            rhs.check(st, errorHandler)
         }
 
     }
@@ -65,7 +66,7 @@ sealed class StatementAST : AST {
     data class ReadAST(private val lhs: AssignLHSAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            TODO("Not yet implemented")
+            lhs.check(st, errorHandler)
         }
 
     }
