@@ -10,13 +10,12 @@ class ProgramAST(
 ) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-
+        // Check validity of each function
         for (func in functionList) {
             func.check(st, errorHandler)
         }
-
+        // Check validity of statement
         stat.check(st, errorHandler)
-
     }
 
 }

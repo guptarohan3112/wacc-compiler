@@ -25,23 +25,20 @@ sealed class StatementAST : AST {
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            // Check validity of type of identifier that is being declared
             type.check(st, errorHandler)
+
             val variable: IdentifierObject? = st.lookup(varName)
-
-//            if (typeIdent == null) {
-//                errorHandler.invalidIdentifier(type.toString())
-//            } else if (typeIdent !is TypeIdentifier) {
-//                errorHandler.invalidType(type.toString())
-//            }
-
             if (variable != null) {
                 errorHandler.repeatVariableDeclaration(varName)
             } else {
+                // Check that right hand side and type of identifier match
                 val typeIdent: TypeIdentifier = st.lookupAll(type.toString()) as TypeIdentifier
                 assignment.check(st, errorHandler)
                 if (typeIdent != assignment.getType()) {
                     errorHandler.typeMismatch(typeIdent, assignment.getType())
                 }
+                // Create variable identifier and add to symbol table
                 val varIdent = VariableIdentifier(varName, typeIdent)
                 st.add(varName, varIdent)
             }
@@ -56,6 +53,7 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             lhs.check(st, errorHandler)
             rhs.check(st, errorHandler)
+            // Check that both sides match up in their types
             if (lhs.getType() != rhs.getType()) {
                 errorHandler.typeMismatch(lhs.getType(), rhs.getType())
             }
@@ -83,8 +81,14 @@ sealed class StatementAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             expr.check(st, errorHandler)
+            // Ensure exit is only on an integer
             if (expr.getType() != TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)) {
-                errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE), expr.getType())
+                errorHandler.typeMismatch(
+                    TypeIdentifier.IntIdentifier(
+                        Int.MIN_VALUE,
+                        Int.MAX_VALUE
+                    ), expr.getType()
+                )
             }
         }
 
@@ -105,7 +109,10 @@ sealed class StatementAST : AST {
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            // Check validity of conditional expression
             condExpr.check(st, errorHandler)
+
+            // Ensure that the condition expression evaluates to a boolean
             val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
             if (condExpr.getType() != boolType) {
                 errorHandler.typeMismatch(boolType, condExpr.getType())
@@ -133,9 +140,11 @@ sealed class StatementAST : AST {
     data class ReturnAST(private val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            // Check validity of expression
             expr.check(st, errorHandler)
+
+            // Check that type of expression being returned is the same as the return type of the function that defines the current scope
             val returnType: TypeIdentifier = expr.getType()
-            // the value below is guaranteed to not be null due to the nature of returnType.toString()
             val funcReturnType: TypeIdentifier? =
                 st.lookup(returnType.toString()) as TypeIdentifier?
             if (funcReturnType == null) {
@@ -161,8 +170,10 @@ sealed class StatementAST : AST {
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+            // Check validity of looping expression
             loopExpr.check(st, errorHandler)
-            // Would be nice to have access to top level st
+
+            // Check that looping expression evaluates to a boolean
             val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
             if (boolType != loopExpr.getType()) {
                 errorHandler.typeMismatch(boolType, loopExpr.getType())
@@ -170,7 +181,6 @@ sealed class StatementAST : AST {
                 val body_st = SymbolTable(st)
                 body.check(body_st, errorHandler)
             }
-
         }
     }
 

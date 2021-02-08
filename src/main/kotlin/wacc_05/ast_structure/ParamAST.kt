@@ -13,15 +13,10 @@ class ParamAST(
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
 
+        // Check validity of parameter type
         type.check(st, errorHandler)
-//        val typeIdent: IdentifierObject? = st.lookupAll(type.toString())
-//
-//        if (typeIdent == null) {
-//            errorHandler.invalidIdentifier(type.toString())
-//        } else if (typeIdent !is TypeIdentifier) {
-//            errorHandler.invalidType(type.toString())
-//        }
 
+        // Create parameter identifier and add to symbol table
         val typeIdent: IdentifierObject? = st.lookupAll(type.toString())
         val paramIdent = ParamIdentifier(typeIdent as TypeIdentifier)
         st.add(name, paramIdent)
