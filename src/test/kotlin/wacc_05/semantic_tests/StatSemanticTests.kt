@@ -8,6 +8,7 @@ import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.TypeAST
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
+import wacc_05.ast_structure.assignment_ast.NewPairAST
 import wacc_05.ast_structure.assignment_ast.PairElemAST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
@@ -128,6 +129,22 @@ class StatSemanticTests {
     }
 
     @Test
+    fun assignASTLHSIncorrectTypeCheck() {
+        st.add("int", intType)
+        st.add("char", charType)
+        st.add("x", VariableIdentifier("x", charType))
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.AssignAST(
+            AssignLHSAST("x"),
+            ExprAST.IntLiterAST("+", "3")
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(charType, intType) }
+    }
+
+    @Test
     fun assignASTLHSPairNotPresentCheck() {
         st.add("int", intType)
 
@@ -145,7 +162,7 @@ class StatSemanticTests {
     fun assignASTLHSArrayNotPresentCheck() {
         st.add("int", intType)
 
-        every { seh.invalidIdentifier(any())} just runs
+        every { seh.invalidIdentifier(any()) } just runs
 
         StatementAST.AssignAST(
             AssignLHSAST(ExprAST.ArrayElemAST("x", arrayListOf(ExprAST.IntLiterAST("+", "3")))),
@@ -156,9 +173,36 @@ class StatSemanticTests {
     }
 
     @Test
+    fun assignASTRHSValidArrayLiterCheck() {
+        st.add("int", intType)
+        st.add("x", TypeIdentifier.ArrayIdentifier(intType, 4))
+        st.add("y", intType)
+
+        StatementAST.AssignAST(
+            AssignLHSAST("y"),
+            ExprAST.ArrayElemAST("x", arrayListOf(ExprAST.IntLiterAST("+", "1")))
+        ).check(st, seh)
+    }
+
+    @Test
+    fun assignASTRHSValidNewPairCheck() {
+        val identifier = TypeIdentifier.PairIdentifier(intType, charType)
+
+        st.add("int", intType)
+        st.add("char", charType)
+        st.add("x", identifier)
+
+        StatementAST.AssignAST(
+            AssignLHSAST("x"),
+            NewPairAST(ExprAST.IntLiterAST("+", "3"), ExprAST.CharLiterAST("c"))
+        ).check(st, seh)
+    }
+
+    @Test
     fun assignASTRHSIncorrectTypeCheck() {
         st.add("int", intType)
         st.add("char", charType)
+        st.add("x", intType)
 
         every { seh.typeMismatch(any(), any()) } just runs
 

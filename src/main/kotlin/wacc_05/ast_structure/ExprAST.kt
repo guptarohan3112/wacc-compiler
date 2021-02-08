@@ -40,7 +40,8 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            TODO("Not yet implemented")
+            //TODO
+            return
         }
     }
 
