@@ -13,14 +13,16 @@ class ParamAST(
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
 
+        type.check(st, errorHandler)
+//        val typeIdent: IdentifierObject? = st.lookupAll(type.toString())
+//
+//        if (typeIdent == null) {
+//            errorHandler.invalidIdentifier(type.toString())
+//        } else if (typeIdent !is TypeIdentifier) {
+//            errorHandler.invalidType(type.toString())
+//        }
+
         val typeIdent: IdentifierObject? = st.lookupAll(type.toString())
-
-        if (typeIdent == null) {
-            errorHandler.invalidIdentifier(type.toString())
-        } else if (typeIdent !is TypeIdentifier) {
-            errorHandler.invalidType(type.toString())
-        }
-
         val paramIdent = ParamIdentifier(typeIdent as TypeIdentifier, name)
         st.add(name, paramIdent)
     }
