@@ -42,17 +42,60 @@ dependencies {
 
 sourceSets {
     main {
-        main.kotlin.srcDirs += 'src/main/kotlin/'
-        main.java.srcDirs += 'src/main/java/'
+        kotlin {
+            srcDirs += 'src/main/kotlin/'
+        }
+
+        java {
+            srcDirs += 'src/main/java/'
+        }
+    }
+
+    test {
+        kotlin {
+            srcDirs += 'src/test/'
+        }
+    }
+
+    semanticTests {
+        main {
+            kotlin {
+                srcDirs += 'src/main/kotlin/'
+            }
+            java {
+                srcDirs += 'src/main/java/'
+            }
+        }
+        test {
+            kotlin {
+                srcDirs += 'src/test/kotlin/wacc_05/semantic_tests/'
+            }
+        }
     }
 }
 
 // only while we are still using STD input, to be removed
-run{
+run {
     standardInput = System.in
 }
 
 application {
     // Define the main class for the application.
     mainClass = 'wacc_05/AppKt'
+}
+
+test {
+    useJUnit {}
+    testLogging {
+        showStandardStreams = true
+    }
+
+    beforeTest { descriptor -> "Running test: " + descriptor }
+
+    // set to true to fail on first test failure
+    failFast = false
+}
+
+task semanticTests(type: Test) {
+
 }
