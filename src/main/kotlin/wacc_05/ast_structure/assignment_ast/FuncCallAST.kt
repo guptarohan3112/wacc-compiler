@@ -17,21 +17,13 @@ class FuncCallAST(private val function: String, private val args: ArrayList<Expr
             errorHandler.invalidFunction(function)
         } else {
             val noOfArgs: Int = funcIdentifier.getParams().size
+            // Check for the expected number of arguments for this function call
             if (noOfArgs != args.size) {
                 errorHandler.argNumberError(function, noOfArgs, args.size)
             }
             for (arg in args) {
                 arg.check(st, errorHandler)
             }
-//            if (args.isEmpty()) {
-////                args.check(st, errorHandler)
-//                // arglist needs to know how many arguments are meant to be here for this function
-//            } else {
-//                val noOfArgs = funcIdentifier.getParams().size
-//                if (noOfArgs != 0) {
-//                    errorHandler.argNumberError(function, 0, noOfArgs)
-//                }
-//            }
         }
     }
 
