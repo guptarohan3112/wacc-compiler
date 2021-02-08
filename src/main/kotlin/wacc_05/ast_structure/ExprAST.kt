@@ -85,6 +85,7 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             TODO("Not yet implemented")
+            // Need check to see whether ident has been defined previously in the table
         }
 
     }

@@ -22,11 +22,13 @@ class FuncCallAST(private val function: String, private val args: ArrayList<Expr
         } else if (funcIdentifier !is FunctionIdentifier) {
             errorHandler.invalidFunction(function)
         } else {
+            // Check that the number of args is as expected
             val noOfArgs: Int = funcIdentifier.getParams().size
-            // Check for the expected number of arguments for this function call
             if (noOfArgs != args.size) {
                 errorHandler.argNumberError(function, noOfArgs, args.size)
             }
+
+            // Check that arg type match up with corresponding parameter type
             for (i in 0 until args.size) {
                 args[i].check(st, errorHandler)
                 val expectedType: TypeIdentifier = funcIdentifier.getParams()[i].getType()
@@ -35,9 +37,9 @@ class FuncCallAST(private val function: String, private val args: ArrayList<Expr
                     errorHandler.typeMismatch(expectedType, actualType)
                 }
             }
+            // Set the return type after relevant checks have been done
+            returnType = funcIdentifier.getReturnType()
         }
-        val func = funcIdentifier as FunctionIdentifier
-        returnType = func.getReturnType()
     }
 
 }
