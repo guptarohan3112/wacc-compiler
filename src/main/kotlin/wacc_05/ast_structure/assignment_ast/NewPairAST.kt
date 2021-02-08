@@ -16,10 +16,9 @@ class NewPairAST(private val fst: ExprAST, private val snd: ExprAST) : AssignRHS
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
         fst.check(st, errorHandler)
         snd.check(st, errorHandler)
-        if (fst.getType() != snd.getType()) {
-            errorHandler.pairTypeMismatch(fst.getType(), snd.getType())
-        }
-        elemType = fst.getType()
+
+        // Set type after
+        elemType = TypeIdentifier.PairIdentifier(fst.getType(), snd.getType())
     }
 
 }

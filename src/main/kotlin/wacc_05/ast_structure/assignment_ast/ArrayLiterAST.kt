@@ -23,7 +23,8 @@ class ArrayLiterAST(private val elems: ArrayList<ExprAST>) : AssignRHSAST() {
                 errorHandler.typeMismatch(firstElemType, elems[i].getType())
             }
         }
-        arrayType = firstElemType
+
+        arrayType = TypeIdentifier.ArrayIdentifier(firstElemType, elems.size)
     }
 
 }
