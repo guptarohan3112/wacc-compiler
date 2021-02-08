@@ -13,7 +13,7 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun getType(): TypeIdentifier {
             // To be changed
-            return TypeIdentifier.IntIdentifier(-1, 1)
+            return TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
@@ -100,7 +100,7 @@ sealed class ExprAST : AssignRHSAST() {
             // Will need to get unaryOpIdentifier from st (can I if it an invalid operator) and get its return type
             return when (UnaryOp) {
                 "not" -> TypeIdentifier.BoolIdentifier
-                "len" -> TypeIdentifier.IntIdentifier(-1, 1)
+                "len" -> TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
                 "ord" -> TypeIdentifier.IntIdentifier(0, 256)
                 else -> TypeIdentifier.CharIdentifier
             }
@@ -121,7 +121,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun getType(): TypeIdentifier {
             return when (operator) {
                 // Need valid min and max integers to put here
-                "add", "mod", "div", "mult", "sub" -> TypeIdentifier.IntIdentifier(-1, 1)
+                "add", "mod", "div", "mult", "sub" -> TypeIdentifier.IntIdentifier(
+                    Int.MIN_VALUE,
+                    Int.MAX_VALUE
+                )
                 else -> TypeIdentifier.BoolIdentifier
             }
         }
