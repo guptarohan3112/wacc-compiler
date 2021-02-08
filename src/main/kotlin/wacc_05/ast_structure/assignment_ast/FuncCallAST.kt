@@ -1,6 +1,6 @@
 package wacc_05.ast_structure.assignment_ast
 
-import wacc_05.SemanticErrorHandler
+import wacc_05.SemanticErrors
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
@@ -9,7 +9,7 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class FuncCallAST(private val function: String, private val args: ArrayList<ExprAST>) : AssignRHSAST() {
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
         val funcIdentifier: IdentifierObject? = st.lookupAll(function)
         if (funcIdentifier == null) {
             errorHandler.invalidIdentifier(function)

@@ -1,6 +1,6 @@
 package wacc_05.ast_structure
 
-import wacc_05.SemanticErrorHandler
+import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 
 sealed class TypeAST : AST {
@@ -9,8 +9,9 @@ sealed class TypeAST : AST {
 
     data class BaseTypeAST(private val typeName: String) : TypeAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            TODO("Not yet implemented")
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+            // TODO
+            return
         }
 
         override fun toString(): String {
@@ -20,7 +21,7 @@ sealed class TypeAST : AST {
 
     data class ArrayTypeAST(private val elemsType: TypeAST) : TypeAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             TODO("Not yet implemented")
         }
 
@@ -31,7 +32,7 @@ sealed class TypeAST : AST {
 
     data class PairElemTypeAST(private val pair: String? = null, private val type: TypeAST?) : AST {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             TODO("Not yet implemented")
         }
 
@@ -45,7 +46,7 @@ sealed class TypeAST : AST {
         private val sndType: PairElemTypeAST
     ) : TypeAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             TODO("Not yet implemented")
         }
 

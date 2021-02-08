@@ -1,6 +1,6 @@
 package wacc_05.ast_structure
 
-import wacc_05.SemanticErrorHandler
+import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
@@ -16,7 +16,7 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             TODO("Not yet implemented")
         }
     }
@@ -27,7 +27,7 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.BoolIdentifier
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             TODO("Not yet implemented")
         }
     }
@@ -38,7 +38,7 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.CharIdentifier
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             TODO("Not yet implemented")
         }
     }
@@ -49,7 +49,7 @@ sealed class ExprAST : AssignRHSAST() {
             TODO("Not yet implemented")
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             TODO("Not yet implemented")
         }
     }
@@ -60,7 +60,7 @@ sealed class ExprAST : AssignRHSAST() {
             TODO("Not yet implemented")
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 //            TODO("Not yet implemented")
         }
     }
@@ -71,7 +71,7 @@ sealed class ExprAST : AssignRHSAST() {
             TODO("Not yet implemented")
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 //            TODO("Not yet implemented")
         }
     }
@@ -85,7 +85,7 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.ArrayIdentifier(exprs[0].getType(), exprs.size)
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             TODO("Not yet implemented")
         }
 
@@ -106,7 +106,7 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 //            TODO("Not yet implemented")
         }
 
@@ -129,7 +129,7 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 //            TODO("Not yet implemented")
         }
 

@@ -1,6 +1,6 @@
 package wacc_05.ast_structure
 
-import wacc_05.SemanticErrorHandler
+import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
@@ -11,7 +11,7 @@ class FunctionAST(
     private val body: StatementAST
 ) : AST {
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
+    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
         // look up return type in symbol table and check valid identifier
         returnType.check(st, errorHandler)
