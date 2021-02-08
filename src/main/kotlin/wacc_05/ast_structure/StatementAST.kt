@@ -83,6 +83,9 @@ sealed class StatementAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             expr.check(st, errorHandler)
+            if (expr.getType() != TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)) {
+                errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE), expr.getType())
+            }
         }
 
     }
@@ -103,8 +106,6 @@ sealed class StatementAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             condExpr.check(st, errorHandler)
-            // Making the assumption that boolean identifiers have a key of "boolean".
-            // Eventually look up in top level symbol table
             val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
             if (condExpr.getType() != boolType) {
                 errorHandler.typeMismatch(boolType, condExpr.getType())
