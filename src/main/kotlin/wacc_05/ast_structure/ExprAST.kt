@@ -97,6 +97,7 @@ sealed class ExprAST : AssignRHSAST() {
     ) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
+            // Will need to get unaryOpIdentifier from st (can I if it an invalid operator) and get its return type
             return when (UnaryOp) {
                 "not" -> TypeIdentifier.BoolIdentifier
                 "len" -> TypeIdentifier.IntIdentifier(-1, 1)

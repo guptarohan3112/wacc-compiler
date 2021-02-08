@@ -5,6 +5,11 @@ class UnaryOpIdentifier(
     private val argType: TypeIdentifier,
     private val returnType: TypeIdentifier = argType
 ) : IdentifierObject() {
+
+    fun getReturnType() : TypeIdentifier {
+        return returnType
+    }
+
     enum class UnaryOp {
         NOT,
         NEGATIVE,
