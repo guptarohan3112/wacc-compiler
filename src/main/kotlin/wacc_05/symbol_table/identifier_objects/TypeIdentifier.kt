@@ -6,6 +6,7 @@ sealed class TypeIdentifier : IdentifierObject() {
         val BOOLEAN = "bool"
         val CHARACTER = "char"
         val INTEGER = "int"
+        val STRING = "string"
     }
 
     object BoolIdentifier : TypeIdentifier() {
@@ -15,6 +16,12 @@ sealed class TypeIdentifier : IdentifierObject() {
     }
 
     object CharIdentifier : TypeIdentifier() {
+        override fun toString(): String {
+            return CHARACTER
+        }
+    }
+
+    object StringIdentifier : TypeIdentifier() {
         override fun toString(): String {
             return CHARACTER
         }
