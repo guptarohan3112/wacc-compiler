@@ -19,24 +19,26 @@ sealed class StatementAST : AST {
     }
 
     data class DeclAST(
-        private val typeName: TypeAST,
+        private val type: TypeAST,
         private val varName: String,
         private val assignment: AssignRHSAST
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            val typeIdent: IdentifierObject? = st.lookupAll(typeName.toString())
+            type.check(st, errorHandler)
             val variable: IdentifierObject? = st.lookup(varName)
 
-            if (typeIdent == null) {
-                errorHandler.invalidIdentifier(typeName.toString())
-            } else if (typeIdent !is TypeIdentifier) {
-                errorHandler.invalidType(typeName.toString())
-            }
+//            if (typeIdent == null) {
+//                errorHandler.invalidIdentifier(type.toString())
+//            } else if (typeIdent !is TypeIdentifier) {
+//                errorHandler.invalidType(type.toString())
+//            }
 
             if (variable != null) {
                 errorHandler.repeatVariableDeclaration(varName)
             } else {
+                //typeIdent is not null and is a valid type identifier, known due to checking of "type"
+                val typeIdent: IdentifierObject? = st.lookupAll(type.toString())
                 val varIdent = VariableIdentifier(varName, typeIdent as TypeIdentifier)
                 st.add(varName, varIdent)
             }
