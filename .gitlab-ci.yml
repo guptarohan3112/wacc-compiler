@@ -2,14 +2,14 @@ image: alexusher/wacc:latest
 
 stages:
     - build
-    - semantic
+    - test
 
 build:
     stage: build
     script:
         - make clean && make
 
-semantic:
+test:
     script:
         - make
         - ./gradlew semanticTests
