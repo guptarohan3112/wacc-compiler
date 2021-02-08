@@ -2,16 +2,16 @@ image: alexusher/wacc:latest
 
 stages:
     - build
-    - test
+    - semantic_test
 
 build:
     stage: build
     script:
         - make clean && make
 
-test:
+semantic_test:
     script:
-        - echo "This should print Hello World for now"
-        - make && ./gradlew run
+        - make
+        - ./gradlew semanticTests
     only: 
         - master
