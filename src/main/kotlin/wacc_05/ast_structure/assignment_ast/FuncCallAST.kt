@@ -9,6 +9,12 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class FuncCallAST(private val function: String, private val args: ArrayList<ExprAST>) : AssignRHSAST() {
 
+    private lateinit var returnType: TypeIdentifier
+
+    override fun getType(): TypeIdentifier {
+        return returnType
+    }
+
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
         val funcIdentifier: IdentifierObject? = st.lookupAll(function)
         if (funcIdentifier == null) {
@@ -30,6 +36,8 @@ class FuncCallAST(private val function: String, private val args: ArrayList<Expr
                 }
             }
         }
+        val func = funcIdentifier as FunctionIdentifier
+        returnType = func.getReturnType()
     }
 
 }

@@ -37,9 +37,12 @@ sealed class StatementAST : AST {
             if (variable != null) {
                 errorHandler.repeatVariableDeclaration(varName)
             } else {
-                //typeIdent is not null and is a valid type identifier, known due to checking of "type"
-                val typeIdent: IdentifierObject? = st.lookupAll(type.toString())
-                val varIdent = VariableIdentifier(varName, typeIdent as TypeIdentifier)
+                val typeIdent: TypeIdentifier = st.lookupAll(type.toString()) as TypeIdentifier
+                assignment.check(st, errorHandler)
+                if (typeIdent != assignment.getType()) {
+                    errorHandler.typeMismatch(typeIdent, assignment.getType())
+                }
+                val varIdent = VariableIdentifier(varName, typeIdent)
                 st.add(varName, varIdent)
             }
         }
