@@ -23,7 +23,7 @@ class ParamAST(
 //        }
 
         val typeIdent: IdentifierObject? = st.lookupAll(type.toString())
-        val paramIdent = ParamIdentifier(typeIdent as TypeIdentifier, name)
+        val paramIdent = ParamIdentifier(typeIdent as TypeIdentifier)
         st.add(name, paramIdent)
     }
 

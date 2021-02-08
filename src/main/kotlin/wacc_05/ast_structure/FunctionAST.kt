@@ -35,7 +35,7 @@ class FunctionAST(
         val returnTypeIdent: IdentifierObject? = st.lookupAll(returnType.toString())
 
         val funcIdent =
-            FunctionIdentifier(funcName, returnTypeIdent as TypeIdentifier, ArrayList(), funcST)
+            FunctionIdentifier(returnTypeIdent as TypeIdentifier, ArrayList(), funcST)
         st.add(funcName, funcIdent)
 
         // The return type is added as a explicit entry to the symbol table for the function scope
