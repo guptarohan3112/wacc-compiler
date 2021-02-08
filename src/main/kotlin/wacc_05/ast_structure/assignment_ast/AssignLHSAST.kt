@@ -20,14 +20,6 @@ class AssignLHSAST(private val ident: String?) : AST {
         this.pairElem = pairElem
     }
 
-    fun getType() : TypeIdentifier {
-        return when {
-            ident != null -> TypeIdentifier.StringIdentifier
-            arrElem != null -> arrElem!!.getType()
-            else -> pairElem!!.getType()
-        }
-    }
-
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
         if (arrElem != null) {
             arrElem!!.check(st, errorHandler)
