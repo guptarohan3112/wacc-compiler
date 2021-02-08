@@ -42,4 +42,8 @@ class SemanticErrorHandler() {
         println("Semantic error: This return statement is of the wrong return type for the function")
     }
 
+    fun pairTypeMismatch(fstType: TypeIdentifier, sndType: TypeIdentifier) {
+        println("Semantic error: First element in the pair of type ${fstType}, but the second element is of type ${sndType}")
+    }
+
 }
