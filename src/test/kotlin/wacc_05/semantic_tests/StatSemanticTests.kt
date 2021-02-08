@@ -53,6 +53,21 @@ class StatSemanticTests {
     }
 
     @Test
+    fun declASTKeywordClash() {
+        st.add("int", intType)
+
+        every { seh.repeatVariableDeclaration(any()) } just Runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "int",
+            ExprAST.IntLiterAST("+", "3")
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.repeatVariableDeclaration("int") }
+    }
+
+    @Test
     fun declASTDifferentTypes() {
         st.add("int", intType)
         st.add("char", charType)
@@ -110,5 +125,48 @@ class StatSemanticTests {
         ).check(st, seh)
 
         verify(exactly = 1) { seh.invalidIdentifier("x") }
+    }
+
+    @Test
+    fun assignASTLHSPairNotPresentCheck() {
+        st.add("int", intType)
+
+        every { seh.invalidIdentifier(any()) } just runs
+
+        StatementAST.AssignAST(
+            AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"))),
+            ExprAST.IntLiterAST("+", "3")
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.invalidIdentifier("x") }
+    }
+
+    @Test
+    fun assignASTLHSArrayNotPresentCheck() {
+        st.add("int", intType)
+
+        every { seh.invalidIdentifier(any())} just runs
+
+        StatementAST.AssignAST(
+            AssignLHSAST(ExprAST.ArrayElemAST("x", arrayListOf(ExprAST.IntLiterAST("+", "3")))),
+            ExprAST.IntLiterAST("+", "3")
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.invalidIdentifier("x") }
+    }
+
+    @Test
+    fun assignASTRHSIncorrectTypeCheck() {
+        st.add("int", intType)
+        st.add("char", charType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.AssignAST(
+            AssignLHSAST("x"),
+            ExprAST.CharLiterAST("c")
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(intType, charType) }
     }
 }
