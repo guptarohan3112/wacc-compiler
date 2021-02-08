@@ -37,8 +37,8 @@ dependencies {
     // Use the Kotlin JUnit integration.
     testImplementation 'org.jetbrains.kotlin:kotlin-test-junit'
 
-    // Dependency for the jmock testing setup
-    testImplementation group: 'org.jmock', name: 'jmock-junit4', version: '2.8.3'
+    // Dependency for the mockk testing setup
+    testImplementation "io.mockk:mockk:1.10.5"
 
     antlr "org.antlr:antlr4:4.9.1"
 }
