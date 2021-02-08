@@ -4,6 +4,7 @@ import wacc_05.SemanticErrorHandler
 import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class AssignLHSAST(private val ident: String?) : AST {
     // we have to store these instead of making them extend AssignLHSAST
@@ -17,6 +18,14 @@ class AssignLHSAST(private val ident: String?) : AST {
 
     constructor(pairElem: PairElemAST) : this(null) {
         this.pairElem = pairElem
+    }
+
+    fun getType() : TypeIdentifier {
+        return when {
+            ident != null -> TypeIdentifier.StringIdentifier
+            arrElem != null -> arrElem!!.getType()
+            else -> pairElem!!.getType()
+        }
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
