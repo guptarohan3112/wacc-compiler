@@ -4,6 +4,7 @@ import wacc_05.SemanticErrorHandler
 import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
+import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class AssignLHSAST(private val ident: String?) : AST {
@@ -23,6 +24,13 @@ class AssignLHSAST(private val ident: String?) : AST {
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
         if (arrElem != null) {
             arrElem!!.check(st, errorHandler)
-        } else pairElem?.check(st, errorHandler)
+        } else if (pairElem != null) {
+            pairElem?.check(st, errorHandler)
+        } else {
+            val identInST: IdentifierObject? = st.lookupAll(ident!!)
+            if (identInST == null) {
+                errorHandler.invalidIdentifier(ident)
+            }
+        }
     }
 }
