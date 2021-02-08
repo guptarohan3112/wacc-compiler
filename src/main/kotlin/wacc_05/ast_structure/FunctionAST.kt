@@ -5,10 +5,10 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
 class FunctionAST(
-    val returnType: TypeAST,
-    val funcName: String,
-    val paramList: ParamListAST?,
-    val body: StatementAST
+    private val returnType: TypeAST,
+    private val funcName: String,
+    private val paramList: ParamListAST?,
+    private val body: StatementAST
 ) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {

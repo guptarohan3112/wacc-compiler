@@ -55,7 +55,7 @@ sealed class StatementAST : AST {
 
     }
 
-    data class BeginAST(val stat: StatementAST) : StatementAST() {
+    data class BeginAST(private val stat: StatementAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             stat.check(st, errorHandler)
@@ -88,9 +88,9 @@ sealed class StatementAST : AST {
     }
 
     data class IfAST(
-        val condExpr: ExprAST,
-        val thenStat: StatementAST,
-        val elseStat: StatementAST
+        private val condExpr: ExprAST,
+        private val thenStat: StatementAST,
+        private val elseStat: StatementAST
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
@@ -127,7 +127,8 @@ sealed class StatementAST : AST {
             expr.check(st, errorHandler)
             val returnType: TypeIdentifier = expr.getType()
             // the value below is guaranteed to not be null due to the nature of returnType.toString()
-            val funcReturnType: TypeIdentifier? = st.lookup(returnType.toString()) as TypeIdentifier?
+            val funcReturnType: TypeIdentifier? =
+                st.lookup(returnType.toString()) as TypeIdentifier?
             if (funcReturnType == null) {
                 errorHandler.invalidReturnType()
             }
@@ -146,8 +147,8 @@ sealed class StatementAST : AST {
     }
 
     data class WhileAST(
-        val loopExpr: ExprAST,
-        val body: StatementAST
+        private val loopExpr: ExprAST,
+        private val body: StatementAST
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {

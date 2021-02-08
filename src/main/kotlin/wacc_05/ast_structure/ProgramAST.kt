@@ -5,8 +5,8 @@ import wacc_05.symbol_table.SymbolTable
 import java.util.*
 
 class ProgramAST(
-    val functionList: ArrayList<FunctionAST>,
-    val stat: StatementAST
+    private val functionList: ArrayList<FunctionAST>,
+    private val stat: StatementAST
 ) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {

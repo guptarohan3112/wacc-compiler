@@ -7,8 +7,8 @@ import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class ParamAST(
-    val type: TypeAST,
-    val name: String
+    private val type: TypeAST,
+    private val name: String
 ) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
