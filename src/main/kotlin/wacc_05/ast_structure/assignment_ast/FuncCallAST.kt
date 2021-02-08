@@ -5,6 +5,7 @@ import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class FuncCallAST(private val function: String, private val args: ArrayList<ExprAST>) : AssignRHSAST() {
 
@@ -20,8 +21,13 @@ class FuncCallAST(private val function: String, private val args: ArrayList<Expr
             if (noOfArgs != args.size) {
                 errorHandler.argNumberError(function, noOfArgs, args.size)
             }
-            for (arg in args) {
-                arg.check(st, errorHandler)
+            for (i in 0 until args.size) {
+                args[i].check(st, errorHandler)
+                val expectedType: TypeIdentifier = funcIdentifier.getParams()[i].getType()
+                val actualType: TypeIdentifier = args[i].getType()
+                if (expectedType != actualType) {
+                    errorHandler.typeMismatch(expectedType, actualType)
+                }
             }
         }
     }
