@@ -7,8 +7,6 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 sealed class ExprAST : AssignRHSAST() {
 
-    abstract fun getType(): TypeIdentifier
-
     data class IntLiterAST(private val sign: String, private val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
