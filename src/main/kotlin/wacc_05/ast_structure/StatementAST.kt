@@ -56,6 +56,9 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
             lhs.check(st, errorHandler)
             rhs.check(st, errorHandler)
+            if (lhs.getType() != rhs.getType()) {
+                errorHandler.typeMismatch(lhs.getType(), rhs.getType())
+            }
         }
 
     }

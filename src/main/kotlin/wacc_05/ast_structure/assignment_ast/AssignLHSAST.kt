@@ -36,4 +36,8 @@ class AssignLHSAST(private val ident: String?) : AST {
             type = TypeIdentifier.StringIdentifier
         }
     }
+
+    fun getType() : TypeIdentifier {
+        return type
+    }
 }
