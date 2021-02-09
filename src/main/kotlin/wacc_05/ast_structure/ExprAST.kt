@@ -148,7 +148,7 @@ sealed class ExprAST : AssignRHSAST() {
         override fun getType(): TypeIdentifier {
             return when (operator) {
                 // Need valid min and max integers to put here
-                "add", "mod", "div", "mult", "sub" -> TypeIdentifier.IntIdentifier(
+                "+", "%", "/", "*", "-" -> TypeIdentifier.IntIdentifier(
                     Int.MIN_VALUE,
                     Int.MAX_VALUE
                 )

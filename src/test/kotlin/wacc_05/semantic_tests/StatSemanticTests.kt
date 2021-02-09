@@ -130,7 +130,7 @@ open class StatSemanticTests {
     fun exitASTInvalidTypeCheck() {
         st.add("char", charType)
 
-        every { seh.invalidExitType(any()) }
+        every { seh.invalidExitType(any()) } just runs
 
         StatementAST.ExitAST(ExprAST.CharLiterAST("c")).check(st, seh)
 

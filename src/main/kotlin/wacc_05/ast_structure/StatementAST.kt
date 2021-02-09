@@ -86,13 +86,8 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
             // Ensure exit is only on an integer
-            if (expr.getType() != TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)) {
-                errorHandler.typeMismatch(
-                    TypeIdentifier.IntIdentifier(
-                        Int.MIN_VALUE,
-                        Int.MAX_VALUE
-                    ), expr.getType()
-                )
+            if (expr.getType() !is TypeIdentifier.IntIdentifier) {
+                errorHandler.invalidExitType(expr.getType())
             }
         }
 
@@ -105,7 +100,7 @@ sealed class StatementAST : AST {
 
             val type = expr.getType()
 
-            if(!(type is TypeIdentifier.PairIdentifier || type is TypeIdentifier.ArrayIdentifier)) {
+            if (!(type is TypeIdentifier.PairIdentifier || type is TypeIdentifier.ArrayIdentifier)) {
                 errorHandler.invalidFreeType(type)
             }
         }
