@@ -60,4 +60,54 @@ class UnOpTests : ExprSemanticTests() {
 
         verify(exactly = 1) { seh.typeMismatch(intType, boolType) }
     }
+
+    @Test
+    fun unOpNegValidCheck() {
+        st.add("int", intType)
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "x",
+            ExprAST.UnOpAST(
+                ExprAST.IntLiterAST("+", "3"),
+                "-"
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun unOpNegInvalidArgumentTypeCheck() {
+        st.add("int", intType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "x",
+            ExprAST.UnOpAST(
+                ExprAST.CharLiterAST("c"),
+                "-"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(intType, charType) }
+    }
+
+    @Test
+    fun unOpNegReturnTypeCheck() {
+        st.add("char", charType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("char"),
+            "x",
+            ExprAST.UnOpAST(
+                ExprAST.IntLiterAST("-", "4"),
+                "-"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(charType, intType) }
+    }
 }
