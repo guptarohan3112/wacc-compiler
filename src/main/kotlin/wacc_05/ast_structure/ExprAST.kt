@@ -3,7 +3,9 @@ package wacc_05.ast_structure
 import wacc_05.SemanticErrorHandler
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 sealed class ExprAST : AssignRHSAST() {
 
@@ -17,7 +19,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            TODO("Not yet implemented")
+            return
         }
     }
 
@@ -28,7 +30,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            TODO("Not yet implemented")
+            return
         }
     }
 
@@ -39,40 +41,42 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            TODO("Not yet implemented")
+            return
         }
     }
 
     data class StrLiterAST(private val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
-            TODO("Not yet implemented")
+            return TypeIdentifier.StringIdentifier
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            TODO("Not yet implemented")
+            return
         }
     }
 
     data class PairLiterAST(private val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
-            TODO("Not yet implemented")
+//            return TypeIdentifier.PairIdentifier(??)
+            return null
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-//            TODO("Not yet implemented")
+            return
         }
     }
 
     data class IdentAST(private val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
-            TODO("Not yet implemented")
+            // need to look up the ident in the st?
+            return null
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-//            TODO("Not yet implemented")
+            return
         }
     }
 
@@ -86,7 +90,20 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-            TODO("Not yet implemented")
+
+            for (expr in exprs){
+                expr.check(st, errorHandler)
+                if (expr.getType() !is TypeIdentifier.IntIdentifier){
+                    errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(), expr.getType())
+                }
+            }
+
+            val variable: IdentifierObject? = st.lookupAll(ident)
+
+            if (variable == null) {
+                errorHandler.invalidIdentifier(ident)
+
+            }
         }
 
     }
@@ -107,7 +124,16 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-//            TODO("Not yet implemented")
+
+            expr.check(st, errorHandler)
+
+            val exprType = expr.getType()
+            val expectedType = getType()
+
+            if (exprType != expectedType){
+                return errorHandler.typeMismatch(exprType, expectedType)
+            }
+
         }
 
     }
@@ -130,7 +156,23 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
-//            TODO("Not yet implemented")
+
+            expr1.check(st, errorHandler)
+            expr2.check(st, errorHandler)
+
+            val expr1Type = expr1.getType()
+            val expr2Type = expr2.getType()
+            val expectedType = getType()
+
+            // Check type of expressions match expected type for operator
+            if (expr1Type != expectedType){
+                return errorHandler.typeMismatch(expr1Type, expectedType)
+            }
+            // Check type of expressions are both the same
+            if (expr1Type != expr2Type){
+                return errorHandler.typeMismatch(expr1Type, expr2Type)
+            }
+
         }
 
     }

@@ -3,10 +3,12 @@ package wacc_05.symbol_table.identifier_objects
 sealed class TypeIdentifier : IdentifierObject() {
 
     companion object {
-        val BOOLEAN = "bool"
-        val CHARACTER = "char"
-        val INTEGER = "int"
-        val STRING = "string"
+        const val BOOLEAN = "bool"
+        const val CHARACTER = "char"
+        const val INTEGER = "int"
+        const val STRING = "string"
+        const val PAIR = "pair"
+        const val ARRAY = "array"
     }
 
     object BoolIdentifier : TypeIdentifier() {
@@ -23,7 +25,7 @@ sealed class TypeIdentifier : IdentifierObject() {
 
     object StringIdentifier : TypeIdentifier() {
         override fun toString(): String {
-            return CHARACTER
+            return STRING
         }
     }
 
@@ -39,7 +41,15 @@ sealed class TypeIdentifier : IdentifierObject() {
 
     }
 
-    data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) : TypeIdentifier()
+    data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) : TypeIdentifier() {
+        override fun toString(): String {
+            return ARRAY
+        }
+    }
 
-    data class PairIdentifier(private val fstType : TypeIdentifier, private val sndType : TypeIdentifier) : TypeIdentifier()
+    data class PairIdentifier(private val fstType : TypeIdentifier, private val sndType : TypeIdentifier) : TypeIdentifier() {
+        override fun toString(): String {
+            return PAIR
+        }
+    }
 }

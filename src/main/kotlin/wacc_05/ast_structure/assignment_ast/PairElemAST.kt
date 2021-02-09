@@ -8,6 +8,7 @@ class PairElemAST(private val elem: ExprAST) : AssignRHSAST() {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
         elem.check(st, errorHandler)
+        // should we also check that the elem type is the pair?
     }
 
 }
