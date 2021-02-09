@@ -86,16 +86,24 @@ open class StatSemanticTests {
         verify(exactly = 1) { seh.invalidFreeType(intType) }
     }
 
-//    @Test
-//    fun returnASTValidReturnType() {
-//        // we recreate this just by giving the return ast a symbol table with the desired return type
-//        // in it
-//
-//        st.add("bool", boolType)
-//
-//        StatementAST.ReturnAST(ExprAST.BoolLiterAST("true")).check(st, seh)
-//    }
-//
-//    @Test
-//    fun
+    @Test
+    fun returnASTValidReturnType() {
+        // we recreate this just by giving the return ast a symbol table with the desired return type
+        // in it
+
+        st.add("bool", boolType)
+
+        StatementAST.ReturnAST(ExprAST.BoolLiterAST("true")).check(st, seh)
+    }
+
+    @Test
+    fun returnASTInvalidReturnType() {
+        st.add("bool", boolType)
+
+        every { seh.invalidReturnType() } just runs
+
+        StatementAST.ReturnAST(ExprAST.IntLiterAST("+", "3")).check(st, seh)
+
+        verify(exactly = 1) { seh.invalidReturnType() }
+    }
 }
