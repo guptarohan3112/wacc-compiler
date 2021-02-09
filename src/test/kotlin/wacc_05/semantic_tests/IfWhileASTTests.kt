@@ -1,6 +1,5 @@
 package wacc_05.semantic_tests
 
-import antlr.WaccParser
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
