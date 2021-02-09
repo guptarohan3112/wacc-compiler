@@ -142,11 +142,11 @@ sealed class ExprAST : AssignRHSAST() {
     data class BinOpAST(
         private val expr1: ExprAST,
         private val expr2: ExprAST,
-        private val operator: String
+        private val op: String
     ) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
-            return when (operator) {
+            return when (op) {
                 // Need valid min and max integers to put here
                 "+", "%", "/", "*", "-" -> TypeIdentifier.IntIdentifier(
                     Int.MIN_VALUE,
@@ -165,13 +165,24 @@ sealed class ExprAST : AssignRHSAST() {
             val expr2Type = expr2.getType()
             val expectedType = getType()
 
-            // Check type of expressions match expected type for operator
-            if (expr1Type != expectedType) {
-                return errorHandler.typeMismatch(expr1Type, expectedType)
-            }
+            var exprTypesMatch = expr1Type == expr2Type
+
             // Check type of expressions are both the same
-            if (expr1Type != expr2Type) {
+            if (expectedType is TypeIdentifier.IntIdentifier && !exprTypesMatch) {
                 return errorHandler.typeMismatch(expr1Type, expr2Type)
+            }
+            if (op == "&&" || op == "||"){
+                if (!exprTypesMatch || expr1Type !is TypeIdentifier.BoolIdentifier){
+                    return errorHandler.typeMismatch(expr1Type, expr2Type)
+                }
+            }
+            if (op == ">" || op == ">=" || op == "<" || op == "<=") {
+                if (expr1Type !is TypeIdentifier.IntIdentifier && expr1Type !is TypeIdentifier.CharIdentifier){
+                    return errorHandler.typeMismatch(expr1Type, expr2Type)
+                }
+                else if (!exprTypesMatch) {
+                    return errorHandler.typeMismatch(expr1Type, expr2Type)
+                }
             }
         }
     }
