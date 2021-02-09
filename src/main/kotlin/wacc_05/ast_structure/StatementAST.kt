@@ -72,8 +72,13 @@ sealed class StatementAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             lhs.check(st, errorHandler)
-        }
 
+            val type = lhs.getType()
+
+            if (!(type is TypeIdentifier.IntIdentifier || type is TypeIdentifier.CharIdentifier)) {
+                errorHandler.invalidReadType(type)
+            }
+        }
     }
 
     data class ExitAST(private val expr: ExprAST) : StatementAST() {

@@ -6,6 +6,7 @@ import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class AssignLHSAST(private val ident: String?) : AST {
 
@@ -26,14 +27,14 @@ class AssignLHSAST(private val ident: String?) : AST {
             arrElem!!.check(st, errorHandler)
             type = arrElem!!.getType()
         } else if (pairElem != null) {
-            pairElem?.check(st, errorHandler)
+            pairElem!!.check(st, errorHandler)
             type = pairElem!!.getType()
         } else {
             val identInST: IdentifierObject? = st.lookupAll(ident!!)
             if (identInST == null) {
                 errorHandler.invalidIdentifier(ident)
             }
-            type = TypeIdentifier.StringIdentifier
+            type = (identInST as VariableIdentifier).getType()
         }
     }
 
