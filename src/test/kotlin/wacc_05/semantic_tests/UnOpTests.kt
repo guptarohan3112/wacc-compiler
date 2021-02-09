@@ -167,4 +167,54 @@ class UnOpTests : ExprSemanticTests() {
 
         verify(exactly = 1) { seh.typeMismatch(charType, intType) }
     }
+
+    @Test
+    fun unOpOrdValidCheck() {
+        st.add("int", intType)
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "x",
+            ExprAST.UnOpAST(
+                ExprAST.CharLiterAST("c"),
+                "ord"
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun unOpOrdInvalidArgumentTypeCheck() {
+        st.add("int", intType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "x",
+            ExprAST.UnOpAST(
+                ExprAST.IntLiterAST("+", "4"),
+                "ord"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(charType, intType) }
+    }
+
+    @Test
+    fun unOpOrdReturnTypeCheck() {
+        st.add("char", charType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("char"),
+            "x",
+            ExprAST.UnOpAST(
+                ExprAST.CharLiterAST("c"),
+                "ord"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(charType, intType) }
+    }
 }
