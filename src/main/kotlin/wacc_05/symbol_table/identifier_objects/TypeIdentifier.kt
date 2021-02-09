@@ -52,4 +52,10 @@ sealed class TypeIdentifier : IdentifierObject() {
             return PAIR
         }
     }
+
+    object PairLiterIdentifier : TypeIdentifier() {
+        override fun toString(): String {
+            return PAIR
+        }
+    }
 }
