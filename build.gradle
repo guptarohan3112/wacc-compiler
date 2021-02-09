@@ -25,7 +25,7 @@ dependencies {
     // Align versions of all Kotlin components
     implementation platform('org.jetbrains.kotlin:kotlin-bom')
 
-    // dependency for kotlin
+//    // dependency for kotlin
     implementation 'org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version'
 
     // This dependency is used by the application.
@@ -42,17 +42,123 @@ dependencies {
 
 sourceSets {
     main {
-        main.kotlin.srcDirs += 'src/main/kotlin/'
-        main.java.srcDirs += 'src/main/java/'
+        kotlin {
+            srcDirs += 'src/main/kotlin/'
+        }
+
+        java {
+            srcDirs += 'src/main/java/'
+        }
+    }
+
+    test {
+        kotlin {
+            srcDirs += 'src/test/'
+        }
+    }
+
+    errorTests {
+        main {
+            kotlin {
+                srcDirs += 'src/main/kotlin/'
+            }
+            java {
+                srcDirs += 'src/main/java/'
+            }
+        }
+        test {
+            kotlin {
+                srcDirs += 'src/test/kotlin/wacc_05/error_tests/'
+            }
+        }
+    }
+
+    semanticTests {
+        main {
+            kotlin {
+                srcDirs += 'src/main/kotlin/'
+            }
+            java {
+                srcDirs += 'src/main/java/'
+            }
+        }
+        test {
+            kotlin {
+                srcDirs += 'src/test/kotlin/wacc_05/semantic_tests/'
+            }
+        }
     }
 }
 
 // only while we are still using STD input, to be removed
-run{
+run {
     standardInput = System.in
 }
 
 application {
     // Define the main class for the application.
     mainClass = 'wacc_05/AppKt'
+}
+
+test {
+    useJUnit {}
+    testLogging {
+        showStandardStreams = true
+    }
+
+    beforeTest { descriptor -> "Running test: " + descriptor }
+
+    // set to true to fail on first test failure
+    failFast = false
+}
+
+task semanticTests(type: Test) {
+
+}
+
+task errorTests(type: Test) {
+
+}
+
+/* THE BELOW CODE WAS TAKEN FROM
+ https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time"
+ All Credit for this goes Shubham Chaudhary */
+
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
+tasks.withType(Test) {
+    testLogging {
+        // set options for log level LIFECYCLE
+        events TestLogEvent.FAILED,
+                TestLogEvent.PASSED,
+                TestLogEvent.SKIPPED,
+                TestLogEvent.STANDARD_OUT
+        exceptionFormat TestExceptionFormat.FULL
+        showExceptions true
+        showCauses true
+        showStackTraces true
+
+        // set options for log level DEBUG and INFO
+        debug {
+            events TestLogEvent.STARTED,
+                    TestLogEvent.FAILED,
+                    TestLogEvent.PASSED,
+                    TestLogEvent.SKIPPED,
+                    TestLogEvent.STANDARD_ERROR,
+                    TestLogEvent.STANDARD_OUT
+            exceptionFormat TestExceptionFormat.FULL
+        }
+        info.events = debug.events
+        info.exceptionFormat = debug.exceptionFormat
+
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} passed, ${result.failedTestCount} failed, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
+    }
 }

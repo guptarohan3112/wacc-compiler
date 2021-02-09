@@ -11,7 +11,5 @@ build:
 
 test:
     script:
-        - echo "This should print Hello World for now"
-        - make && ./gradlew run
-    only: 
-        - master
+        - make
+        - ./gradlew semanticTests
