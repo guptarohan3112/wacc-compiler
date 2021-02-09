@@ -13,3 +13,5 @@ test:
     script:
         - make
         - ./gradlew semanticTests
+    only:
+        - master
