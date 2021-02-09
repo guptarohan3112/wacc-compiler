@@ -8,6 +8,8 @@ import org.junit.Test
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.TypeAST
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class UnOpTests : ExprSemanticTests() {
 
@@ -105,6 +107,61 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 ExprAST.IntLiterAST("-", "4"),
                 "-"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(charType, intType) }
+    }
+
+    @Test
+    fun unOpLenValidCheck() {
+        val arrIdent = TypeIdentifier.ArrayIdentifier(intType, 5)
+        st.add("int", intType)
+        st.add("x", VariableIdentifier("x", arrIdent))
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "y",
+            ExprAST.UnOpAST(
+                ExprAST.IdentAST("x"),
+                "len"
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun unOpLenInvalidArgumentTypeCheck() {
+        st.add("int", intType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "x",
+            ExprAST.UnOpAST(
+                ExprAST.IntLiterAST("+", "3"),
+                "len"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(any(), intType) }
+    }
+
+    @Test
+    fun unOpLenReturnTypeCheck() {
+        val arrIdent = TypeIdentifier.ArrayIdentifier(intType, 5)
+        st.add("int", intType)
+        st.add("char", charType)
+        st.add("arr", arrIdent)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("char"),
+            "x",
+            ExprAST.UnOpAST(
+                ExprAST.IdentAST("arr"),
+                "len"
             )
         ).check(st, seh)
 
