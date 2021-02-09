@@ -41,4 +41,8 @@ class SemanticErrorHandler : SemanticErrors {
         println("Semantic error: This return statement is of the wrong return type for the function")
     }
 
+    override fun nullDereference() {
+        println("Semantic error: Attempt to dereference null pointer")
+    }
+
 }
