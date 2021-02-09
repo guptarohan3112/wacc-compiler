@@ -4,6 +4,7 @@ import antlr.WaccParser
 import antlr.WaccParserBaseVisitor
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
+import kotlin.system.exitProcess
 
 class Visitor : WaccParserBaseVisitor<AST>() {
 
@@ -340,11 +341,17 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitIntLit(ctx: WaccParser.IntLitContext): ExprAST.IntLiterAST {
         var sign = ""
+        var limit = Math.pow(2.0, 31.0)
         if (ctx.PLUS() != null) {
             sign = ctx.PLUS().text
+            limit -= 1
         }
         if (ctx.MINUS() != null) {
             sign = ctx.MINUS().text
+        }
+        if (ctx.INT_LIT().text.toDouble() > limit) {
+            println("SYNTAX ERROR 100 : INTEGER OVERFLOW DETECTED")
+            exitProcess(Error.SYNTAX_ERROR)
         }
         return ExprAST.IntLiterAST(sign, ctx.INT_LIT().text)
     }

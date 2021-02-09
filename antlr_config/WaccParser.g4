@@ -54,7 +54,7 @@ type: baseType
 | pairType
 ;
 
-arrayType: (baseType | pairType) OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET ;
+arrayType: (baseType | pairType) (OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET)+ ;
 
 baseType: INT
 | BOOL

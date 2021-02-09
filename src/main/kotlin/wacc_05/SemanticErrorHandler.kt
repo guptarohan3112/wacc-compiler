@@ -5,10 +5,6 @@ import kotlin.system.exitProcess
 
 class SemanticErrorHandler : SemanticErrors {
 
-    companion object {
-        val SEMANTIC_ERROR = 200
-    }
-
     override fun invalidIdentifier(name: String) {
         println("Semantic error: ${name} is an unknown element in the context of this program")
 //        exitProcess(SEMANTIC_ERROR)
