@@ -41,6 +41,47 @@ class IfWhileASTTests : StatSemanticTests() {
     }
 
     @Test
+    fun nestedIfValidCheck() {
+        // tests nested ifs for validity
+
+        StatementAST.IfAST(
+            ExprAST.BoolLiterAST("true"),
+            StatementAST.IfAST(
+                ExprAST.BoolLiterAST("false"),
+                StatementAST.SkipAST,
+                StatementAST.SkipAST
+            ),
+            StatementAST.IfAST(
+                ExprAST.BoolLiterAST("false"),
+                StatementAST.SkipAST,
+                StatementAST.SkipAST
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun nestedIfInvalidCheck() {
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.IfAST(
+            ExprAST.BoolLiterAST("true"),
+            StatementAST.IfAST(
+                ExprAST.IntLiterAST("+", "3"),
+                StatementAST.SkipAST,
+                StatementAST.SkipAST
+            ),
+            StatementAST.IfAST(
+                ExprAST.CharLiterAST("c"),
+                StatementAST.SkipAST,
+                StatementAST.SkipAST
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(boolType, intType) }
+        verify(exactly = 1) { seh.typeMismatch(boolType, charType) }
+    }
+
+    @Test
     fun ifASTInvalidExprCheck() {
         every { seh.typeMismatch(any(), any()) } just runs
 
