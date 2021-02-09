@@ -77,7 +77,7 @@ sealed class ExprAST : AssignRHSAST() {
             if (st.lookupAll(value) == null) {
                 errorHandler.invalidIdentifier(value)
             } else {
-                type = st.lookupAll(value) as TypeIdentifier
+                type = (st.lookupAll(value) as VariableIdentifier).getType()
             }
         }
     }
