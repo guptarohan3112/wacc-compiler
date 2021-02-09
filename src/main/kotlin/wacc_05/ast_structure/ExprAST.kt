@@ -56,14 +56,14 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class PairLiterAST(private val value: String) : ExprAST() {
+    object PairLiterAST : ExprAST() {
 
         override fun getType(): TypeIdentifier {
             TODO("Not yet implemented")
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-//            TODO("Not yet implemented")
+            TODO("Not yet implemented")
         }
     }
 

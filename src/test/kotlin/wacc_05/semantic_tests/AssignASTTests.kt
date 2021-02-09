@@ -224,12 +224,4 @@ class AssignASTTests : StatSemanticTests() {
 
         verify { seh.typeMismatch(intCharIdentifier, charIntIdentifier) }
     }
-
-//    @Test
-//    fun assignASTRHSPairElemNullCheck() {
-//        st.add("int", intType)
-//        st.add("x", VariableIdentifier("x", intType))
-//
-//        every { seh.}
-//    }
 }

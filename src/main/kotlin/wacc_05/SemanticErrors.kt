@@ -18,6 +18,4 @@ interface SemanticErrors {
     fun argNumberError(fName: String, expected: Int, actual: Int)
 
     fun invalidReturnType()
-
-    fun nullDereference()
 }
