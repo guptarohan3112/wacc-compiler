@@ -8,6 +8,8 @@ import org.junit.Test
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.TypeAST
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class BinOpTests : ExprSemanticTests() {
 
@@ -153,6 +155,75 @@ class BinOpTests : ExprSemanticTests() {
                 ">"
             )
         ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
+    }
+
+    @Test
+    fun binOpEqValidCheck() {
+        st.add("bool", boolType)
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("bool"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.CharLiterAST("c"),
+                ExprAST.CharLiterAST("c"),
+                "=="
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun binOpEqDifferentTypeArgsCheck() {
+        st.add("bool", boolType)
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("bool"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.StrLiterAST("c"),
+                ExprAST.CharLiterAST("c"),
+                "=="
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun binOpEqDifferentArgsTypeCheckPairArray() {
+        val arrIdent: TypeIdentifier.ArrayIdentifier = TypeIdentifier.ArrayIdentifier(intType, 5)
+        val pairIdent: TypeIdentifier.PairIdentifier = TypeIdentifier.PairIdentifier(intType, intType)
+        st.add("bool", boolType)
+        st.add("x", VariableIdentifier("x", arrIdent))
+        st.add("y", VariableIdentifier("y", pairIdent))
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("bool"),
+            "res",
+            ExprAST.BinOpAST(
+                ExprAST.IdentAST("x"),
+                ExprAST.IdentAST("y"),
+                "=="
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun binOpEqReturnTypeCheck() {
+        st.add("char", charType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("char"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.IntLiterAST("+", "3"),
+                ExprAST.IntLiterAST("+", "3"),
+                "=="
+            )
+        ).check(st, seh)
+
 
         verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
     }
