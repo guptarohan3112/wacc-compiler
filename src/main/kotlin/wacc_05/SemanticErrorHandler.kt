@@ -15,29 +15,33 @@ class SemanticErrorHandler : SemanticErrors {
     }
 
     override fun invalidType(typeName: String) {
-        println("Semantic error: ${typeName} is not a valid type")
+        println("Semantic error: $typeName is not a valid type")
 //        exitProcess(SEMANTIC_ERROR)
     }
 
     override fun invalidFunction(funcName: String) {
-        println("Semantic error: ${funcName} is not a valid function that has been predefined")
+        println("Semantic error: $funcName is not a valid function that has been predefined")
     }
 
     override fun repeatVariableDeclaration(varName: String) {
-        println("Semantic error: ${varName} has already been declared earlier on in the current scope.")
+        println("Semantic error: $varName has already been declared earlier on in the current scope.")
 //        exitProcess(SEMANTIC_ERROR)
     }
 
     override fun typeMismatch(expected: TypeIdentifier, actual: TypeIdentifier) {
-        println("Semantic error: Could not match the expected type of ${expected} to the actual type of ${actual}")
+        println("Semantic error: Could not match the expected type of $expected to the actual type of $actual")
 //        exitProcess(SEMANTIC_ERROR)
     }
 
     override fun argNumberError(fName: String, expected: Int, actual: Int) {
-        println("Semantic error: The function ${fName} is expecting ${expected} argument(s), but is given ${actual}")
+        println("Semantic error: The function $fName is expecting $expected argument(s), but is given $actual")
     }
 
     override fun invalidReturnType() {
         println("Semantic error: This return statement is of the wrong return type for the function")
+    }
+
+    override fun invalidReadType(actual: TypeIdentifier) {
+        println("Semantic error: Invalid read type. Could not match expected type of {int, char} to $actual")
     }
 }
