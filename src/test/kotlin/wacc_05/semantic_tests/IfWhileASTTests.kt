@@ -1,5 +1,6 @@
 package wacc_05.semantic_tests
 
+import antlr.WaccParser
 import io.mockk.every
 import io.mockk.just
 import io.mockk.runs
@@ -115,6 +116,35 @@ class IfWhileASTTests : StatSemanticTests() {
             ),
             StatementAST.SkipAST
         ).check(st, seh)
+    }
+
+    @Test
+    fun nestedWhileValidCheck() {
+        // a simple nested while loop test
+        StatementAST.WhileAST(
+            ExprAST.BoolLiterAST("true"),
+            StatementAST.WhileAST(
+                ExprAST.BoolLiterAST("false"),
+                StatementAST.SkipAST
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun nestedWhileInvalidCheck() {
+        // invalid nested while loop test
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.WhileAST(
+            ExprAST.BoolLiterAST("true"),
+            StatementAST.WhileAST(
+                ExprAST.IntLiterAST("+", "3"),
+                StatementAST.SkipAST
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(boolType, intType) }
     }
 
     @Test
