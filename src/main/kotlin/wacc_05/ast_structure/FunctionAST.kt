@@ -13,36 +13,27 @@ class FunctionAST(
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
-        // look up return type in symbol table and check valid identifier
+        // Check validity of the return type
         returnType.check(st, errorHandler)
-//        val returnType: IdentifierObject? = st.lookupAll(returnType.toString())
 
-        // assuming all types can be returned, do we need to check this?
-//        if (returnType == null) {
-//            errorHandler.invalidIdentifier(returnType.toString())
-//        } else if (returnType !is TypeIdentifier) {
-//            errorHandler.invalidType(returnType.toString())
-//        } else if (func != null) {
-//            errorHandler.repeatVariableDeclaration(funcName)
-//        }
-
+        // Check to make sure function has not already been defined
         val func: IdentifierObject? = st.lookup(funcName)
         if (func != null) {
             errorHandler.repeatVariableDeclaration(funcName)
         }
 
+        // Create function identifier and add to symbol table
         val funcST = SymbolTable(st)
         val returnTypeIdent: IdentifierObject? = st.lookupAll(returnType.toString())
-
         val funcIdent =
             FunctionIdentifier(returnTypeIdent as TypeIdentifier, ArrayList(), funcST)
         st.add(funcName, funcIdent)
 
-        // The return type is added as a explicit entry to the symbol table for the function scope
+        // Add return type as key value pair of symbol table for function (for future reference)
         funcST.add(returnType.toString(), returnTypeIdent)
 
+        // Check parameter list and function body
         paramList?.check(funcST, errorHandler)
-
         body.check(funcST, errorHandler)
 
     }
