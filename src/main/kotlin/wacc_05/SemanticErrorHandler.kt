@@ -44,4 +44,8 @@ class SemanticErrorHandler : SemanticErrors {
     override fun invalidReadType(actual: TypeIdentifier) {
         println("Semantic error: Invalid read type. Could not match expected type of {int, char} to $actual")
     }
+
+    override fun invalidFreeType(actual: TypeIdentifier) {
+        println("Semantic error: Invalid free type. Could not match expected type of {pair(T1, T2), T[]} to $actual")
+    }
 }
