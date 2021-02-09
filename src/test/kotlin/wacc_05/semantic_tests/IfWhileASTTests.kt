@@ -8,7 +8,7 @@ import org.junit.Test
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 
-class IfASTTests : StatSemanticTests() {
+class IfWhileASTTests : StatSemanticTests() {
 
     @Test
     fun ifASTValidCheck() {
@@ -51,5 +51,40 @@ class IfASTTests : StatSemanticTests() {
         ).check(st, seh)
 
         verify(exactly = 1) { seh.typeMismatch(boolType, intType) }
+    }
+
+    @Test
+    fun whileASTValidCheck() {
+        // a very basic while loop check
+        StatementAST.WhileAST(
+            ExprAST.BoolLiterAST("true"),
+            StatementAST.SkipAST
+        ).check(st, seh)
+    }
+
+    @Test
+    fun whileASTValidExprCheck() {
+        // a slightly more complex expr check
+
+        StatementAST.WhileAST(
+            ExprAST.BinOpAST(
+                ExprAST.BoolLiterAST("true"),
+                ExprAST.BoolLiterAST("false"),
+                "||"
+            ),
+            StatementAST.SkipAST
+        ).check(st, seh)
+    }
+
+    @Test
+    fun whileASTInvalidExprCheck() {
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.WhileAST(
+            ExprAST.CharLiterAST("c"),
+            StatementAST.SkipAST
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(boolType, charType) }
     }
 }
