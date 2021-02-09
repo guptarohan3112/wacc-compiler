@@ -2,9 +2,8 @@ package wacc_05.error_tests
 
 import org.junit.Test
 
-import wacc_05.App
+import wacc_05.WaccCompiler
 import java.io.File
-import kotlin.math.exp
 import kotlin.test.assertTrue
 
 class ErrorTests {
@@ -33,7 +32,7 @@ class ErrorTests {
 
         File(directoryPath).walk().forEach {
             if (it.extension == "wacc")
-                if (App.runCompiler(it.absolutePath) == expected)
+                if (WaccCompiler.runCompiler(it.absolutePath) == expected)
                     passedTests.add(it.nameWithoutExtension)
                 else
                     failedTests.add(it.nameWithoutExtension)

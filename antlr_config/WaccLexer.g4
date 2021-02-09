@@ -76,9 +76,6 @@ OR: '||' ;
 // Integer sign
 INT_SIGN: '+' | '-' ;
 
-// Identifiers
-IDENT: ('_' | 'a'..'z' | 'A'..'Z') ('_' | 'a'..'z' | 'A'..'Z' | DIGIT)* ;
-
 fragment DIGIT: '0'..'9' ;
 fragment CHARACTER: ~('\\' | '\'' | '"') | '\\' ESCAPED_CHAR ;
 fragment ESCAPED_CHAR: '0' | 'b' | 't' | 'n' | 'f' | 'r' | '"' | '\'' | '\\' ;
@@ -90,5 +87,5 @@ BOOL_LIT: 'true' | 'false' ;
 CHAR_LIT: '\'' CHARACTER '\'' ;
 STR_LIT: '"' STRING_FRAG '"' ;
 
-
-
+// Identifiers
+IDENT: ('_' | 'a'..'z' | 'A'..'Z') ('_' | 'a'..'z' | 'A'..'Z' | DIGIT)* ;

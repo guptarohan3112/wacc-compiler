@@ -1,6 +1,6 @@
 package wacc_05.symbol_table.identifier_objects
 
-sealed class TypeIdentifier : IdentifierObject() {
+open class TypeIdentifier : IdentifierObject() {
 
     companion object {
         const val BOOLEAN = "bool"

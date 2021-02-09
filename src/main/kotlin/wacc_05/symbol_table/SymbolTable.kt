@@ -1,7 +1,9 @@
 package wacc_05.symbol_table
 
-import wacc_05.ast_structure.TypeAST
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
+import wacc_05.symbol_table.identifier_objects.KeywordIdentifier
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.UnaryOpIdentifier
 import java.util.HashMap
 
 /* Class: SymbolTable
@@ -44,6 +46,42 @@ class SymbolTable(private val parentST: SymbolTable?) {
      * Returns the corresponding identifier object if found or null otherwise
      */
     fun lookupAll(name: String): IdentifierObject? {
-        return lookup(name.toString()) ?: parentST?.lookupAll(name)
+        return lookup(name) ?: parentST?.lookupAll(name)
+    }
+
+    companion object {
+        fun makeTopLevel(st: SymbolTable) {
+            val intType = TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
+            st.add("int", intType)
+            st.add("char", TypeIdentifier.CharIdentifier)
+            st.add("bool", TypeIdentifier.BoolIdentifier)
+            st.add("string", TypeIdentifier.StringIdentifier)
+            st.add("pair", TypeIdentifier.PairLiterIdentifier)
+
+            st.add(
+                "len",
+                UnaryOpIdentifier(
+                    UnaryOpIdentifier.UnaryOp.LEN,
+                    TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0),
+                    intType
+                )
+            )
+            st.add(
+                "ord",
+                UnaryOpIdentifier(
+                    UnaryOpIdentifier.UnaryOp.ORD,
+                    TypeIdentifier.CharIdentifier,
+                    TypeIdentifier.IntIdentifier(0, 256)
+                )
+            )
+            st.add(
+                "chr",
+                UnaryOpIdentifier(
+                    UnaryOpIdentifier.UnaryOp.CHR,
+                    TypeIdentifier.IntIdentifier(0, 256),
+                    TypeIdentifier.CharIdentifier
+                )
+            )
+        }
     }
 }

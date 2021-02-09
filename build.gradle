@@ -100,7 +100,7 @@ run {
 
 application {
     // Define the main class for the application.
-    mainClass = 'wacc_05/AppKt'
+    mainClass = 'wacc_05/WaccCompilerKt'
 }
 
 test {
