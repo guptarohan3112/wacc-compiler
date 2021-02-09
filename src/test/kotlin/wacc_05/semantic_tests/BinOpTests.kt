@@ -227,4 +227,57 @@ class BinOpTests : ExprSemanticTests() {
 
         verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
     }
+
+    @Test
+    fun binOpLogicalValidCheck() {
+        st.add("bool", boolType)
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("bool"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.BoolLiterAST("true"),
+                ExprAST.BoolLiterAST("false"),
+                "&&"
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun binOpLogicalInvalidArgumentTypeCheck() {
+        st.add("bool", boolType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("bool"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.CharLiterAST("c"),
+                ExprAST.BoolLiterAST("true"),
+                "&&"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(boolType, charType) }
+    }
+
+    @Test
+    fun binOpLogicalReturnTypeCheck() {
+        st.add("char", charType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("char"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.BoolLiterAST("true"),
+                ExprAST.BoolLiterAST("false"),
+                "||"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
+    }
 }
