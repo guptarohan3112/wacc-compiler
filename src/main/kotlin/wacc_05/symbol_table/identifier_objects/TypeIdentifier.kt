@@ -9,6 +9,13 @@ open class TypeIdentifier : IdentifierObject() {
         const val STRING = "string"
         const val PAIR = "pair"
         const val ARRAY = "array"
+
+        // static type definitions to use globally instead of redefining on each use
+        val INT_TYPE = IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
+        val INT_TYPE_CHAR = IntIdentifier(0, 256) // an int strictly within the range of a char
+        val CHAR_TYPE = CharIdentifier
+        val BOOL_TYPE = BoolIdentifier
+        val STRING_TYPE = StringIdentifier
     }
 
     object BoolIdentifier : TypeIdentifier() {
@@ -29,9 +36,10 @@ open class TypeIdentifier : IdentifierObject() {
         }
     }
 
-    data class IntIdentifier(private val min : Int = Int.MIN_VALUE, private val max : Int = Int.MAX_VALUE) : TypeIdentifier() {
+    data class IntIdentifier(private val min: Int = Int.MIN_VALUE, private val max: Int = Int.MAX_VALUE) :
+        TypeIdentifier() {
 
-        fun valid(value : Int) : Boolean {
+        fun valid(value: Int): Boolean {
             return value in min until max
         }
 
@@ -47,7 +55,8 @@ open class TypeIdentifier : IdentifierObject() {
         }
     }
 
-    data class PairIdentifier(private val fstType : TypeIdentifier, private val sndType : TypeIdentifier) : TypeIdentifier() {
+    data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
+        TypeIdentifier() {
         override fun toString(): String {
             return PAIR
         }
