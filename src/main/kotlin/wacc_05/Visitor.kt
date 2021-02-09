@@ -458,7 +458,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
                 visitStrLit(ctx.strLit())
             }
             ctx.PAIR_LIT() != null -> {
-                ExprAST.PairLiterAST(value = ctx.PAIR_LIT().text)
+                ExprAST.PairLiterAST
             }
             ctx.IDENT() != null -> {
                 ExprAST.IdentAST(value = ctx.IDENT().text)
