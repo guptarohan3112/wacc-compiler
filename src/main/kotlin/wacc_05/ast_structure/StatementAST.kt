@@ -102,8 +102,13 @@ sealed class StatementAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
-        }
 
+            val type = expr.getType()
+
+            if(!(type is TypeIdentifier.PairIdentifier || type is TypeIdentifier.ArrayIdentifier)) {
+                errorHandler.invalidFreeType(type)
+            }
+        }
     }
 
     data class IfAST(
