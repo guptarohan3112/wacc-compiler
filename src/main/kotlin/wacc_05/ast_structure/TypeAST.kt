@@ -7,8 +7,6 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 sealed class TypeAST : AST {
 
-    // Not sure about toString method for all of these classes
-
     data class BaseTypeAST(private val typeName: String) : TypeAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrorHandler) {
