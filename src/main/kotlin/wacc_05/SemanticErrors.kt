@@ -22,4 +22,6 @@ interface SemanticErrors {
     fun invalidReadType(actual: TypeIdentifier)
 
     fun invalidFreeType(actual: TypeIdentifier)
+
+    fun invalidExitType(actual: TypeIdentifier)
 }

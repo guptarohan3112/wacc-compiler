@@ -106,4 +106,35 @@ open class StatSemanticTests {
 
         verify(exactly = 1) { seh.invalidReturnType() }
     }
+
+    @Test
+    fun exitASTValidCheck() {
+        // an exit statement is valid if its expression is of integer type
+        st.add("int", intType)
+
+        StatementAST.ExitAST(ExprAST.IntLiterAST("+", "0")).check(st, seh)
+    }
+
+    @Test
+    fun exitASTValidExprCheck() {
+        st.add("int", intType)
+        StatementAST.ExitAST(
+            ExprAST.BinOpAST(
+                ExprAST.IntLiterAST("+", "3"),
+                ExprAST.IntLiterAST("+", "4"),
+                "+"
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun exitASTInvalidTypeCheck() {
+        st.add("char", charType)
+
+        every { seh.invalidExitType(any()) }
+
+        StatementAST.ExitAST(ExprAST.CharLiterAST("c")).check(st, seh)
+
+        verify(exactly = 1) { seh.invalidExitType(charType) }
+    }
 }

@@ -48,4 +48,8 @@ class SemanticErrorHandler : SemanticErrors {
     override fun invalidFreeType(actual: TypeIdentifier) {
         println("Semantic error: Invalid free type. Could not match expected type of {pair(T1, T2), T[]} to $actual")
     }
+
+    override fun invalidExitType(actual: TypeIdentifier) {
+        println("Semantic error: Invalid exit type. Could not match expected type of int to $actual")
+    }
 }
