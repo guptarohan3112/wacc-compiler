@@ -66,4 +66,94 @@ class BinOpTests : ExprSemanticTests() {
 
         verify { seh.typeMismatch(charType, intType) }
     }
+
+    @Test
+    fun binOpGTIntValidCheck() {
+        st.add("bool", boolType)
+        st.add("int", intType)
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("bool"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.IntLiterAST("+", "4"),
+                ExprAST.IntLiterAST("+", "1"),
+                ">"
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun binOpGTCharValidCheck() {
+        st.add("bool", boolType)
+        st.add("char", charType)
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("bool"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.CharLiterAST("A"),
+                ExprAST.CharLiterAST("a"),
+                ">"
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun binOpGTInvalidArgTypeCheck() {
+        st.add("bool", boolType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("bool"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.BoolLiterAST("true"),
+                ExprAST.BoolLiterAST("false"),
+                ">"
+            )
+        ).check(st, seh)
+
+        // use any here to capture expectation of intType or charType
+        verify(exactly = 2) { seh.typeMismatch(any(), boolType) }
+    }
+
+    @Test
+    fun binOpGTIntCharTypeCheck() {
+        st.add("bool", boolType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("bool"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.IntLiterAST("+", "4"),
+                ExprAST.CharLiterAST("c"),
+                ">"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(intType, charType) }
+    }
+
+    @Test
+    fun binOpGTReturnTypeCheck() {
+        st.add("char", charType)
+
+        every { seh.typeMismatch(any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("char"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.IntLiterAST("+", "3"),
+                ExprAST.IntLiterAST("+", "3"),
+                ">"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
+    }
 }
