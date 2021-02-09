@@ -145,13 +145,20 @@ sealed class ExprAST : AssignRHSAST() {
         private val operator: String
     ) : ExprAST() {
 
+        companion object {
+            val intIntFunctions = hashSetOf("*", "/", "+", "-", "%")
+
+            val intCharFunctions = hashSetOf(">", ">=", "<", "<=")
+
+            val anyTypeFunctions = hashSetOf("==", "!=")
+
+            val boolBoolFunctions = hashSetOf("&&", "||")
+        }
+
         override fun getType(): TypeIdentifier {
             return when (operator) {
                 // Need valid min and max integers to put here
-                "+", "%", "/", "*", "-" -> TypeIdentifier.IntIdentifier(
-                    Int.MIN_VALUE,
-                    Int.MAX_VALUE
-                )
+                "+", "%", "/", "*", "-" -> TypeIdentifier.INT_TYPE
                 else -> TypeIdentifier.BoolIdentifier
             }
         }
@@ -163,15 +170,51 @@ sealed class ExprAST : AssignRHSAST() {
 
             val expr1Type = expr1.getType()
             val expr2Type = expr2.getType()
-            val expectedType = getType()
 
-            // Check type of expressions match expected type for operator
-            if (expr1Type != expectedType) {
-                return errorHandler.typeMismatch(expr1Type, expectedType)
-            }
-            // Check type of expressions are both the same
-            if (expr1Type != expr2Type) {
-                return errorHandler.typeMismatch(expr1Type, expr2Type)
+            when {
+                intIntFunctions.contains(operator) -> {
+                    if (expr1Type !is TypeIdentifier.IntIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr1Type)
+                    }
+
+                    if (expr2Type !is TypeIdentifier.IntIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr2Type)
+                    }
+                }
+                intCharFunctions.contains(operator) -> {
+                    // if type1 is valid, check against type 2 and type1 dominates if not equal
+                    // if type2 is valid and type1 is not, type mismatch on type2
+                    // else type mismatch on both
+
+                    if (expr1Type is TypeIdentifier.IntIdentifier || expr1Type is TypeIdentifier.CharIdentifier) {
+                        if (expr1Type != expr2Type) {
+                            errorHandler.typeMismatch(expr1Type, expr2Type)
+                        }
+                        return
+                    }
+
+                    if (expr2Type is TypeIdentifier.IntIdentifier || expr2Type is TypeIdentifier.CharIdentifier) {
+                        // we already know type 1 isn't valid
+                        errorHandler.typeMismatch(expr2Type, expr1Type)
+                        return
+                    }
+
+                    // both aren't valid
+                    errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr1Type)
+                    errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr2Type)
+                }
+                boolBoolFunctions.contains(operator) -> {
+                    if (expr1Type !is TypeIdentifier.BoolIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, expr1Type)
+                    }
+
+                    if (expr2Type !is TypeIdentifier.BoolIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, expr2Type)
+                    }
+                }
+                else -> {
+                    // do nothing
+                }
             }
         }
     }

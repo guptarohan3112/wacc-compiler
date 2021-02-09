@@ -1,9 +1,6 @@
 package wacc_05.symbol_table
 
-import wacc_05.symbol_table.identifier_objects.IdentifierObject
-import wacc_05.symbol_table.identifier_objects.KeywordIdentifier
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.UnaryOpIdentifier
+import wacc_05.symbol_table.identifier_objects.*
 import java.util.HashMap
 
 /* Class: SymbolTable
@@ -51,29 +48,52 @@ class SymbolTable(private val parentST: SymbolTable?) {
 
     companion object {
         fun makeTopLevel(st: SymbolTable) {
-            val intType = TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
-            st.add("int", intType)
-            st.add("char", TypeIdentifier.CharIdentifier)
-            st.add("bool", TypeIdentifier.BoolIdentifier)
-            st.add("string", TypeIdentifier.StringIdentifier)
+            st.add("int", TypeIdentifier.INT_TYPE)
+            st.add("char", TypeIdentifier.CHAR_TYPE)
+            st.add("bool", TypeIdentifier.BOOL_TYPE)
+            st.add("string", TypeIdentifier.STRING_TYPE)
             st.add("pair", TypeIdentifier.PairLiterIdentifier)
+
+            addUnaryOps(st)
+        }
+
+        private fun addUnaryOps(st: SymbolTable) {
+            st.add(
+                "!",
+                UnaryOpIdentifier(
+                    UnaryOpIdentifier.UnaryOp.NOT,
+                    TypeIdentifier.BOOL_TYPE,
+                    TypeIdentifier.BOOL_TYPE
+                )
+            )
+
+            st.add(
+                "-",
+                UnaryOpIdentifier(
+                    UnaryOpIdentifier.UnaryOp.NEGATIVE,
+                    TypeIdentifier.INT_TYPE,
+                    TypeIdentifier.INT_TYPE
+                )
+            )
 
             st.add(
                 "len",
                 UnaryOpIdentifier(
                     UnaryOpIdentifier.UnaryOp.LEN,
                     TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0),
-                    intType
+                    TypeIdentifier.INT_TYPE
                 )
             )
+
             st.add(
                 "ord",
                 UnaryOpIdentifier(
                     UnaryOpIdentifier.UnaryOp.ORD,
-                    TypeIdentifier.CharIdentifier,
-                    TypeIdentifier.IntIdentifier(0, 256)
+                    TypeIdentifier.CHAR_TYPE,
+                    TypeIdentifier.INT_TYPE_CHAR
                 )
             )
+
             st.add(
                 "chr",
                 UnaryOpIdentifier(
