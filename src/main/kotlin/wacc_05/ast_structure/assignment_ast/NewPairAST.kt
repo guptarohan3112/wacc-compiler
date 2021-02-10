@@ -7,19 +7,13 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class NewPairAST(private val fst: ExprAST, private val snd: ExprAST) : AssignRHSAST() {
 
-    private lateinit var elemType: TypeIdentifier
-
-    override fun getType(): TypeIdentifier {
-        return elemType
+    override fun getType(st: SymbolTable): TypeIdentifier {
+        return TypeIdentifier.PairIdentifier(fst.getType(st), snd.getType(st))
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
         fst.check(st, errorHandler)
         snd.check(st, errorHandler)
-
-        // Set type after
-        elemType = TypeIdentifier.PairIdentifier(fst.getType(), snd.getType())
     }
 
 }

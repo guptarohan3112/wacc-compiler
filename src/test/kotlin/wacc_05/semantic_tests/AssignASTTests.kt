@@ -25,13 +25,18 @@ class AssignASTTests : StatSemanticTests() {
         st.add("x", VariableIdentifier("x", TypeIdentifier.PairIdentifier(intType, intType)))
 
         StatementAST.AssignAST(
+<<<<<<< HEAD
             AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"), true)),
+=======
+            AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"), false)),
+>>>>>>> test_fixes
             ExprAST.IntLiterAST("+", "3")
         ).check(st, seh)
     }
 
     @Test
     fun assignASTLHSValidArrayElemCheck() {
+        // x[3] = 3
         st.add("int", intType)
         st.add("x", VariableIdentifier("x", TypeIdentifier.ArrayIdentifier(intType, 4)))
 
@@ -104,6 +109,8 @@ class AssignASTTests : StatSemanticTests() {
         // we assign an array of same type but different length to x
         st.add("int", intType)
         st.add("x", VariableIdentifier("x", TypeIdentifier.ArrayIdentifier(intType, 4)))
+
+        // x = [3]
 
         StatementAST.AssignAST(
             AssignLHSAST("x"),

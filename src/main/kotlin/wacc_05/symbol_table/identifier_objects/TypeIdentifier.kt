@@ -11,6 +11,7 @@ open class TypeIdentifier : IdentifierObject() {
         const val ARRAY = "array"
 
         // static type definitions to use globally instead of redefining on each use
+        val GENERIC = TypeIdentifier()
         val INT_TYPE = IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
         val CHAR_TYPE = CharIdentifier
         val BOOL_TYPE = BoolIdentifier
@@ -59,6 +60,14 @@ open class TypeIdentifier : IdentifierObject() {
         override fun toString(): String {
             return ARRAY
         }
+
+        fun getType(): TypeIdentifier {
+            return elemType
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return other is ArrayIdentifier && other.elemType == elemType
+        }
     }
 
     data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
@@ -67,11 +76,11 @@ open class TypeIdentifier : IdentifierObject() {
             return PAIR
         }
 
-        fun getFirstType() : TypeIdentifier {
+        fun getFstType(): TypeIdentifier {
             return fstType
         }
 
-        fun getSecondType() : TypeIdentifier {
+        fun getSndType(): TypeIdentifier {
             return sndType
         }
     }
