@@ -32,6 +32,7 @@ class AssignASTTests : StatSemanticTests() {
 
     @Test
     fun assignASTLHSValidArrayElemCheck() {
+        // x[3] = 3
         st.add("int", intType)
         st.add("x", VariableIdentifier("x", TypeIdentifier.ArrayIdentifier(intType, 4)))
 

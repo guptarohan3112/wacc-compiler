@@ -53,6 +53,10 @@ open class TypeIdentifier : IdentifierObject() {
         override fun toString(): String {
             return ARRAY
         }
+
+        fun getType(): TypeIdentifier {
+            return elemType
+        }
     }
 
     data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
