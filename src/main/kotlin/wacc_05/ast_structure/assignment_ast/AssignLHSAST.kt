@@ -35,9 +35,9 @@ class AssignLHSAST(private val ident: String?) : AST {
         }
     }
 
-    fun setType(st: SymbolTable, type: TypeIdentifier) {
-        st.add(ident!!, VariableIdentifier(ident, type))
-    }
+//    fun setType(st: SymbolTable, type: TypeIdentifier) {
+//        st.add(ident!!, VariableIdentifier(ident, type))
+//    }
 
     fun getType(st: SymbolTable): TypeIdentifier {
         return when {
