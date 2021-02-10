@@ -48,10 +48,12 @@ object WaccCompiler {
 
         val visitor = Visitor()
         val ast: AST = visitor.visit(tree)
-        semanticErrorCheck(ast, SymbolTable(null), SemanticErrorHandler())
+
+        val seh = SemanticErrorHandler()
+        semanticErrorCheck(ast, SymbolTable(null), seh)
 
         println("FINISHED")
-        return Error.SUCCESS
+        return seh.err
     }
 
     private fun semanticErrorCheck(ast: AST, st: SymbolTable, errorHandler: SemanticErrors) {
