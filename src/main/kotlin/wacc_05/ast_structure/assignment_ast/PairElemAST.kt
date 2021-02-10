@@ -9,10 +9,8 @@ import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class PairElemAST(private val elem: ExprAST, val fst: Boolean) : AssignRHSAST() {
 
-    private lateinit var type: TypeIdentifier
-
-    override fun getType(): TypeIdentifier {
-        return type
+    override fun getType(st: SymbolTable): TypeIdentifier {
+        return elem.getType(st)
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -31,14 +29,6 @@ class PairElemAST(private val elem: ExprAST, val fst: Boolean) : AssignRHSAST() 
                     VariableIdentifier(elem.toString(), anyPairType),
                     actualType
                 )
-            } else {
-                val variable: VariableIdentifier = actualType as VariableIdentifier
-                val pair: TypeIdentifier.PairIdentifier = variable.getType() as TypeIdentifier.PairIdentifier
-                type = if (fst) {
-                    pair.getFirstType()
-                } else {
-                    pair.getSecondType()
-                }
             }
         }
     }

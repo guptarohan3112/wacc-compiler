@@ -5,14 +5,14 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.UnaryOpIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 sealed class ExprAST : AssignRHSAST() {
 
     data class IntLiterAST(private val sign: String, private val value: String) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            // To be changed
+        override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
         }
 
@@ -23,8 +23,8 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class BoolLiterAST(private val value: String) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            return TypeIdentifier.BoolIdentifier
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.BOOL_TYPE
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -34,8 +34,8 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class CharLiterAST(private val value: String) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            return TypeIdentifier.CharIdentifier
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.CHAR_TYPE
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -45,8 +45,8 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class StrLiterAST(private val value: String) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            return TypeIdentifier.StringIdentifier
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.STRING_TYPE
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -56,7 +56,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     object PairLiterAST : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
+        override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.PairLiterIdentifier
         }
 
@@ -67,18 +67,13 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class IdentAST(private val value: String) : ExprAST() {
 
-        private lateinit var type: TypeIdentifier
-
-        override fun getType(): TypeIdentifier {
-            return type
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return (st.lookupAll(value) as VariableIdentifier).getType()
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             if (st.lookupAll(value) == null) {
                 errorHandler.invalidIdentifier(value)
-                type = TypeIdentifier.NullIdentifier
-            } else {
-                type = (st.lookupAll(value) as VariableIdentifier).getType()
             }
         }
     }
@@ -88,16 +83,15 @@ sealed class ExprAST : AssignRHSAST() {
         private val exprs: ArrayList<ExprAST>
     ) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            return TypeIdentifier.ArrayIdentifier(exprs[0].getType(), exprs.size)
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.ArrayIdentifier(exprs[0].getType(st), exprs.size)
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
             for (expr in exprs) {
                 expr.check(st, errorHandler)
-                if (expr.getType() !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(), expr.getType())
+                if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
+                    errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(), expr.getType(st))
                 }
             }
 
@@ -105,7 +99,6 @@ sealed class ExprAST : AssignRHSAST() {
 
             if (variable == null) {
                 errorHandler.invalidIdentifier(ident)
-
             }
         }
 
@@ -115,47 +108,50 @@ sealed class ExprAST : AssignRHSAST() {
         private val expr: ExprAST,
         private val op: String
     ) : ExprAST() {
-
-        override fun getType(): TypeIdentifier {
+        // Returns the return type of the unary operator
+        override fun getType(st: SymbolTable): TypeIdentifier {
             // Will need to get unaryOpIdentifier from st (can I if it an invalid operator) and get its return type
-            return when (op) {
-                "!" -> TypeIdentifier.BoolIdentifier
-//                "len" -> TypeIdentifier.IntIdentifier()
-                "ord" -> TypeIdentifier.IntIdentifier(0, 256)
-                "chr" -> TypeIdentifier.CharIdentifier
-                else -> TypeIdentifier.IntIdentifier()
-            }
+            return (st.lookupAll(op) as UnaryOpIdentifier).getReturnType()
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
             expr.check(st, errorHandler)
+            val exprType = expr.getType(st)
 
-            val exprType = expr.getType()
-            val returnType = getType()
-
-            if (op == "len") {
-                if (exprType !is TypeIdentifier.ArrayIdentifier) {
-                    val mockArrayObject = TypeIdentifier.ArrayIdentifier(TypeIdentifier.IntIdentifier(), 0)
-                    return errorHandler.typeMismatch(mockArrayObject, exprType)
+            when (op) {
+                "len" -> {
+                    if (exprType !is TypeIdentifier.ArrayIdentifier) {
+                        errorHandler.typeMismatch(
+                            TypeIdentifier.ArrayIdentifier(
+                                TypeIdentifier(),
+                                0
+                            ), exprType
+                        )
+                    }
                 }
-            }
-
-            else if (op == "ord") {
-                if (exprType !is TypeIdentifier.CharIdentifier) {
-                    return errorHandler.typeMismatch(TypeIdentifier.CharIdentifier, exprType)
+                "ord" -> {
+                    if (exprType !is TypeIdentifier.CharIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.CHAR_TYPE, exprType)
+                    }
                 }
-            }
-
-            else if (op == "chr") {
-                if (exprType !is TypeIdentifier.IntIdentifier) {
-                    return errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(), exprType)
+                "chr" -> {
+                    if (exprType !is TypeIdentifier.IntIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, exprType)
+                    }
                 }
-            }
-
-            // For all other expressions, both expressions must have the same type
-            else if (exprType != returnType) {
-                return errorHandler.typeMismatch(returnType, exprType)
+                "!" -> {
+                    if (exprType !is TypeIdentifier.BoolIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, exprType)
+                    }
+                }
+                "-" -> {
+                    if (exprType !is TypeIdentifier.IntIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, exprType)
+                    }
+                }
+                else -> {
+                    //do nothing
+                }
             }
 
         }
@@ -167,57 +163,98 @@ sealed class ExprAST : AssignRHSAST() {
         private val op: String
     ) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
+
+        companion object {
+            val intIntFunctions = hashSetOf("*", "/", "+", "-", "%")
+
+            val intCharFunctions = hashSetOf(">", ">=", "<", "<=")
+
+            val anyTypeFunctions = hashSetOf("==", "!=")
+
+            val boolBoolFunctions = hashSetOf("&&", "||")
+        }
+
+        override fun getType(st: SymbolTable): TypeIdentifier {
             return when (op) {
-                // Need valid min and max integers to put here
-                "+", "%", "/", "*", "-" -> TypeIdentifier.IntIdentifier(
-                    Int.MIN_VALUE,
-                    Int.MAX_VALUE
-                )
+                "+", "%", "/", "*", "-" -> TypeIdentifier.INT_TYPE
                 else -> TypeIdentifier.BoolIdentifier
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(
+            st: SymbolTable,
+            errorHandler: SemanticErrors
+        ) {
 
             expr1.check(st, errorHandler)
             expr2.check(st, errorHandler)
 
-            val expr1Type = expr1.getType()
-            val expr2Type = expr2.getType()
-            val expectedType = getType()
+            val expr1Type = expr1.getType(st)
+            val expr2Type = expr2.getType(st)
 
-            // If equality expression, no checks
-            if (op == "==" || op == "!=") {
-                return
-            }
+            when {
+                intIntFunctions.contains(op) -> {
+                    if (expr1Type !is TypeIdentifier.IntIdentifier) {
+                        errorHandler.typeMismatch(
+                            TypeIdentifier.INT_TYPE,
+                            expr1Type
+                        )
+                    }
 
-            // For all other expressions, both expressions must have the same type
-            if (expr1Type != expr2Type) {
-                return errorHandler.typeMismatch(expr1Type, expr2Type)
-            }
+                    if (expr2Type !is TypeIdentifier.IntIdentifier) {
+                        errorHandler.typeMismatch(
+                            TypeIdentifier.INT_TYPE,
+                            expr2Type
+                        )
+                    }
+                }
+                intCharFunctions.contains(op) -> {
+                    // if type1 is valid, check against type 2 and type1 dominates if not equal
+                    // if type2 is valid and type1 is not, type mismatch on type2
+                    // else type mismatch on both
 
-            // If arithmetic expression, check both expressions have int types
-            if (expectedType is TypeIdentifier.IntIdentifier) {
-                if (expr1Type !is TypeIdentifier.IntIdentifier) {
-                    return errorHandler.typeMismatch(expr1Type, expr2Type)
+                    if (expr1Type is TypeIdentifier.IntIdentifier || expr1Type is TypeIdentifier.CharIdentifier) {
+                        if (expr1Type != expr2Type) {
+                            errorHandler.typeMismatch(expr1Type, expr2Type)
+                        }
+                        return
+                    }
+
+                    if (expr2Type is TypeIdentifier.IntIdentifier || expr2Type is TypeIdentifier.CharIdentifier) {
+                        // we already know type 1 isn't valid
+                        errorHandler.typeMismatch(expr2Type, expr1Type)
+                        return
+                    }
+
+                    // both aren't valid
+                    errorHandler.typeMismatch(
+                        TypeIdentifier.INT_TYPE,
+                        expr1Type
+                    )
+                    errorHandler.typeMismatch(
+                        TypeIdentifier.INT_TYPE,
+                        expr2Type
+                    )
+                }
+                boolBoolFunctions.contains(op) -> {
+                    if (expr1Type !is TypeIdentifier.BoolIdentifier) {
+                        errorHandler.typeMismatch(
+                            TypeIdentifier.BOOL_TYPE,
+                            expr1Type
+                        )
+                    }
+
+                    if (expr2Type !is TypeIdentifier.BoolIdentifier) {
+                        errorHandler.typeMismatch(
+                            TypeIdentifier.BOOL_TYPE,
+                            expr2Type
+                        )
+                    }
+                }
+                else -> {
+                    // do nothing
                 }
             }
-
-            // If comparison expression, check both expressions have int or char types
-            if (op == ">" || op == ">=" || op == "<" || op == "<=") {
-                if (expr1Type !is TypeIdentifier.IntIdentifier && expr1Type !is TypeIdentifier.CharIdentifier){
-                    return errorHandler.typeMismatch(expr1Type, expr2Type)
-                }
-            }
-
-            // If logical expression, check both expressions have bool types
-            if (op == "&&" || op == "||"){
-                if (expr1Type !is TypeIdentifier.BoolIdentifier){
-                    return errorHandler.typeMismatch(expr1Type, expr2Type)
-                }
-            }
-
         }
     }
 }

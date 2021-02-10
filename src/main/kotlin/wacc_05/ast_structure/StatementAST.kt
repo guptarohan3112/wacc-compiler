@@ -34,8 +34,8 @@ sealed class StatementAST : AST {
                 // Check that right hand side and type of identifier match
                 val typeIdent: TypeIdentifier = st.lookupAll(type.toString()) as TypeIdentifier
                 assignment.check(st, errorHandler)
-                if (typeIdent::class.simpleName != assignment.getType()::class.simpleName) {
-                    errorHandler.typeMismatch(typeIdent, assignment.getType())
+                if (typeIdent != assignment.getType(st)) {
+                    errorHandler.typeMismatch(typeIdent, assignment.getType(st))
                 }
                 // Create variable identifier and add to symbol table
                 val varIdent = VariableIdentifier(varName, typeIdent)
@@ -56,8 +56,8 @@ sealed class StatementAST : AST {
             println("The type of the left hand side is: ${lhs.getType()}")
             println("The type of the right hand side is: ${lhs.getType()}")
             // Check that both sides match up in their types
-            if (lhs.getType() != rhs.getType()) {
-                errorHandler.typeMismatch(lhs.getType(), rhs.getType())
+            if (lhs.getType(st) != rhs.getType(st)) {
+                errorHandler.typeMismatch(lhs.getType(st), rhs.getType(st))
             }
         }
 
@@ -76,7 +76,7 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             lhs.check(st, errorHandler)
 
-            val type = lhs.getType()
+            val type = lhs.getType(st)
 
             if (!(type is TypeIdentifier.IntIdentifier || type is TypeIdentifier.CharIdentifier)) {
                 errorHandler.invalidReadType(type)
@@ -89,8 +89,8 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
             // Ensure exit is only on an integer
-            if (expr.getType() !is TypeIdentifier.IntIdentifier) {
-                errorHandler.invalidExitType(expr.getType())
+            if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
+                errorHandler.invalidExitType(expr.getType(st))
             }
         }
 
@@ -101,7 +101,7 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
 
-            val type = expr.getType()
+            val type = expr.getType(st)
 
             if (!(type is TypeIdentifier.PairIdentifier || type is TypeIdentifier.ArrayIdentifier)) {
                 errorHandler.invalidFreeType(type)
@@ -121,8 +121,8 @@ sealed class StatementAST : AST {
 
             // Ensure that the condition expression evaluates to a boolean
             val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
-            if (condExpr.getType() != boolType) {
-                errorHandler.typeMismatch(boolType, condExpr.getType())
+            if (condExpr.getType(st) != boolType) {
+                errorHandler.typeMismatch(boolType, condExpr.getType(st))
             } else {
                 val then_st = SymbolTable(st)
                 val else_st = SymbolTable(st)
@@ -151,7 +151,7 @@ sealed class StatementAST : AST {
             expr.check(st, errorHandler)
 
             // Check that type of expression being returned is the same as the return type of the function that defines the current scope
-            val returnType: TypeIdentifier = expr.getType()
+            val returnType: TypeIdentifier = expr.getType(st)
             val funcReturnType: TypeIdentifier? =
                 st.lookup(returnType.toString()) as TypeIdentifier?
             if (funcReturnType == null) {
@@ -182,8 +182,8 @@ sealed class StatementAST : AST {
 
             // Check that looping expression evaluates to a boolean
             val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
-            if (boolType != loopExpr.getType()) {
-                errorHandler.typeMismatch(boolType, loopExpr.getType())
+            if (boolType != loopExpr.getType(st)) {
+                errorHandler.typeMismatch(boolType, loopExpr.getType(st))
             } else {
                 val body_st = SymbolTable(st)
                 body.check(body_st, errorHandler)

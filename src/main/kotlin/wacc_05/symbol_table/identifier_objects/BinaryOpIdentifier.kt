@@ -6,6 +6,7 @@ class BinaryOpIdentifier(
     private val argType2: TypeIdentifier,
     private val returnType: TypeIdentifier
 ) : IdentifierObject() {
+
     enum class BinOp {
         MULT,
         DIVIDE,

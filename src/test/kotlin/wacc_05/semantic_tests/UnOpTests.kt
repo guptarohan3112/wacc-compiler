@@ -152,7 +152,7 @@ class UnOpTests : ExprSemanticTests() {
         val arrIdent = TypeIdentifier.ArrayIdentifier(intType, 5)
         st.add("int", intType)
         st.add("char", charType)
-        st.add("arr", arrIdent)
+        st.add("arr", VariableIdentifier("arr", arrIdent))
 
         every { seh.typeMismatch(any(), any()) } just runs
 

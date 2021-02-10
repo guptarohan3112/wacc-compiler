@@ -12,7 +12,6 @@ class AssignLHSAST(private val ident: String?) : AST {
 
     private var arrElem: ExprAST.ArrayElemAST? = null
     private var pairElem: PairElemAST? = null
-    private lateinit var type: TypeIdentifier
 
     constructor(arrElem: ExprAST.ArrayElemAST) : this(null) {
         this.arrElem = arrElem
@@ -25,13 +24,10 @@ class AssignLHSAST(private val ident: String?) : AST {
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
         if (arrElem != null) {
             arrElem!!.check(st, errorHandler)
-            type = arrElem!!.getType()
         } else if (pairElem != null) {
             pairElem!!.check(st, errorHandler)
-            type = pairElem!!.getType()
         } else {
-            val identInST: IdentifierObject? = st.lookupAll(ident!!)
-            if (identInST == null) {
+            if (st.lookupAll(ident!!) == null) {
                 errorHandler.invalidIdentifier(ident)
                 type = TypeIdentifier.NullIdentifier
             } else {
@@ -40,7 +36,17 @@ class AssignLHSAST(private val ident: String?) : AST {
         }
     }
 
-    fun getType() : TypeIdentifier {
-        return type
+    fun getType(st: SymbolTable): TypeIdentifier {
+        return when {
+            arrElem != null -> {
+                arrElem!!.getType(st)
+            }
+            pairElem != null -> {
+                pairElem!!.getType(st)
+            }
+            else -> {
+                (st.lookupAll(ident!!) as VariableIdentifier).getType()
+            }
+        }
     }
 }
