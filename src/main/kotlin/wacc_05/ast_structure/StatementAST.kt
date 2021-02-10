@@ -7,6 +7,7 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.symbol_table.identifier_objects.KeywordIdentifier
 
 sealed class StatementAST : AST {
 
@@ -52,12 +53,37 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             lhs.check(st, errorHandler)
             rhs.check(st, errorHandler)
-            // Check that both sides match up in their types
-            if (lhs.getType(st) != rhs.getType(st)) {
-                errorHandler.typeMismatch(lhs.getType(st), rhs.getType(st))
-            }
-        }
 
+
+            // x = y
+
+
+            val lhsType = lhs.getType(st)
+            val rhsType = rhs.getType(st)
+
+            if (lhsType != rhsType && lhsType != TypeIdentifier.GENERIC && rhsType != TypeIdentifier.GENERIC) {
+                errorHandler.typeMismatch(lhsType, rhsType)
+            }
+
+//            if(lhsType != TypeIdentifier.GENERIC) {
+//                if(rhsType == TypeIdentifier.GENERIC) {
+//                    (rhs as ExprAST.IdentAST).setType(st, lhsType)
+//                }
+//            }
+//
+//            if (rhsType != TypeIdentifier.GENERIC) {
+//                if (lhsType == TypeIdentifier.GENERIC) {
+//                    // we've had a semantic error where lhs is not defined
+//                    // set lhs to type to rhs and continue
+//                    lhs.setType(st, rhsType)
+//                } else {
+//                    // Check that both sides match up in their types
+//                    if (lhsType != rhsType) {
+//                        errorHandler.typeMismatch(lhs.getType(st), rhs.getType(st))
+//                    }
+//                }
+//            }
+        }
     }
 
     data class BeginAST(private val stat: StatementAST) : StatementAST() {

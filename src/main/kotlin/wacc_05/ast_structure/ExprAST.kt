@@ -67,7 +67,16 @@ sealed class ExprAST : AssignRHSAST() {
     data class IdentAST(private val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
-            return (st.lookupAll(value) as VariableIdentifier).getType()
+            val type = st.lookupAll(value)
+            return if(type == null) {
+                TypeIdentifier.GENERIC
+            } else {
+                (type as VariableIdentifier).getType()
+            }
+        }
+
+        fun setType(st: SymbolTable, type: TypeIdentifier) {
+            st.add(value, VariableIdentifier(value, type))
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -90,7 +99,7 @@ sealed class ExprAST : AssignRHSAST() {
             for (expr in exprs) {
                 expr.check(st, errorHandler)
                 if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(), expr.getType(st))
+                    errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr.getType(st))
                 }
             }
 

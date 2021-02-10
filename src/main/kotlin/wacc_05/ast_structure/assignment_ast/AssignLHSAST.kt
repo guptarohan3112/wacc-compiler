@@ -5,6 +5,7 @@ import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
+import wacc_05.symbol_table.identifier_objects.KeywordIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
@@ -29,8 +30,13 @@ class AssignLHSAST(private val ident: String?) : AST {
         } else {
             if (st.lookupAll(ident!!) == null) {
                 errorHandler.invalidIdentifier(ident)
+                st.add(ident, VariableIdentifier(ident, TypeIdentifier.GENERIC))
             }
         }
+    }
+
+    fun setType(st: SymbolTable, type: TypeIdentifier) {
+        st.add(ident!!, VariableIdentifier(ident, type))
     }
 
     fun getType(st: SymbolTable): TypeIdentifier {

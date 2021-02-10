@@ -11,6 +11,7 @@ open class TypeIdentifier : IdentifierObject() {
         const val ARRAY = "array"
 
         // static type definitions to use globally instead of redefining on each use
+        val GENERIC = TypeIdentifier()
         val INT_TYPE = IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
         val CHAR_TYPE = CharIdentifier
         val BOOL_TYPE = BoolIdentifier
