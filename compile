@@ -9,6 +9,8 @@ if [ $# -eq 0 ]
     exit 1
 fi
 
-./gradlew run --console=plain --args="$1"
+java -jar build/libs/wacc_05.jar $1
+exit $?
+
 # with some arguments
 # puts "TODO: setup this script to call your WACC compiler"

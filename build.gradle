@@ -16,6 +16,8 @@ plugins {
     id 'antlr'
 }
 
+apply plugin: 'kotlin'
+
 repositories {
     // Use JCenter for resolving dependencies.
     jcenter()
@@ -96,6 +98,17 @@ sourceSets {
 // only while we are still using STD input, to be removed
 run {
     standardInput = System.in
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'wacc_05/WaccCompilerKt'
+    }
+
+    dependsOn(configurations.runtimeClasspath)
+    from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
+//
+//    from(sourceSets.main.get().output)
 }
 
 application {
