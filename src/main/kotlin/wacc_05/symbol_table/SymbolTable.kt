@@ -46,6 +46,10 @@ class SymbolTable(private val parentST: SymbolTable?) {
         return lookup(name) ?: parentST?.lookupAll(name)
     }
 
+    fun isMain(): Boolean {
+        return parentST == null
+    }
+
     companion object {
         fun makeTopLevel(st: SymbolTable) {
             st.add("int", TypeIdentifier.INT_TYPE)

@@ -4,10 +4,7 @@ import wacc_05.SemanticErrors
 import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.IdentifierObject
-import wacc_05.symbol_table.identifier_objects.KeywordIdentifier
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+import wacc_05.symbol_table.identifier_objects.*
 
 class AssignLHSAST(private val ident: String?) : AST {
 
@@ -40,6 +37,7 @@ class AssignLHSAST(private val ident: String?) : AST {
 //    }
 
     fun getType(st: SymbolTable): TypeIdentifier {
+        var type = st.lookupAll(ident!!)
         return when {
             arrElem != null -> {
                 arrElem!!.getType(st)
@@ -47,8 +45,14 @@ class AssignLHSAST(private val ident: String?) : AST {
             pairElem != null -> {
                 pairElem!!.getType(st)
             }
+            // TODO: LHS for assign ident cannot be a function
+            //  and function cannot be cast to Variable Ident below?
+            //  This fixes the problem for now but returns a generic type
+            type == FunctionIdentifier(TypeIdentifier(), ArrayList(), st) -> {
+                TypeIdentifier.GENERIC
+            }
             else -> {
-                (st.lookupAll(ident!!) as VariableIdentifier).getType()
+                (type as VariableIdentifier).getType()
             }
         }
     }

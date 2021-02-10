@@ -166,7 +166,7 @@ sealed class StatementAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
-            if (st.lookup("int") != null){
+            if (st.isMain()){
                 errorHandler.invalidReturn()
             }
 
