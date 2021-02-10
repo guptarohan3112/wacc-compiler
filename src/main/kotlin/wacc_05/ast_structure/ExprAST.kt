@@ -76,7 +76,7 @@ sealed class ExprAST : AssignRHSAST() {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             if (st.lookupAll(value) == null) {
                 errorHandler.invalidIdentifier(value)
-                // Not sure how to set up the type here
+                type = TypeIdentifier.NullIdentifier
             } else {
                 type = (st.lookupAll(value) as VariableIdentifier).getType()
             }
