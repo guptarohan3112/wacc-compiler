@@ -60,6 +60,14 @@ open class TypeIdentifier : IdentifierObject() {
         override fun toString(): String {
             return PAIR
         }
+
+        fun getFirstType() : TypeIdentifier {
+            return fstType
+        }
+
+        fun getSecondType() : TypeIdentifier {
+            return sndType
+        }
     }
 
     object PairLiterIdentifier : TypeIdentifier() {
