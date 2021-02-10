@@ -165,6 +165,11 @@ sealed class StatementAST : AST {
     data class ReturnAST(private val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+
+            if (st.lookup("int") != null){
+                errorHandler.invalidReturn()
+            }
+
             // Check validity of expression
             expr.check(st, errorHandler)
 
