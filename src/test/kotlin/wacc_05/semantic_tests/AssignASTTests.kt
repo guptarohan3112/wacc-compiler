@@ -25,11 +25,7 @@ class AssignASTTests : StatSemanticTests() {
         st.add("x", VariableIdentifier("x", TypeIdentifier.PairIdentifier(intType, intType)))
 
         StatementAST.AssignAST(
-<<<<<<< HEAD
-            AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"), true)),
-=======
             AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"), false)),
->>>>>>> test_fixes
             ExprAST.IntLiterAST("+", "3")
         ).check(st, seh)
     }
