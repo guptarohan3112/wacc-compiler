@@ -53,8 +53,8 @@ sealed class StatementAST : AST {
             lhs.check(st, errorHandler)
             rhs.check(st, errorHandler)
 
-//            println("The type of the left hand side is: ${lhs.getType()}")
-//            println("The type of the right hand side is: ${lhs.getType()}")
+            println("The type of the left hand side is: ${lhs.getType()}")
+            println("The type of the right hand side is: ${lhs.getType()}")
             // Check that both sides match up in their types
             if (lhs.getType() != rhs.getType()) {
                 errorHandler.typeMismatch(lhs.getType(), rhs.getType())
