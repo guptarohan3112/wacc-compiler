@@ -112,28 +112,55 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class UnOpAST(
         private val expr: ExprAST,
-        private val UnaryOp: String
+        private val op: String
     ) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
             // Will need to get unaryOpIdentifier from st (can I if it an invalid operator) and get its return type
-            return when (UnaryOp) {
-                "not" -> TypeIdentifier.BoolIdentifier
-                "len" -> TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
-                "ord" -> TypeIdentifier.IntIdentifier(0, 256)
-                else -> TypeIdentifier.CharIdentifier
+            return when (op) {
+                "-" -> TypeIdentifier.INT_TYPE
+                "!" -> TypeIdentifier.BOOL_TYPE
+                "len" -> TypeIdentifier.INT_TYPE
+                "ord" -> TypeIdentifier.INT_TYPE_CHAR
+                "chr" -> TypeIdentifier.CHAR_TYPE
+                else -> TypeIdentifier()
             }
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
             expr.check(st, errorHandler)
-
             val exprType = expr.getType()
-            val expectedType = getType()
 
-            if (exprType != expectedType) {
-                return errorHandler.typeMismatch(exprType, expectedType)
+            when (op) {
+                "len" -> {
+                    if (exprType !is TypeIdentifier.ArrayIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0), exprType)
+                    }
+                }
+                "ord" -> {
+                    if (exprType !is TypeIdentifier.CharIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.CHAR_TYPE, exprType)
+                    }
+                }
+                "chr" -> {
+                    if (exprType !is TypeIdentifier.IntIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE_CHAR, exprType)
+                    }
+                }
+                "!" -> {
+                    if (exprType !is TypeIdentifier.BoolIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, exprType)
+                    }
+                }
+                "-" -> {
+                    if (exprType !is TypeIdentifier.IntIdentifier) {
+                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, exprType)
+                    }
+                }
+                else -> {
+                    //do nothing
+                }
             }
         }
 
