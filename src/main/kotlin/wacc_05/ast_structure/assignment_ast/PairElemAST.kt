@@ -7,15 +7,12 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class PairElemAST(private val elem: ExprAST) : AssignRHSAST() {
 
-    private lateinit var type: TypeIdentifier
-
-    override fun getType(): TypeIdentifier {
-        return type
+    override fun getType(st: SymbolTable): TypeIdentifier {
+        return elem.getType(st)
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
         elem.check(st, errorHandler)
-        type = elem.getType()
     }
 
 }

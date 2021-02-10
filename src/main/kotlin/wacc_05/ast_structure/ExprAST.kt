@@ -11,9 +11,8 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class IntLiterAST(private val sign: String, private val value: String) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            // To be changed
-            return TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.INT_TYPE
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -23,8 +22,8 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class BoolLiterAST(private val value: String) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            return TypeIdentifier.BoolIdentifier
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.BOOL_TYPE
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -34,8 +33,8 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class CharLiterAST(private val value: String) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            return TypeIdentifier.CharIdentifier
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.CHAR_TYPE
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -45,8 +44,8 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class StrLiterAST(private val value: String) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            return TypeIdentifier.StringIdentifier
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.STRING_TYPE
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -56,7 +55,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     object PairLiterAST : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
+        override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.PairLiterIdentifier
         }
 
@@ -67,17 +66,13 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class IdentAST(private val value: String) : ExprAST() {
 
-        private lateinit var type: TypeIdentifier
-
-        override fun getType(): TypeIdentifier {
-            return type
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return (st.lookupAll(value) as VariableIdentifier).getType()
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             if (st.lookupAll(value) == null) {
                 errorHandler.invalidIdentifier(value)
-            } else {
-                type = (st.lookupAll(value) as VariableIdentifier).getType()
             }
         }
     }
@@ -87,16 +82,15 @@ sealed class ExprAST : AssignRHSAST() {
         private val exprs: ArrayList<ExprAST>
     ) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
-            return TypeIdentifier.ArrayIdentifier(exprs[0].getType(), exprs.size)
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.ArrayIdentifier(exprs[0].getType(st), exprs.size)
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
             for (expr in exprs) {
                 expr.check(st, errorHandler)
-                if (expr.getType() !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(), expr.getType())
+                if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
+                    errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(), expr.getType(st))
                 }
             }
 
@@ -104,7 +98,6 @@ sealed class ExprAST : AssignRHSAST() {
 
             if (variable == null) {
                 errorHandler.invalidIdentifier(ident)
-
             }
         }
 
@@ -115,7 +108,7 @@ sealed class ExprAST : AssignRHSAST() {
         private val op: String
     ) : ExprAST() {
 
-        override fun getType(): TypeIdentifier {
+        override fun getType(st: SymbolTable): TypeIdentifier {
             // Will need to get unaryOpIdentifier from st (can I if it an invalid operator) and get its return type
             return when (op) {
                 "-" -> TypeIdentifier.INT_TYPE
@@ -130,7 +123,7 @@ sealed class ExprAST : AssignRHSAST() {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
             expr.check(st, errorHandler)
-            val exprType = expr.getType()
+            val exprType = expr.getType(st)
 
             when (op) {
                 "len" -> {
@@ -182,7 +175,7 @@ sealed class ExprAST : AssignRHSAST() {
             val boolBoolFunctions = hashSetOf("&&", "||")
         }
 
-        override fun getType(): TypeIdentifier {
+        override fun getType(st: SymbolTable): TypeIdentifier {
             return when (operator) {
                 // Need valid min and max integers to put here
                 "+", "%", "/", "*", "-" -> TypeIdentifier.INT_TYPE
@@ -195,8 +188,8 @@ sealed class ExprAST : AssignRHSAST() {
             expr1.check(st, errorHandler)
             expr2.check(st, errorHandler)
 
-            val expr1Type = expr1.getType()
-            val expr2Type = expr2.getType()
+            val expr1Type = expr1.getType(st)
+            val expr2Type = expr2.getType(st)
 
             when {
                 intIntFunctions.contains(operator) -> {
