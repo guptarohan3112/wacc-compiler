@@ -7,7 +7,7 @@ import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-class PairElemAST(private val elem: ExprAST, private val fst: Boolean) : AssignRHSAST() {
+class PairElemAST(private val elem: ExprAST, val fst: Boolean) : AssignRHSAST() {
 
     private lateinit var type: TypeIdentifier
 
