@@ -7,7 +7,6 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
-import wacc_05.symbol_table.identifier_objects.KeywordIdentifier
 
 sealed class StatementAST : AST {
 
@@ -53,10 +52,6 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             lhs.check(st, errorHandler)
             rhs.check(st, errorHandler)
-
-
-            // x = y
-
 
             val lhsType = lhs.getType(st)
             val rhsType = rhs.getType(st)
@@ -143,14 +138,13 @@ sealed class StatementAST : AST {
             condExpr.check(st, errorHandler)
 
             // Ensure that the condition expression evaluates to a boolean
-            val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
-            if (condExpr.getType(st) != boolType) {
-                errorHandler.typeMismatch(boolType, condExpr.getType(st))
+            if (condExpr.getType(st) != TypeIdentifier.BOOL_TYPE) {
+                errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, condExpr.getType(st))
             } else {
-                val then_st = SymbolTable(st)
-                val else_st = SymbolTable(st)
-                thenStat.check(then_st, errorHandler)
-                elseStat.check(else_st, errorHandler)
+                val thenSt = SymbolTable(st)
+                val elseSt = SymbolTable(st)
+                thenStat.check(thenSt, errorHandler)
+                elseStat.check(elseSt, errorHandler)
             }
         }
 
@@ -204,12 +198,11 @@ sealed class StatementAST : AST {
             loopExpr.check(st, errorHandler)
 
             // Check that looping expression evaluates to a boolean
-            val boolType: TypeIdentifier = TypeIdentifier.BoolIdentifier
-            if (boolType != loopExpr.getType(st)) {
-                errorHandler.typeMismatch(boolType, loopExpr.getType(st))
+            if (loopExpr.getType(st) != TypeIdentifier.BOOL_TYPE) {
+                errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, loopExpr.getType(st))
             } else {
-                val body_st = SymbolTable(st)
-                body.check(body_st, errorHandler)
+                val bodySt = SymbolTable(st)
+                body.check(bodySt, errorHandler)
             }
         }
     }

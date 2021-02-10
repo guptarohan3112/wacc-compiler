@@ -56,7 +56,7 @@ sealed class ExprAST : AssignRHSAST() {
     object PairLiterAST : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
-            return TypeIdentifier.PairLiterIdentifier
+            return TypeIdentifier.PAIR_LIT_TYPE
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -75,9 +75,9 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        fun setType(st: SymbolTable, type: TypeIdentifier) {
-            st.add(value, VariableIdentifier(value, type))
-        }
+//        fun setType(st: SymbolTable, type: TypeIdentifier) {
+//            st.add(value, VariableIdentifier(value, type))
+//        }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             if (st.lookupAll(value) == null) {

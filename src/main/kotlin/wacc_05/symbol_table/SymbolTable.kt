@@ -52,7 +52,7 @@ class SymbolTable(private val parentST: SymbolTable?) {
             st.add("char", TypeIdentifier.CHAR_TYPE)
             st.add("bool", TypeIdentifier.BOOL_TYPE)
             st.add("string", TypeIdentifier.STRING_TYPE)
-            st.add("pair", TypeIdentifier.PairLiterIdentifier)
+            st.add("pair", TypeIdentifier.PAIR_LIT_TYPE)
 
             addUnaryOps(st)
         }
@@ -98,8 +98,8 @@ class SymbolTable(private val parentST: SymbolTable?) {
                 "chr",
                 UnaryOpIdentifier(
                     UnaryOpIdentifier.UnaryOp.CHR,
-                    TypeIdentifier.IntIdentifier(0, 256),
-                    TypeIdentifier.CharIdentifier
+                    TypeIdentifier.INT_TYPE,
+                    TypeIdentifier.CHAR_TYPE
                 )
             )
         }

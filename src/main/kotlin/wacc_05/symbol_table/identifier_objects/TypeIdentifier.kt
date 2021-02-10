@@ -16,6 +16,7 @@ open class TypeIdentifier : IdentifierObject() {
         val CHAR_TYPE = CharIdentifier
         val BOOL_TYPE = BoolIdentifier
         val STRING_TYPE = StringIdentifier
+        val PAIR_LIT_TYPE = PairLiterIdentifier
     }
 
     object BoolIdentifier : TypeIdentifier() {

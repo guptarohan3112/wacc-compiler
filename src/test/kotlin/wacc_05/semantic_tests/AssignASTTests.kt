@@ -189,7 +189,12 @@ class AssignASTTests : StatSemanticTests() {
             ArrayLiterAST(arrayListOf(ExprAST.CharLiterAST("c"), ExprAST.CharLiterAST("f")))
         ).check(st, seh)
 
-        verify { seh.typeMismatch(intType, charType) }
+        verify(exactly = 1) {
+            seh.typeMismatch(
+                TypeIdentifier.ArrayIdentifier(intType, 0),
+                TypeIdentifier.ArrayIdentifier(charType, 0)
+            )
+        }
     }
 
     @Test
@@ -218,7 +223,7 @@ class AssignASTTests : StatSemanticTests() {
         st.add("int", intType)
         st.add("x", VariableIdentifier("x", intCharIdentifier))
 
-        every { seh.typeMismatch(any(), any())} just runs
+        every { seh.typeMismatch(any(), any()) } just runs
 
         StatementAST.AssignAST(
             AssignLHSAST("x"),
