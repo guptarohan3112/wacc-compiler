@@ -25,7 +25,7 @@ class AssignASTTests : StatSemanticTests() {
         st.add("x", VariableIdentifier("x", TypeIdentifier.PairIdentifier(intType, intType)))
 
         StatementAST.AssignAST(
-            AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"))),
+            AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"), false)),
             ExprAST.IntLiterAST("+", "3")
         ).check(st, seh)
     }
@@ -79,7 +79,7 @@ class AssignASTTests : StatSemanticTests() {
         every { seh.invalidIdentifier(any()) } just runs
 
         StatementAST.AssignAST(
-            AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"))),
+            AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"), true)),
             ExprAST.IntLiterAST("+", "3")
         ).check(st, seh)
 
@@ -105,6 +105,8 @@ class AssignASTTests : StatSemanticTests() {
         // we assign an array of same type but different length to x
         st.add("int", intType)
         st.add("x", VariableIdentifier("x", TypeIdentifier.ArrayIdentifier(intType, 4)))
+
+        // x = [3]
 
         StatementAST.AssignAST(
             AssignLHSAST("x"),

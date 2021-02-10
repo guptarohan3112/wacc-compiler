@@ -57,12 +57,24 @@ open class TypeIdentifier : IdentifierObject() {
         fun getType(): TypeIdentifier {
             return elemType
         }
+
+        override fun equals(other: Any?): Boolean {
+            return other is ArrayIdentifier && other.elemType == elemType
+        }
     }
 
     data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
         TypeIdentifier() {
         override fun toString(): String {
             return PAIR
+        }
+
+        fun getFstType(): TypeIdentifier {
+            return fstType
+        }
+
+        fun getSndType(): TypeIdentifier {
+            return sndType
         }
     }
 
