@@ -90,7 +90,7 @@ class SymbolTable(private val parentST: SymbolTable?) {
                 UnaryOpIdentifier(
                     UnaryOpIdentifier.UnaryOp.ORD,
                     TypeIdentifier.CHAR_TYPE,
-                    TypeIdentifier.INT_TYPE_CHAR
+                    TypeIdentifier.INT_TYPE
                 )
             )
 

@@ -121,7 +121,7 @@ sealed class ExprAST : AssignRHSAST() {
                 "-" -> TypeIdentifier.INT_TYPE
                 "!" -> TypeIdentifier.BOOL_TYPE
                 "len" -> TypeIdentifier.INT_TYPE
-                "ord" -> TypeIdentifier.INT_TYPE_CHAR
+                "ord" -> TypeIdentifier.INT_TYPE
                 "chr" -> TypeIdentifier.CHAR_TYPE
                 else -> TypeIdentifier()
             }
@@ -145,7 +145,7 @@ sealed class ExprAST : AssignRHSAST() {
                 }
                 "chr" -> {
                     if (exprType !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE_CHAR, exprType)
+                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, exprType)
                     }
                 }
                 "!" -> {
