@@ -33,8 +33,10 @@ class AssignLHSAST(private val ident: String?) : AST {
             val identInST: IdentifierObject? = st.lookupAll(ident!!)
             if (identInST == null) {
                 errorHandler.invalidIdentifier(ident)
+                type = TypeIdentifier.NullIdentifier
+            } else {
+                type = (identInST as VariableIdentifier).getType()
             }
-            type = (identInST as VariableIdentifier).getType()
         }
     }
 

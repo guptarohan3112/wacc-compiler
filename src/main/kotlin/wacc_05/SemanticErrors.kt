@@ -1,5 +1,6 @@
 package wacc_05
 
+import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import kotlin.system.exitProcess
 
@@ -14,6 +15,8 @@ interface SemanticErrors {
     fun repeatVariableDeclaration(varName: String)
 
     fun typeMismatch(expected: TypeIdentifier, actual: TypeIdentifier)
+
+    fun identifierMismatch(expected: IdentifierObject, actual: IdentifierObject)
 
     fun argNumberError(fName: String, expected: Int, actual: Int)
 

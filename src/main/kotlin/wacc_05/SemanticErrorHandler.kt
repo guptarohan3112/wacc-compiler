@@ -1,5 +1,6 @@
 package wacc_05
 
+import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class SemanticErrorHandler : SemanticErrors {
@@ -22,6 +23,10 @@ class SemanticErrorHandler : SemanticErrors {
 
     override fun typeMismatch(expected: TypeIdentifier, actual: TypeIdentifier) {
         println("Semantic error: Could not match the expected type of $expected to the actual type of $actual")
+    }
+
+    override fun identifierMismatch(expected: IdentifierObject, actual: IdentifierObject) {
+        println("Semantic error: Could not match the expected identifier of ${expected} to the actual identifier of ${actual}")
     }
 
     override fun argNumberError(fName: String, expected: Int, actual: Int) {

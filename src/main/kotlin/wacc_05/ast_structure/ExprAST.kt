@@ -13,7 +13,7 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun getType(): TypeIdentifier {
             // To be changed
-            return TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
+            return TypeIdentifier.INT_TYPE
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -76,6 +76,7 @@ sealed class ExprAST : AssignRHSAST() {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             if (st.lookupAll(value) == null) {
                 errorHandler.invalidIdentifier(value)
+                type = TypeIdentifier.NullIdentifier
             } else {
                 type = (st.lookupAll(value) as VariableIdentifier).getType()
             }

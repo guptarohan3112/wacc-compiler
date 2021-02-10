@@ -17,6 +17,13 @@ open class TypeIdentifier : IdentifierObject() {
         val STRING_TYPE = StringIdentifier
     }
 
+    // This identifier is set as the type when a semantic error has been found (eg: identifier does not currently exist in the symbol table)
+    object NullIdentifier : TypeIdentifier() {
+        override fun toString(): String {
+            return "null"
+        }
+    }
+
     object BoolIdentifier : TypeIdentifier() {
         override fun toString(): String {
             return BOOLEAN
@@ -58,6 +65,14 @@ open class TypeIdentifier : IdentifierObject() {
         TypeIdentifier() {
         override fun toString(): String {
             return PAIR
+        }
+
+        fun getFirstType() : TypeIdentifier {
+            return fstType
+        }
+
+        fun getSecondType() : TypeIdentifier {
+            return sndType
         }
     }
 
