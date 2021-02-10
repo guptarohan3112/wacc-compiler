@@ -112,16 +112,17 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class UnOpAST(
         private val expr: ExprAST,
-        private val UnaryOp: String
+        private val op: String
     ) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
             // Will need to get unaryOpIdentifier from st (can I if it an invalid operator) and get its return type
-            return when (UnaryOp) {
-                "not" -> TypeIdentifier.BoolIdentifier
-                "len" -> TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
+            return when (op) {
+                "!" -> TypeIdentifier.BoolIdentifier
+//                "len" -> TypeIdentifier.IntIdentifier()
                 "ord" -> TypeIdentifier.IntIdentifier(0, 256)
-                else -> TypeIdentifier.CharIdentifier
+                "chr" -> TypeIdentifier.CharIdentifier
+                else -> TypeIdentifier.IntIdentifier()
             }
         }
 
@@ -130,13 +131,33 @@ sealed class ExprAST : AssignRHSAST() {
             expr.check(st, errorHandler)
 
             val exprType = expr.getType()
-            val expectedType = getType()
+            val returnType = getType()
 
-            if (exprType != expectedType) {
-                return errorHandler.typeMismatch(exprType, expectedType)
+            if (op == "len") {
+                if (exprType !is TypeIdentifier.ArrayIdentifier) {
+                    val mockArrayObject = TypeIdentifier.ArrayIdentifier(TypeIdentifier.IntIdentifier(), 0)
+                    return errorHandler.typeMismatch(mockArrayObject, exprType)
+                }
             }
-        }
 
+            else if (op == "ord") {
+                if (exprType !is TypeIdentifier.CharIdentifier) {
+                    return errorHandler.typeMismatch(TypeIdentifier.CharIdentifier, exprType)
+                }
+            }
+
+            else if (op == "chr") {
+                if (exprType !is TypeIdentifier.IntIdentifier) {
+                    return errorHandler.typeMismatch(TypeIdentifier.IntIdentifier(), exprType)
+                }
+            }
+
+            // For all other expressions, both expressions must have the same type
+            else if (exprType != returnType) {
+                return errorHandler.typeMismatch(returnType, exprType)
+            }
+
+        }
     }
 
     data class BinOpAST(
@@ -165,25 +186,37 @@ sealed class ExprAST : AssignRHSAST() {
             val expr2Type = expr2.getType()
             val expectedType = getType()
 
-            var exprTypesMatch = expr1Type == expr2Type
+            // If equality expression, no checks
+            if (op == "==" || op == "!=") {
+                return
+            }
 
-            // Check type of expressions are both the same
-            if (expectedType is TypeIdentifier.IntIdentifier && !exprTypesMatch) {
+            // For all other expressions, both expressions must have the same type
+            if (expr1Type != expr2Type) {
                 return errorHandler.typeMismatch(expr1Type, expr2Type)
             }
-            if (op == "&&" || op == "||"){
-                if (!exprTypesMatch || expr1Type !is TypeIdentifier.BoolIdentifier){
+
+            // If arithmetic expression, check both expressions have int types
+            if (expectedType is TypeIdentifier.IntIdentifier) {
+                if (expr1Type !is TypeIdentifier.IntIdentifier) {
                     return errorHandler.typeMismatch(expr1Type, expr2Type)
                 }
             }
+
+            // If comparison expression, check both expressions have int or char types
             if (op == ">" || op == ">=" || op == "<" || op == "<=") {
                 if (expr1Type !is TypeIdentifier.IntIdentifier && expr1Type !is TypeIdentifier.CharIdentifier){
                     return errorHandler.typeMismatch(expr1Type, expr2Type)
                 }
-                else if (!exprTypesMatch) {
+            }
+
+            // If logical expression, check both expressions have bool types
+            if (op == "&&" || op == "||"){
+                if (expr1Type !is TypeIdentifier.BoolIdentifier){
                     return errorHandler.typeMismatch(expr1Type, expr2Type)
                 }
             }
+
         }
     }
 }

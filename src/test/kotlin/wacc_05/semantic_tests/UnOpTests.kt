@@ -58,7 +58,7 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.BoolLiterAST("true"),
                 "!"
             )
-        )
+        ).check(st, seh)
 
         verify(exactly = 1) { seh.typeMismatch(intType, boolType) }
     }
