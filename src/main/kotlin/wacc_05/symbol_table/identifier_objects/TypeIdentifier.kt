@@ -12,7 +12,6 @@ open class TypeIdentifier : IdentifierObject() {
 
         // static type definitions to use globally instead of redefining on each use
         val INT_TYPE = IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
-        val INT_TYPE_CHAR = IntIdentifier(0, 256) // an int strictly within the range of a char
         val CHAR_TYPE = CharIdentifier
         val BOOL_TYPE = BoolIdentifier
         val STRING_TYPE = StringIdentifier

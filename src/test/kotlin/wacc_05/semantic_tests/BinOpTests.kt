@@ -118,7 +118,7 @@ class BinOpTests : ExprSemanticTests() {
         ).check(st, seh)
 
         // use any here to capture expectation of intType or charType
-        verify(exactly = 1) { seh.typeMismatch(any(), boolType) }
+        verify(exactly = 2) { seh.typeMismatch(any(), boolType) }
     }
 
     @Test
@@ -259,7 +259,7 @@ class BinOpTests : ExprSemanticTests() {
             )
         ).check(st, seh)
 
-        verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
+        verify(exactly = 1) { seh.typeMismatch(boolType, charType) }
     }
 
     @Test

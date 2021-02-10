@@ -13,9 +13,9 @@ import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 open class StatSemanticTests {
 
-    val intType: TypeIdentifier.IntIdentifier = TypeIdentifier.IntIdentifier()
-    val charType: TypeIdentifier.CharIdentifier = TypeIdentifier.CharIdentifier
-    val boolType: TypeIdentifier.BoolIdentifier = TypeIdentifier.BoolIdentifier
+    val intType: TypeIdentifier.IntIdentifier = TypeIdentifier.INT_TYPE
+    val charType: TypeIdentifier.CharIdentifier = TypeIdentifier.CHAR_TYPE
+    val boolType: TypeIdentifier.BoolIdentifier = TypeIdentifier.BOOL_TYPE
 
     var st: SymbolTable = SymbolTable(null)
     var seh: SemanticErrors = mockk()

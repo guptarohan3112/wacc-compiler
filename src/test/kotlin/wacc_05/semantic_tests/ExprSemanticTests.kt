@@ -10,9 +10,9 @@ import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 open class ExprSemanticTests {
 
-    val intType: TypeIdentifier.IntIdentifier = TypeIdentifier.IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
-    val charType: TypeIdentifier.CharIdentifier = TypeIdentifier.CharIdentifier
-    val boolType: TypeIdentifier.BoolIdentifier = TypeIdentifier.BoolIdentifier
+    val intType: TypeIdentifier.IntIdentifier = TypeIdentifier.INT_TYPE
+    val charType: TypeIdentifier.CharIdentifier = TypeIdentifier.CHAR_TYPE
+    val boolType: TypeIdentifier.BoolIdentifier = TypeIdentifier.BOOL_TYPE
 
     val st: SymbolTable = SymbolTable(null)
     val seh: SemanticErrorHandler = mockk()
