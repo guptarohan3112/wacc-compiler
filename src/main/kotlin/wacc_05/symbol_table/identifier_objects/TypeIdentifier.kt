@@ -19,13 +19,6 @@ open class TypeIdentifier : IdentifierObject() {
         val PAIR_LIT_TYPE = PairLiterIdentifier
     }
 
-    // This identifier is set as the type when a semantic error has been found (eg: identifier does not currently exist in the symbol table)
-    object NullIdentifier : TypeIdentifier() {
-        override fun toString(): String {
-            return "null"
-        }
-    }
-
     object BoolIdentifier : TypeIdentifier() {
         override fun toString(): String {
             return BOOLEAN
@@ -68,6 +61,12 @@ open class TypeIdentifier : IdentifierObject() {
 
         override fun equals(other: Any?): Boolean {
             return other is ArrayIdentifier && other.elemType == elemType
+        }
+
+        override fun hashCode(): Int {
+            var result = elemType.hashCode()
+            result = 31 * result + size
+            return result
         }
     }
 
