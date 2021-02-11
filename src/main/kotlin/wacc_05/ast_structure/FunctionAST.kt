@@ -21,13 +21,13 @@ class FunctionAST(
         } else {
             // Create function identifier and add to symbol table
             val funcST = SymbolTable(st)
-            val returnTypeIdent: IdentifierObject? = st.lookupAll(returnType.toString())
+            val returnTypeIdent: TypeIdentifier = returnType.getType(st)
 
             // create the param identifier array list
             val params: ArrayList<ParamIdentifier> = paramList?.getParams(st) ?: ArrayList()
 
             val funcIdent =
-                FunctionIdentifier(returnTypeIdent as TypeIdentifier, params, funcST)
+                FunctionIdentifier(returnTypeIdent, params, funcST)
 
             // Check parameter list and function body
             paramList?.check(funcST, errorHandler)
