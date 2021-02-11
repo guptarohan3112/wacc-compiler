@@ -28,7 +28,7 @@ sealed class StatementAST : AST {
             type.check(st, errorHandler)
 
             val variable: IdentifierObject? = st.lookup(varName)
-            if (variable != null) {
+            if (variable != null && variable is VariableIdentifier) {
                 errorHandler.repeatVariableDeclaration(varName)
             } else {
                 // Check that right hand side and type of identifier match

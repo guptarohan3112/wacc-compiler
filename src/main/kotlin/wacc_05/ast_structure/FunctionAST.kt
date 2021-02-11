@@ -18,7 +18,7 @@ class FunctionAST(
 
         // Check to make sure function has not already been defined
         val func: IdentifierObject? = st.lookup(funcName)
-        if (func != null) {
+        if (func != null && func is FunctionIdentifier) {
             errorHandler.repeatVariableDeclaration(funcName)
         }
 
