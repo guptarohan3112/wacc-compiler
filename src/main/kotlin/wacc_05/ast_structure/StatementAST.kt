@@ -32,10 +32,11 @@ sealed class StatementAST : AST {
                 errorHandler.repeatVariableDeclaration(varName)
             } else {
                 // Check that right hand side and type of identifier match
-                val typeIdent: TypeIdentifier = st.lookupAll(type.toString()) as TypeIdentifier
+                val typeIdent: TypeIdentifier = type.getType(st)
                 assignment.check(st, errorHandler)
+                val assignmentType: TypeIdentifier = assignment.getType(st)
 
-                if (typeIdent != assignment.getType(st)) {
+                if (typeIdent != assignmentType && assignmentType != TypeIdentifier.GENERIC) {
                     errorHandler.typeMismatch(typeIdent, assignment.getType(st))
                 }
                 // Create variable identifier and add to symbol table
@@ -85,7 +86,7 @@ sealed class StatementAST : AST {
     data class BeginAST(private val stat: StatementAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            stat.check(st, errorHandler)
+            stat.check(SymbolTable(st), errorHandler)
         }
 
     }
@@ -165,6 +166,11 @@ sealed class StatementAST : AST {
     data class ReturnAST(private val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+
+            if (st.isMain()){
+                errorHandler.invalidReturn()
+            }
+
             // Check validity of expression
             expr.check(st, errorHandler)
 
@@ -172,7 +178,7 @@ sealed class StatementAST : AST {
             val returnType: TypeIdentifier = expr.getType(st)
             val funcReturnType: TypeIdentifier? =
                 st.lookup(returnType.toString()) as TypeIdentifier?
-            if (funcReturnType == null) {
+            if (funcReturnType != returnType) {
                 errorHandler.invalidReturnType()
             }
         }

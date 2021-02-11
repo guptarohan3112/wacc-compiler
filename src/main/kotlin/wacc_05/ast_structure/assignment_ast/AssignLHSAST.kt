@@ -4,10 +4,7 @@ import wacc_05.SemanticErrors
 import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.IdentifierObject
-import wacc_05.symbol_table.identifier_objects.KeywordIdentifier
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+import wacc_05.symbol_table.identifier_objects.*
 
 class AssignLHSAST(private val ident: String?) : AST {
 
@@ -28,9 +25,13 @@ class AssignLHSAST(private val ident: String?) : AST {
         } else if (pairElem != null) {
             pairElem!!.check(st, errorHandler)
         } else {
-            if (st.lookupAll(ident!!) == null) {
+            val type = st.lookupAll(ident!!)
+            if (type == null) {
                 errorHandler.invalidIdentifier(ident)
                 st.add(ident, VariableIdentifier(ident, TypeIdentifier.GENERIC))
+            }
+            else if (type is FunctionIdentifier) {
+                errorHandler.invalidAssignment(ident)
             }
         }
     }
@@ -47,8 +48,11 @@ class AssignLHSAST(private val ident: String?) : AST {
             pairElem != null -> {
                 pairElem!!.getType(st)
             }
+            st.lookupAll(ident!!) is FunctionIdentifier -> {
+                TypeIdentifier.GENERIC
+            }
             else -> {
-                (st.lookupAll(ident!!) as VariableIdentifier).getType()
+                (st.lookupAll(ident) as VariableIdentifier).getType()
             }
         }
     }

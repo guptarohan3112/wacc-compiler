@@ -3,9 +3,8 @@ package wacc_05.ast_structure
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
-import wacc_05.symbol_table.identifier_objects.IdentifierObject
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+import wacc_05.symbol_table.identifier_objects.*
+import java.sql.ParameterMetaData
 
 sealed class ExprAST : AssignRHSAST() {
 
@@ -68,12 +67,19 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             val type = st.lookupAll(value)
-            return if (type == null) {
-                TypeIdentifier.GENERIC
-            } else {
-                (type as VariableIdentifier).getType()
+            return when (type) {
+                null -> {
+                    TypeIdentifier.GENERIC
+                }
+                is ParamIdentifier -> {
+                    type.getType()
+                }
+                else -> {
+                    (type as VariableIdentifier).getType()
+                }
             }
         }
+
 
 //        fun setType(st: SymbolTable, type: TypeIdentifier) {
 //            st.add(value, VariableIdentifier(value, type))
@@ -96,7 +102,11 @@ sealed class ExprAST : AssignRHSAST() {
             return if (type == null) {
                 TypeIdentifier.GENERIC
             } else {
-                ((type as VariableIdentifier).getType() as TypeIdentifier.ArrayIdentifier).getType()
+                val typeIdent = (type as VariableIdentifier).getType()
+                if (typeIdent !is TypeIdentifier.ArrayIdentifier) {
+                    return TypeIdentifier.GENERIC
+                }
+                return typeIdent.getType()
             }
         }
 
@@ -112,6 +122,11 @@ sealed class ExprAST : AssignRHSAST() {
 
             if (variable == null) {
                 errorHandler.invalidIdentifier(ident)
+            } else {
+                val variableType = (variable as VariableIdentifier).getType()
+                if (variableType !is TypeIdentifier.ArrayIdentifier) {
+                    errorHandler.typeMismatch(variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
+                }
             }
         }
 

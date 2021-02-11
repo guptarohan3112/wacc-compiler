@@ -7,7 +7,18 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 sealed class TypeAST : AST {
 
+    abstract fun getType(st: SymbolTable): TypeIdentifier
+
     data class BaseTypeAST(private val typeName: String) : TypeAST() {
+
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            val typeIdent: IdentifierObject? = st.lookupAll(typeName)
+            if (typeIdent == null) {
+                return TypeIdentifier.GENERIC
+            } else {
+                return typeIdent as TypeIdentifier
+            }
+        }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             val typeIdent: IdentifierObject? = st.lookupAll(typeName)
@@ -30,6 +41,10 @@ sealed class TypeAST : AST {
             elemsType.check(st, errorHandler)
         }
 
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.ArrayIdentifier(elemsType.getType(st), 0)
+        }
+
         override fun toString(): String {
             return elemsType.toString()
         }
@@ -44,12 +59,24 @@ sealed class TypeAST : AST {
         override fun toString(): String {
             return type.toString()
         }
+
+        fun getType(st: SymbolTable): TypeIdentifier {
+            if (type != null) {
+                return type.getType(st)
+            } else {
+                return TypeIdentifier.GENERIC
+            }
+        }
     }
 
     data class PairTypeAST(
         private val fstType: PairElemTypeAST,
         private val sndType: PairElemTypeAST
     ) : TypeAST() {
+
+        override fun getType(st: SymbolTable) : TypeIdentifier {
+            return TypeIdentifier.PairIdentifier(fstType.getType(st), sndType.getType(st))
+        }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             fstType.check(st, errorHandler)

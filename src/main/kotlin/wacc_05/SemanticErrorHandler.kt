@@ -47,6 +47,16 @@ class SemanticErrorHandler : SemanticErrors {
         semanticErr()
     }
 
+    override fun invalidReturn() {
+        println("Semantic error: Cannot return from the main program")
+        semanticErr()
+    }
+
+    override fun invalidAssignment(fName: String) {
+        println("Semantic error: Cannot assign a value to the function $fName")
+        semanticErr()
+    }
+
     override fun invalidReadType(actual: TypeIdentifier) {
         println("Semantic error: Invalid read type. Could not match expected type of {int, char} to $actual")
         semanticErr()

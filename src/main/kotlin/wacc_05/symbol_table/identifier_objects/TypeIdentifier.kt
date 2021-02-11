@@ -19,13 +19,6 @@ open class TypeIdentifier : IdentifierObject() {
         val PAIR_LIT_TYPE = PairLiterIdentifier
     }
 
-    // This identifier is set as the type when a semantic error has been found (eg: identifier does not currently exist in the symbol table)
-    object NullIdentifier : TypeIdentifier() {
-        override fun toString(): String {
-            return "null"
-        }
-    }
-
     object BoolIdentifier : TypeIdentifier() {
         override fun toString(): String {
             return BOOLEAN
@@ -59,7 +52,7 @@ open class TypeIdentifier : IdentifierObject() {
 
     data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) : TypeIdentifier() {
         override fun toString(): String {
-            return ARRAY
+            return "$ARRAY[$elemType]"
         }
 
         fun getType(): TypeIdentifier {
@@ -67,14 +60,22 @@ open class TypeIdentifier : IdentifierObject() {
         }
 
         override fun equals(other: Any?): Boolean {
-            return other is ArrayIdentifier && other.elemType == elemType
+            return other is ArrayIdentifier && elemType == other.elemType
+        }
+
+        override fun hashCode(): Int {
+            var result = elemType.hashCode()
+            result = 31 * result + size
+            return result
         }
     }
 
+    open class GenericPairType : TypeIdentifier()
+
     data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
-        TypeIdentifier() {
+        GenericPairType() {
         override fun toString(): String {
-            return PAIR
+            return "PAIR(${fstType}, ${sndType})"
         }
 
         fun getFstType(): TypeIdentifier {
@@ -84,11 +85,33 @@ open class TypeIdentifier : IdentifierObject() {
         fun getSndType(): TypeIdentifier {
             return sndType
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (other is GenericPairType) {
+                return if (other is PairIdentifier) {
+                    fstType == other.fstType && sndType == other.sndType
+                } else {
+                    true
+                }
+            }
+
+            return false
+        }
+
+        override fun hashCode(): Int {
+            var result = fstType.hashCode()
+            result = 31 * result + sndType.hashCode()
+            return result
+        }
     }
 
-    object PairLiterIdentifier : TypeIdentifier() {
+    object PairLiterIdentifier : GenericPairType() {
         override fun toString(): String {
             return PAIR
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return other is GenericPairType
         }
     }
 }

@@ -33,7 +33,7 @@ class FuncCallAST(private val function: String, private val args: ArrayList<Expr
                 }
 
                 // Check that arg type match up with corresponding parameter type
-                for (i in 0 until args.size) {
+                for (i in 0 until args.size.coerceAtMost(noOfArgs)) {
                     args[i].check(st, errorHandler)
                     val expectedType: TypeIdentifier = funcIdentifier.getParams()[i].getType()
                     val actualType: TypeIdentifier = args[i].getType(st)
@@ -44,5 +44,4 @@ class FuncCallAST(private val function: String, private val args: ArrayList<Expr
             }
         }
     }
-
 }

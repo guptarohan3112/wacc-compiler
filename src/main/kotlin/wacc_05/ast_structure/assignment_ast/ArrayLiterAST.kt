@@ -8,18 +8,23 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 class ArrayLiterAST(private val elems: ArrayList<ExprAST>) : AssignRHSAST() {
 
     override fun getType(st: SymbolTable): TypeIdentifier {
-        return TypeIdentifier.ArrayIdentifier(elems[0].getType(st), elems.size)
+        if (elems.size == 0) {
+            return TypeIdentifier.GENERIC
+        } else {
+            return TypeIdentifier.ArrayIdentifier(elems[0].getType(st), elems.size)
+        }
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        if (elems.size != 0) {
+            elems[0].check(st, errorHandler)
+            val firstElemType = elems[0].getType(st)
 
-        elems[0].check(st, errorHandler)
-        val firstElemType = elems[0].getType(st)
-
-        for (i in 1 until elems.size) {
-            elems[i].check(st, errorHandler)
-            if (elems[i].getType(st) != firstElemType) {
-                errorHandler.typeMismatch(firstElemType, elems[i].getType(st))
+            for (i in 1 until elems.size) {
+                elems[i].check(st, errorHandler)
+                if (elems[i].getType(st) != firstElemType) {
+                    errorHandler.typeMismatch(firstElemType, elems[i].getType(st))
+                }
             }
         }
     }
