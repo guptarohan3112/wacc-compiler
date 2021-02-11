@@ -25,8 +25,12 @@ class FunctionAST(
         // Create function identifier and add to symbol table
         val funcST = SymbolTable(st)
         val returnTypeIdent: IdentifierObject? = st.lookupAll(returnType.toString())
+
+        // create the param identifier array list
+        val params: ArrayList<ParamIdentifier> = paramList?.getParams(st) ?: ArrayList()
+
         val funcIdent =
-            FunctionIdentifier(returnTypeIdent as TypeIdentifier, ArrayList(), funcST)
+            FunctionIdentifier(returnTypeIdent as TypeIdentifier, params, funcST)
         st.add(funcName, funcIdent)
 
         // Add return type as key value pair of symbol table for function (for future reference)
