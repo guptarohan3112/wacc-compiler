@@ -106,7 +106,7 @@ sealed class ExprAST : AssignRHSAST() {
                 if (typeIdent !is TypeIdentifier.ArrayIdentifier) {
                     return TypeIdentifier.GENERIC
                 }
-                typeIdent.getType()
+                return typeIdent.getType()
             }
         }
 
@@ -122,8 +122,7 @@ sealed class ExprAST : AssignRHSAST() {
 
             if (variable == null) {
                 errorHandler.invalidIdentifier(ident)
-            }
-            else{
+            } else {
                 val variableType = (variable as VariableIdentifier).getType()
                 if (variableType !is TypeIdentifier.ArrayIdentifier) {
                     errorHandler.typeMismatch(variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
