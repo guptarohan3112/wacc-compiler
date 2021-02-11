@@ -50,11 +50,11 @@ pairElem: FST expr
 ;
 
 type: baseType
-| arrayType
 | pairType
+| type OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET
 ;
 
-arrayType: (baseType | pairType) (OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET)+ ;
+// arrayType: type (OPEN_SQUARE_BRACKET CLOSE_SQUARE_BRACKET) ;
 
 baseType: INT
 | BOOL
