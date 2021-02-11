@@ -61,38 +61,6 @@ sourceSets {
             srcDirs += 'src/test/'
         }
     }
-
-    errorTests {
-        main {
-            kotlin {
-                srcDirs += 'src/main/kotlin/'
-            }
-            java {
-                srcDirs += 'src/main/java/'
-            }
-        }
-        test {
-            kotlin {
-                srcDirs += 'src/test/kotlin/wacc_05/error_tests/'
-            }
-        }
-    }
-
-    semanticTests {
-        main {
-            kotlin {
-                srcDirs += 'src/main/kotlin/'
-            }
-            java {
-                srcDirs += 'src/main/java/'
-            }
-        }
-        test {
-            kotlin {
-                srcDirs += 'src/test/kotlin/wacc_05/semantic_tests/'
-            }
-        }
-    }
 }
 
 // only while we are still using STD input, to be removed
@@ -129,11 +97,43 @@ test {
 }
 
 task semanticTests(type: Test) {
+    sourceSets {
+        main {
+            kotlin {
+                srcDirs += 'src/main/kotlin/'
+            }
+            java {
+                srcDirs += 'src/main/java/'
+            }
+        }
+        test {
+            kotlin {
+                srcDirs += 'src/test/kotlin/wacc_05/semantic_tests/'
+            }
+        }
+    }
 
+    exclude 'wacc_05/error_tests'
 }
 
 task errorTests(type: Test) {
+    sourceSets {
+        main {
+            kotlin {
+                srcDirs += 'src/main/kotlin/'
+            }
+            java {
+                srcDirs += 'src/main/java/'
+            }
+        }
+        test {
+            kotlin {
+                srcDirs += 'src/test/kotlin/wacc_05/error_tests/'
+            }
+        }
+    }
 
+    exclude 'wacc_05/semantic_tests'
 }
 
 /* THE BELOW CODE WAS TAKEN FROM
