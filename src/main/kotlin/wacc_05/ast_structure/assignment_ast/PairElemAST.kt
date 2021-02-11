@@ -28,6 +28,7 @@ class PairElemAST(private val elem: ExprAST, private val isFst: Boolean) : Assig
 
         val elemType = elem.getType(st)
 
+        // The type of the element has to be a generic type (when added for error recovery), a pair or a pair literal
         if (elemType != TypeIdentifier.GENERIC
             && elemType !is TypeIdentifier.PairIdentifier
             && elemType !is TypeIdentifier.PairLiterIdentifier

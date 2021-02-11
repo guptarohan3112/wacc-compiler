@@ -6,6 +6,7 @@ import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
+// This class accounts for whether the left hand side of assignment is a identifier, array element or pair element
 class AssignLHSAST(private val ident: String?) : AST {
 
     private var arrElem: ExprAST.ArrayElemAST? = null
@@ -19,23 +20,6 @@ class AssignLHSAST(private val ident: String?) : AST {
         this.pairElem = pairElem
     }
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        if (arrElem != null) {
-            arrElem!!.check(st, errorHandler)
-        } else if (pairElem != null) {
-            pairElem!!.check(st, errorHandler)
-        } else {
-            val type = st.lookupAll(ident!!)
-            if (type == null) {
-                errorHandler.invalidIdentifier(ident)
-                st.add(ident, VariableIdentifier(TypeIdentifier.GENERIC))
-            }
-            else if (type is FunctionIdentifier) {
-                errorHandler.invalidAssignment(ident)
-            }
-        }
-    }
-
     fun getType(st: SymbolTable): TypeIdentifier {
         return when {
             arrElem != null -> {
@@ -47,12 +31,27 @@ class AssignLHSAST(private val ident: String?) : AST {
             st.lookupAll(ident!!) is FunctionIdentifier -> {
                 TypeIdentifier.GENERIC
             }
-            st.lookupAll(ident) is VariableIdentifier -> {
-                (st.lookupAll(ident) as VariableIdentifier).getType()
-            }
             else -> {
-                (st.lookupAll(ident) as ParamIdentifier).getType()
+                st.lookupAll(ident)!!.getType()
             }
         }
     }
+
+    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        if (arrElem != null) {
+            arrElem!!.check(st, errorHandler)
+        } else if (pairElem != null) {
+            pairElem!!.check(st, errorHandler)
+        } else {
+            val type = st.lookupAll(ident!!)
+            if (type == null) {
+                errorHandler.invalidIdentifier(ident)
+                // Add the identifier into symbol table for error recovery
+                st.add(ident, VariableIdentifier(TypeIdentifier.GENERIC))
+            } else if (type is FunctionIdentifier) {
+                errorHandler.invalidAssignment(ident)
+            }
+        }
+    }
+
 }
