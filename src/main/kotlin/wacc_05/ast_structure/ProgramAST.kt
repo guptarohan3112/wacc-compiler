@@ -11,9 +11,16 @@ class ProgramAST(
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
+        // preliminary pass through the function list to add all function
+        // identifiers to the symbol table
+        for (func in functionList) {
+            func.preliminaryCheck(st, errorHandler)
+        }
+
         for (func in functionList) {
             func.check(st, errorHandler)
         }
+
         // Check validity of statement
         stat.check(st, errorHandler)
     }

@@ -11,35 +11,42 @@ class FunctionAST(
     private val body: StatementAST
 ) : AST {
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
-        // Check validity of the return type
+    fun preliminaryCheck(st: SymbolTable, errorHandler: SemanticErrors) {
         returnType.check(st, errorHandler)
 
         // Check to make sure function has not already been defined
         val func: IdentifierObject? = st.lookup(funcName)
         if (func != null) {
             errorHandler.repeatVariableDeclaration(funcName)
+        } else {
+            // Create function identifier and add to symbol table
+            val funcST = SymbolTable(st)
+            val returnTypeIdent: IdentifierObject? = st.lookupAll(returnType.toString())
+
+            // create the param identifier array list
+            val params: ArrayList<ParamIdentifier> = paramList?.getParams(st) ?: ArrayList()
+
+            val funcIdent =
+                FunctionIdentifier(returnTypeIdent as TypeIdentifier, params, funcST)
+
+            // Add return type as key value pair of symbol table for function (for future reference)
+            funcST.add(returnType.toString(), returnTypeIdent)
+
+            // Check parameter list and function body
+            paramList?.check(funcST, errorHandler)
+
+            // add self to higher level symbol table
+            st.add(funcName, funcIdent)
         }
-
-        // Create function identifier and add to symbol table
-        val funcST = SymbolTable(st)
-        val returnTypeIdent: IdentifierObject? = st.lookupAll(returnType.toString())
-
-        // create the param identifier array list
-        val params: ArrayList<ParamIdentifier> = paramList?.getParams(st) ?: ArrayList()
-
-        val funcIdent =
-            FunctionIdentifier(returnTypeIdent as TypeIdentifier, params, funcST)
-        st.add(funcName, funcIdent)
-
-        // Add return type as key value pair of symbol table for function (for future reference)
-        funcST.add(returnType.toString(), returnTypeIdent)
-
-        // Check parameter list and function body
-        paramList?.check(funcST, errorHandler)
-        body.check(funcST, errorHandler)
-
     }
 
+    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        val funcIdentifier = st.lookupAll(funcName)
+
+        // we don't give another semantic error if this is not null as it will be a semantic error
+        // caused by the inner specifics of the compiler
+        if (funcIdentifier != null) {
+            body.check((funcIdentifier as FunctionIdentifier).getSymbolTable(), errorHandler)
+        }
+    }
 }
