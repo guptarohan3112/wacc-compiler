@@ -47,8 +47,11 @@ class AssignLHSAST(private val ident: String?) : AST {
             st.lookupAll(ident!!) is FunctionIdentifier -> {
                 TypeIdentifier.GENERIC
             }
-            else -> {
+            st.lookupAll(ident) is VariableIdentifier -> {
                 (st.lookupAll(ident) as VariableIdentifier).getType()
+            }
+            else -> {
+                (st.lookupAll(ident) as ParamIdentifier).getType()
             }
         }
     }
