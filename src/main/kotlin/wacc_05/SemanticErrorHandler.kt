@@ -8,7 +8,7 @@ class SemanticErrorHandler : SemanticErrors {
     var err : Int = Error.SUCCESS
 
     override fun invalidIdentifier(name: String) {
-        println("Semantic error: ${name} is an unknown element in the context of this program")
+        println("Semantic error: $name is an unknown element in the context of this program")
         semanticErr()
     }
 
@@ -33,7 +33,7 @@ class SemanticErrorHandler : SemanticErrors {
     }
 
     override fun identifierMismatch(expected: IdentifierObject, actual: IdentifierObject) {
-        println("Semantic error: Could not match the expected identifier of ${expected} to the actual identifier of ${actual}")
+        println("Semantic error: Could not match the expected identifier of $expected to the actual identifier of $actual")
         semanticErr()
     }
 

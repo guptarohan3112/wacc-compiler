@@ -30,7 +30,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         val last = getLast(ctx.stat())
         if ((last !is WaccParser.StatReturnContext) && (last !is WaccParser.StatExitContext)) {
             println("Syntax Error 100: Missing Return Or Exit Statement at end of function")
-            exitProcess(Error.SYNTAX_ERROR);
+            exitProcess(Error.SYNTAX_ERROR)
         }
 
         val paramList: ParamListAST? = if (ctx.paramList() == null) {
@@ -57,13 +57,10 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
         /* Case where we have a sequence of statements or an if statement */
         if (list.isNotEmpty()) {
-            for (state in list) {
-                println(state.text)
-            }
-            return getLast(list[list.size - 1]);
+            return getLast(list[list.size - 1])
         }
         /* Case when we have a single statement, rather than one of the above */
-        return stat;
+        return stat
     }
 
     /* Function: visitParamList()
@@ -348,7 +345,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     override fun visitPairElemType(ctx: WaccParser.PairElemTypeContext): TypeAST.PairElemTypeAST {
         return when {
             ctx.type() != null -> {
-                TypeAST.PairElemTypeAST(type = visitType(ctx.type()))
+                TypeAST.PairElemTypeAST(type = TypeAST.ArrayTypeAST(visitType(ctx.type())))
             }
             ctx.baseType() != null -> {
                 TypeAST.PairElemTypeAST(type = visitBaseType(ctx.baseType()))

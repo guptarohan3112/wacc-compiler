@@ -1,0 +1,11 @@
+begin
+  int[] y = [1, 2, 3];
+  char[] z = ['a', 'b', 'c'];
+  pair(int[], char[]) x = newpair(y, z);
+  begin
+    skip
+  end;
+  int[] a = fst x;
+  char[] b = snd x;
+  print "This has finished"
+end
