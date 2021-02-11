@@ -57,9 +57,6 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
         /* Case where we have a sequence of statements or an if statement */
         if (list.isNotEmpty()) {
-            for (state in list) {
-                println(state.text)
-            }
             return getLast(list[list.size - 1])
         }
         /* Case when we have a single statement, rather than one of the above */

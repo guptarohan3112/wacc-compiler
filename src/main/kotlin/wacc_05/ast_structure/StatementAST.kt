@@ -182,7 +182,7 @@ sealed class StatementAST : AST {
 
             // Check that type of expression being returned is the same as the return type of the function that defines the current scope
             val returnType: TypeIdentifier = expr.getType(st)
-            val funcReturnType: TypeIdentifier? = st.lookup(returnType.toString()) as TypeIdentifier?
+            val funcReturnType: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?
             if (funcReturnType != returnType) {
                 errorHandler.invalidReturnType()
             }
