@@ -92,7 +92,7 @@ open class StatSemanticTests {
         // in it
 
         st.add("bool", boolType)
-        childSt.add("bool", boolType)
+        childSt.add("returnType", boolType)
 
         StatementAST.ReturnAST(ExprAST.BoolLiterAST("true")).check(childSt, seh)
     }
