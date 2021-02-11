@@ -51,7 +51,13 @@ class SymbolTable(private val parentST: SymbolTable?) {
     }
 
     companion object {
+        /* Function: makeTopLevel()
+         * ------------------------
+         * We use makeTopLevel() to insert everything that would need to be included in the
+         * top level symbol table - this includes any type keywords and unary operators.
+         */
         fun makeTopLevel(st: SymbolTable) {
+            // add the key type keywords to the symbol table with their corresponding types
             st.add("int", TypeIdentifier.INT_TYPE)
             st.add("char", TypeIdentifier.CHAR_TYPE)
             st.add("bool", TypeIdentifier.BOOL_TYPE)
@@ -61,11 +67,16 @@ class SymbolTable(private val parentST: SymbolTable?) {
             addUnaryOps(st)
         }
 
+        /* Function: addUnaryOps()
+         * -----------------------
+         * We use this function to add the unary operators to a top level symbol table.
+         * We add the unary operators since len, chr and ord are all valid identifiers, but
+         * should not be defined by the program as they are built into the language.
+         */
         private fun addUnaryOps(st: SymbolTable) {
             st.add(
                 "!",
                 UnaryOpIdentifier(
-                    UnaryOpIdentifier.UnaryOp.NOT,
                     TypeIdentifier.BOOL_TYPE,
                     TypeIdentifier.BOOL_TYPE
                 )
@@ -74,7 +85,6 @@ class SymbolTable(private val parentST: SymbolTable?) {
             st.add(
                 "-",
                 UnaryOpIdentifier(
-                    UnaryOpIdentifier.UnaryOp.NEGATIVE,
                     TypeIdentifier.INT_TYPE,
                     TypeIdentifier.INT_TYPE
                 )
@@ -83,7 +93,6 @@ class SymbolTable(private val parentST: SymbolTable?) {
             st.add(
                 "len",
                 UnaryOpIdentifier(
-                    UnaryOpIdentifier.UnaryOp.LEN,
                     TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0),
                     TypeIdentifier.INT_TYPE
                 )
@@ -92,7 +101,6 @@ class SymbolTable(private val parentST: SymbolTable?) {
             st.add(
                 "ord",
                 UnaryOpIdentifier(
-                    UnaryOpIdentifier.UnaryOp.ORD,
                     TypeIdentifier.CHAR_TYPE,
                     TypeIdentifier.INT_TYPE
                 )
@@ -101,7 +109,6 @@ class SymbolTable(private val parentST: SymbolTable?) {
             st.add(
                 "chr",
                 UnaryOpIdentifier(
-                    UnaryOpIdentifier.UnaryOp.CHR,
                     TypeIdentifier.INT_TYPE,
                     TypeIdentifier.CHAR_TYPE
                 )

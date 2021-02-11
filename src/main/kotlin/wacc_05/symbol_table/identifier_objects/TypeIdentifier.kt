@@ -3,6 +3,7 @@ package wacc_05.symbol_table.identifier_objects
 open class TypeIdentifier : IdentifierObject() {
 
     companion object {
+        // static string definitions of the types
         const val BOOLEAN = "bool"
         const val CHARACTER = "char"
         const val INTEGER = "int"
@@ -41,10 +42,6 @@ open class TypeIdentifier : IdentifierObject() {
     data class IntIdentifier(private val min: Int = Int.MIN_VALUE, private val max: Int = Int.MAX_VALUE) :
         TypeIdentifier() {
 
-        fun valid(value: Int): Boolean {
-            return value in min until max
-        }
-
         override fun toString(): String {
             return INTEGER
         }
@@ -60,6 +57,9 @@ open class TypeIdentifier : IdentifierObject() {
             return elemType
         }
 
+
+        // we override equality for array types to capture that only the element types need
+        // to match for two array types to be equal, regardless of length.
         override fun equals(other: Any?): Boolean {
             return other is ArrayIdentifier && elemType == other.elemType
         }
@@ -71,6 +71,8 @@ open class TypeIdentifier : IdentifierObject() {
         }
     }
 
+    // a generic pair type to capture the overall pair type. Used to represent the loss
+    // of type with nested pairs.
     open class GenericPairType : TypeIdentifier() {
         override fun equals(other: Any?): Boolean {
             return other is GenericPairType
@@ -95,6 +97,8 @@ open class TypeIdentifier : IdentifierObject() {
             return sndType
         }
 
+        // we override equals here to capture that two pair types are equal if they have the same
+        // inner types, or if the other is null.
         override fun equals(other: Any?): Boolean {
             if (other is GenericPairType) {
                 return if (other is PairIdentifier) {

@@ -1,6 +1,5 @@
 package wacc_05.error_tests
 
-import org.junit.Rule
 import org.junit.Test
 
 import wacc_05.WaccCompiler
@@ -11,7 +10,7 @@ class ErrorTests {
 
     @Test
     fun runValidTests() {
-        val testPassed: Boolean = runTestsInDir("src/test/test_cases/valid", "Valid", wacc_05.Error.SUCCESS)
+        val testPassed: Boolean = runTestsInDir("src/test/test_cases/valid", wacc_05.Error.SUCCESS)
         assertTrue(testPassed, "Failed Valid Program Checker Tests")
     }
 
@@ -19,7 +18,6 @@ class ErrorTests {
     fun runInvalidSemanticsTests() {
         val testPassed: Boolean = runTestsInDir(
             "src/test/test_cases/invalid/semanticErr",
-            "Invalid Semantic",
             wacc_05.Error.SEMANTIC_ERROR
         )
         assertTrue(testPassed, "Failed Invalid Semantic Checker Tests")
@@ -29,7 +27,7 @@ class ErrorTests {
      * terminate the entire testsuite.
      */
 
-    private fun runTestsInDir(directoryPath: String, type: String, expected: Int): Boolean {
+    private fun runTestsInDir(directoryPath: String, expected: Int): Boolean {
         val passedTests: ArrayList<String> = ArrayList()
         val failedTests: ArrayList<String> = ArrayList()
 
@@ -47,9 +45,6 @@ class ErrorTests {
         }
 
         println("---------------------------------------------")
-//            passedTests.forEach {
-//                println(it + " failed.")
-//            }
         println(passedTests.size.toString() + " tests passed.")
         println(failedTests.size.toString() + " tests failed.")
         println("---------------------------------------------")
