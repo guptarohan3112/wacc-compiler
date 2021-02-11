@@ -30,7 +30,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         val last = getLast(ctx.stat())
         if ((last !is WaccParser.StatReturnContext) && (last !is WaccParser.StatExitContext)) {
             println("Syntax Error 100: Missing Return Or Exit Statement at end of function")
-            exitProcess(Error.SYNTAX_ERROR);
+            exitProcess(Error.SYNTAX_ERROR)
         }
 
         val paramList: ParamListAST? = if (ctx.paramList() == null) {
@@ -60,10 +60,10 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             for (state in list) {
                 println(state.text)
             }
-            return getLast(list[list.size - 1]);
+            return getLast(list[list.size - 1])
         }
         /* Case when we have a single statement, rather than one of the above */
-        return stat;
+        return stat
     }
 
     /* Function: visitParamList()
