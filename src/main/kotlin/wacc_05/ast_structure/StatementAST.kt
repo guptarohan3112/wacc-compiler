@@ -85,7 +85,7 @@ sealed class StatementAST : AST {
     data class BeginAST(private val stat: StatementAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            stat.check(st, errorHandler)
+            stat.check(SymbolTable(st), errorHandler)
         }
 
     }
@@ -177,7 +177,7 @@ sealed class StatementAST : AST {
             val returnType: TypeIdentifier = expr.getType(st)
             val funcReturnType: TypeIdentifier? =
                 st.lookup(returnType.toString()) as TypeIdentifier?
-            if (funcReturnType == null) {
+            if (funcReturnType != returnType) {
                 errorHandler.invalidReturnType()
             }
         }

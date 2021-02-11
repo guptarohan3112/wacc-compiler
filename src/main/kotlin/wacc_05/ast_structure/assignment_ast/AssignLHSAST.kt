@@ -25,9 +25,13 @@ class AssignLHSAST(private val ident: String?) : AST {
         } else if (pairElem != null) {
             pairElem!!.check(st, errorHandler)
         } else {
-            if (st.lookupAll(ident!!) == null) {
+            val type = st.lookupAll(ident!!)
+            if (type == null) {
                 errorHandler.invalidIdentifier(ident)
                 st.add(ident, VariableIdentifier(ident, TypeIdentifier.GENERIC))
+            }
+            else if (type is FunctionIdentifier) {
+                errorHandler.invalidAssignment(ident)
             }
         }
     }
@@ -44,15 +48,11 @@ class AssignLHSAST(private val ident: String?) : AST {
             pairElem != null -> {
                 pairElem!!.getType(st)
             }
-            // TODO: LHS for assign ident cannot be a function
-            //  and function cannot be cast to Variable Ident below?
-            //  This fixes the problem for now but returns a generic type
             st.lookupAll(ident!!) is FunctionIdentifier -> {
-                print("found function")
                 TypeIdentifier.GENERIC
             }
             else -> {
-                (st.lookupAll(ident!!) as VariableIdentifier).getType()
+                (st.lookupAll(ident) as VariableIdentifier).getType()
             }
         }
     }
