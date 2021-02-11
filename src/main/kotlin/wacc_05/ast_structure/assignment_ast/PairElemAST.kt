@@ -4,9 +4,7 @@ import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class PairElemAST(private val ctx: WaccParser.PairElemContext, private val elem: ExprAST, private val isFst: Boolean) : AssignRHSAST() {
 

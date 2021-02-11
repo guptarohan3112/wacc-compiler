@@ -3,7 +3,6 @@ package wacc_05
 import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import kotlin.system.exitProcess
 
 interface SemanticErrors {
 
@@ -21,9 +20,9 @@ interface SemanticErrors {
 
     fun argNumberError(ctx: ParserRuleContext, fName: String, expected: Int, actual: Int)
 
-    fun invalidReturnType(ctx: ParserRuleContext, )
+    fun invalidReturnType(ctx: ParserRuleContext)
 
-    fun invalidReturn(ctx: ParserRuleContext, )
+    fun invalidReturn(ctx: ParserRuleContext)
 
     fun invalidAssignment(ctx: ParserRuleContext, fName: String)
 

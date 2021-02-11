@@ -2,7 +2,6 @@ package wacc_05.ast_structure
 
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
@@ -26,7 +25,7 @@ class ParamAST(
         return name
     }
 
-    fun getType(st: SymbolTable) : TypeIdentifier{
+    fun getType(st: SymbolTable): TypeIdentifier {
         return type.getType(st)
     }
 

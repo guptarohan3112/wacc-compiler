@@ -16,8 +16,7 @@ class FuncCallAST(private val ctx: WaccParser.FuncCallContext, private val funcN
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        val funcIdentifier: IdentifierObject? = st.lookupAll(funcName)
-        when (funcIdentifier) {
+        when (val funcIdentifier: IdentifierObject? = st.lookupAll(funcName)) {
             null -> {
                 errorHandler.invalidIdentifier(ctx, funcName)
             }
