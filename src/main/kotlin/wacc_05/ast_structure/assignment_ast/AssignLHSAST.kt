@@ -37,7 +37,6 @@ class AssignLHSAST(private val ident: String?) : AST {
 //    }
 
     fun getType(st: SymbolTable): TypeIdentifier {
-        var type = st.lookupAll(ident!!)
         return when {
             arrElem != null -> {
                 arrElem!!.getType(st)
@@ -48,11 +47,12 @@ class AssignLHSAST(private val ident: String?) : AST {
             // TODO: LHS for assign ident cannot be a function
             //  and function cannot be cast to Variable Ident below?
             //  This fixes the problem for now but returns a generic type
-            type == FunctionIdentifier(TypeIdentifier(), ArrayList(), st) -> {
+            st.lookupAll(ident!!) is FunctionIdentifier -> {
+                print("found function")
                 TypeIdentifier.GENERIC
             }
             else -> {
-                (type as VariableIdentifier).getType()
+                (st.lookupAll(ident!!) as VariableIdentifier).getType()
             }
         }
     }

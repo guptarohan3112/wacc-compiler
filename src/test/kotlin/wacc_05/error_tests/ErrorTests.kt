@@ -20,22 +20,23 @@ class ErrorTests {
         assertTrue(testPassed, "Failed Invalid Syntax Checker Tests")
     }
 
-//    @Test
-//    fun runInvalidSemanticsTests() {
-//        val testPassed: Boolean = runTestsInDir("src\\test\\test_cases\\invalid\\semanticErr\\", "Invalid Semantic", wacc_05.Error.SEMANTIC_ERROR)
-////        assertTrue(testPassed)
-//    }
+    @Test
+    fun runInvalidSemanticsTests() {
+        val testPassed: Boolean = runTestsInDir("src\\test\\test_cases\\invalid\\semanticErr\\", "Invalid Semantic", wacc_05.Error.SEMANTIC_ERROR)
+        assertTrue(testPassed, "Failed Invalid Semantic Checker Tests")
+    }
 
     fun runTestsInDir(directoryPath: String, type: String, expected: Int): Boolean {
         val passedTests: ArrayList<String> = ArrayList<String>()
         val failedTests: ArrayList<String> = ArrayList<String>()
 
         File(directoryPath).walk().forEach {
-            if (it.extension == "wacc")
+            if (it.extension == "wacc") {
                 if (WaccCompiler.runCompiler(it.absolutePath) == expected)
                     passedTests.add(it.nameWithoutExtension)
                 else
                     failedTests.add(it.nameWithoutExtension)
+            }
         }
 
         println("---------------------------------------------")
@@ -52,10 +53,8 @@ class ErrorTests {
         if (expected == 100) {
             println(failedTests.toString())
         }
-        return true
         return failedTests.size == 0
 
     }
 
 }
-
