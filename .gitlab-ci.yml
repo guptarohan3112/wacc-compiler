@@ -3,7 +3,7 @@ image: alexusher/wacc:latest
 stages:
     - build
     - testlocal
-    - testdeploy
+    - test
 
 build:
     stage: build
@@ -16,7 +16,8 @@ testlocal:
         - ./gradlew semanticTests
     only:
         - master
-testdeploy:
+
+test:
     script:
         - make
         - ./gradlew errorTests
