@@ -143,8 +143,14 @@ sealed class StatementAST : AST {
             if (condExpr.getType(st) != TypeIdentifier.BOOL_TYPE) {
                 errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, condExpr.getType(st))
             } else {
+                val returnTypeIdent: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?
                 val thenSt = SymbolTable(st)
                 val elseSt = SymbolTable(st)
+                // Propogate return type down in case there is a function that is nested
+                if (returnTypeIdent != null) {
+                    thenSt.add("returnType", returnTypeIdent)
+                    elseSt.add("returnType", returnTypeIdent)
+                }
                 thenStat.check(thenSt, errorHandler)
                 elseStat.check(elseSt, errorHandler)
             }
@@ -167,7 +173,7 @@ sealed class StatementAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
-            if (st.isMain()){
+            if (st.isMain()) {
                 errorHandler.invalidReturn()
             }
 
@@ -176,8 +182,7 @@ sealed class StatementAST : AST {
 
             // Check that type of expression being returned is the same as the return type of the function that defines the current scope
             val returnType: TypeIdentifier = expr.getType(st)
-            val funcReturnType: TypeIdentifier? =
-                st.lookup(returnType.toString()) as TypeIdentifier?
+            val funcReturnType: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?
             if (funcReturnType != returnType) {
                 errorHandler.invalidReturnType()
             }
@@ -209,6 +214,10 @@ sealed class StatementAST : AST {
                 errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, loopExpr.getType(st))
             } else {
                 val bodySt = SymbolTable(st)
+                val returnTypeIdent: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?
+                if (returnTypeIdent != null) {
+                    bodySt.add("returnType", returnTypeIdent)
+                }
                 body.check(bodySt, errorHandler)
             }
         }

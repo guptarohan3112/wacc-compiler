@@ -32,7 +32,7 @@ class FunctionAST(
             // Check parameter list and function body
             paramList?.check(funcST, errorHandler)
 
-            funcST.add(returnTypeIdent.toString(), returnTypeIdent)
+            funcST.add("returnType", returnTypeIdent)
 
             // Check parameter list and function body
             paramList?.check(funcST, errorHandler)
