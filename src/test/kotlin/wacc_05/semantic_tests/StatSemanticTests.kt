@@ -18,6 +18,7 @@ open class StatSemanticTests {
     val boolType: TypeIdentifier.BoolIdentifier = TypeIdentifier.BOOL_TYPE
 
     var st: SymbolTable = SymbolTable(null)
+    var childSt: SymbolTable = SymbolTable(st)
     var seh: SemanticErrors = mockk()
 
     @Test
@@ -91,8 +92,9 @@ open class StatSemanticTests {
         // in it
 
         st.add("bool", boolType)
+        childSt.add("bool", boolType)
 
-        StatementAST.ReturnAST(ExprAST.BoolLiterAST("true")).check(st, seh)
+        StatementAST.ReturnAST(ExprAST.BoolLiterAST("true")).check(childSt, seh)
     }
 
     @Test
@@ -101,7 +103,7 @@ open class StatSemanticTests {
 
         every { seh.invalidReturnType() } just runs
 
-        StatementAST.ReturnAST(ExprAST.IntLiterAST("+", "3")).check(st, seh)
+        StatementAST.ReturnAST(ExprAST.IntLiterAST("+", "3")).check(childSt, seh)
 
         verify(exactly = 1) { seh.invalidReturnType() }
     }
