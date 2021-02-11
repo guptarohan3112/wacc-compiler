@@ -1,5 +1,6 @@
 package wacc_05.error_tests
 
+import org.junit.Rule
 import org.junit.Test
 
 import wacc_05.WaccCompiler
@@ -15,13 +16,6 @@ class ErrorTests {
     }
 
     @Test
-    fun runInvalidSyntaxTests() {
-        val testPassed: Boolean =
-            runTestsInDir("src/test/test_cases/invalid/syntaxErr", "Invalid Syntax", wacc_05.Error.SYNTAX_ERROR)
-        assertTrue(testPassed, "Failed Invalid Syntax Checker Tests")
-    }
-
-    @Test
     fun runInvalidSemanticsTests() {
         val testPassed: Boolean = runTestsInDir(
             "src/test/test_cases/invalid/semanticErr",
@@ -30,6 +24,10 @@ class ErrorTests {
         )
         assertTrue(testPassed, "Failed Invalid Semantic Checker Tests")
     }
+
+    /* NOTE: we do not check syntax error tests since these call exit process directly and would
+     * terminate the entire testsuite.
+     */
 
     private fun runTestsInDir(directoryPath: String, type: String, expected: Int): Boolean {
         val passedTests: ArrayList<String> = ArrayList()
