@@ -31,7 +31,7 @@ class ErrorTests {
         assertTrue(testPassed, "Failed Invalid Semantic Checker Tests")
     }
 
-    fun runTestsInDir(directoryPath: String, type: String, expected: Int): Boolean {
+    private fun runTestsInDir(directoryPath: String, type: String, expected: Int): Boolean {
         val passedTests: ArrayList<String> = ArrayList()
         val failedTests: ArrayList<String> = ArrayList()
 
