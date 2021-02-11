@@ -59,7 +59,7 @@ open class TypeIdentifier : IdentifierObject() {
 
     data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) : TypeIdentifier() {
         override fun toString(): String {
-            return ARRAY
+            return "$ARRAY[$elemType]"
         }
 
         fun getType(): TypeIdentifier {
@@ -74,7 +74,7 @@ open class TypeIdentifier : IdentifierObject() {
     data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
         TypeIdentifier() {
         override fun toString(): String {
-            return PAIR
+            return "PAIR(${fstType.toString()}, ${sndType.toString()})"
         }
 
         fun getFstType(): TypeIdentifier {
