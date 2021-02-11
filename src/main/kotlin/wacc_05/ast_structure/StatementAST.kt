@@ -46,7 +46,7 @@ sealed class StatementAST : AST {
                     }
                 }
                 // Create variable identifier and add to symbol table
-                val varIdent = VariableIdentifier(varName, typeIdent)
+                val varIdent = VariableIdentifier(typeIdent)
                 st.add(varName, varIdent)
             }
         }

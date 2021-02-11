@@ -71,11 +71,8 @@ sealed class ExprAST : AssignRHSAST() {
                 null -> {
                     TypeIdentifier.GENERIC
                 }
-                is ParamIdentifier -> {
-                    type.getType()
-                }
                 else -> {
-                    (type as VariableIdentifier).getType()
+                    type.getType()
                 }
             }
         }
@@ -102,7 +99,7 @@ sealed class ExprAST : AssignRHSAST() {
             return if (type == null) {
                 TypeIdentifier.GENERIC
             } else {
-                val typeIdent = (type as VariableIdentifier).getType()
+                val typeIdent = type.getType()
                 if (typeIdent !is TypeIdentifier.ArrayIdentifier) {
                     return TypeIdentifier.GENERIC
                 }
@@ -123,7 +120,7 @@ sealed class ExprAST : AssignRHSAST() {
             if (variable == null) {
                 errorHandler.invalidIdentifier(ident)
             } else {
-                val variableType = (variable as VariableIdentifier).getType()
+                val variableType = variable.getType()
                 if (variableType !is TypeIdentifier.ArrayIdentifier) {
                     errorHandler.typeMismatch(variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
                 }
