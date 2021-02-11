@@ -22,4 +22,8 @@ class BinaryOpIdentifier(
         LAND,
         LOR
     }
+
+    override fun getType(): TypeIdentifier {
+        return returnType
+    }
 }
