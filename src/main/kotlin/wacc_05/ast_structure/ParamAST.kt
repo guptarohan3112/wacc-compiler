@@ -17,8 +17,8 @@ class ParamAST(
         type.check(st, errorHandler)
 
         // Create parameter identifier and add to symbol table
-        val typeIdent: IdentifierObject? = st.lookupAll(type.toString())
-        val paramIdent = ParamIdentifier(typeIdent as TypeIdentifier)
+        val typeIdent: TypeIdentifier = type.getType(st)
+        val paramIdent = ParamIdentifier(typeIdent)
         st.add(name, paramIdent)
     }
 

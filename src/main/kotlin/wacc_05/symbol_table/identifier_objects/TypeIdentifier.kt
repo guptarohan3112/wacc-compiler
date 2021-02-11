@@ -56,7 +56,7 @@ open class TypeIdentifier : IdentifierObject() {
             return "$ARRAY[$elemType]"
         }
 
-        fun getType(): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return elemType
         }
 
@@ -122,5 +122,9 @@ open class TypeIdentifier : IdentifierObject() {
         override fun equals(other: Any?): Boolean {
             return other is GenericPairType
         }
+    }
+
+    override fun getType(): TypeIdentifier {
+        return this
     }
 }

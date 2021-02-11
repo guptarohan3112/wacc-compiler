@@ -36,13 +36,12 @@ sealed class StatementAST : AST {
                 assignment.check(st, errorHandler)
                 val assignmentType: TypeIdentifier = assignment.getType(st)
 
-
                 if (typeIdent != assignmentType && assignmentType != TypeIdentifier.GENERIC) {
                     errorHandler.typeMismatch(typeIdent, assignment.getType(st))
                 }
 
                 // Create variable identifier and add to symbol table
-                val varIdent = VariableIdentifier(varName, typeIdent)
+                val varIdent = VariableIdentifier(typeIdent)
                 st.add(varName, varIdent)
             }
         }

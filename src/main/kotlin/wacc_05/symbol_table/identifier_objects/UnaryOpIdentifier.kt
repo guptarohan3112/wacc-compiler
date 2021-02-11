@@ -6,7 +6,7 @@ class UnaryOpIdentifier(
     private val returnType: TypeIdentifier = argType
 ) : IdentifierObject() {
 
-    fun getReturnType() : TypeIdentifier {
+    override fun getType() : TypeIdentifier {
         return returnType
     }
 

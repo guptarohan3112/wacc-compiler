@@ -19,4 +19,8 @@ class FunctionIdentifier(
     fun getParams(): ArrayList<ParamIdentifier> {
         return params
     }
+
+    override fun getType(): TypeIdentifier {
+        return getReturnType()
+    }
 }
