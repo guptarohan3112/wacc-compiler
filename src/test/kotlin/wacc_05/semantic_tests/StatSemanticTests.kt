@@ -30,7 +30,7 @@ open class StatSemanticTests {
     @Test
     fun readASTIntCheck() {
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", intType))
+        st.add("x", VariableIdentifier(intType))
 
         StatementAST.ReadAST(AssignLHSAST("x")).check(st, seh)
     }
@@ -38,7 +38,7 @@ open class StatSemanticTests {
     @Test
     fun readASTCharCheck() {
         st.add("char", charType)
-        st.add("x", VariableIdentifier("x", charType))
+        st.add("x", VariableIdentifier(charType))
 
         StatementAST.ReadAST(AssignLHSAST("x")).check(st, seh)
     }
@@ -46,7 +46,7 @@ open class StatSemanticTests {
     @Test
     fun readASTInvalidReadTypeCheck() {
         st.add("bool", boolType)
-        st.add("x", VariableIdentifier("x", boolType))
+        st.add("x", VariableIdentifier(boolType))
 
         every { seh.invalidReadType(any()) } just runs
 
@@ -59,7 +59,7 @@ open class StatSemanticTests {
     fun freeASTPairTypeCheck() {
         val identifier = TypeIdentifier.PairIdentifier(intType, intType)
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", identifier))
+        st.add("x", VariableIdentifier(identifier))
 
         StatementAST.FreeAST(ExprAST.IdentAST("x")).check(st, seh)
     }
@@ -68,7 +68,7 @@ open class StatSemanticTests {
     fun freeASTArrayTypeCheck() {
         val identifier = TypeIdentifier.ArrayIdentifier(intType, 5)
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", identifier))
+        st.add("x", VariableIdentifier(identifier))
 
         StatementAST.FreeAST(ExprAST.IdentAST("x")).check(st, seh)
     }
@@ -77,7 +77,7 @@ open class StatSemanticTests {
     fun freeASTInvalidFreeTypeCheck() {
         // anything not a pair or array type is an invalid free type
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", intType))
+        st.add("x", VariableIdentifier(intType))
 
         every { seh.invalidFreeType(any()) } just runs
 

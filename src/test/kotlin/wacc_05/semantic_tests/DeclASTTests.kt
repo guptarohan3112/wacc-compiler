@@ -24,7 +24,7 @@ class DeclASTTests : StatSemanticTests() {
     @Test
     fun declASTRepeatDeclaration() {
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", intType))
+        st.add("x", VariableIdentifier(intType))
 
         every { seh.repeatVariableDeclaration("x") } just Runs
 

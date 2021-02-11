@@ -194,8 +194,8 @@ class BinOpTests : ExprSemanticTests() {
         val arrIdent: TypeIdentifier.ArrayIdentifier = TypeIdentifier.ArrayIdentifier(intType, 5)
         val pairIdent: TypeIdentifier.PairIdentifier = TypeIdentifier.PairIdentifier(intType, intType)
         st.add("bool", boolType)
-        st.add("x", VariableIdentifier("x", arrIdent))
-        st.add("y", VariableIdentifier("y", pairIdent))
+        st.add("x", VariableIdentifier(arrIdent))
+        st.add("y", VariableIdentifier(pairIdent))
 
         StatementAST.DeclAST(
             TypeAST.BaseTypeAST("bool"),

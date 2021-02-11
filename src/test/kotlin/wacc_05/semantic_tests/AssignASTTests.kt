@@ -14,7 +14,7 @@ class AssignASTTests : StatSemanticTests() {
     @Test
     fun assignASTLHSValidIdentCheck() {
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", intType))
+        st.add("x", VariableIdentifier(intType))
 
         StatementAST.AssignAST(AssignLHSAST("x"), ExprAST.IntLiterAST("+", "3")).check(st, seh)
     }
@@ -22,7 +22,7 @@ class AssignASTTests : StatSemanticTests() {
     @Test
     fun assignASTLHSValidPairElemCheck() {
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", TypeIdentifier.PairIdentifier(intType, intType)))
+        st.add("x", VariableIdentifier(TypeIdentifier.PairIdentifier(intType, intType)))
 
         StatementAST.AssignAST(
             AssignLHSAST(PairElemAST(ExprAST.IdentAST("x"), false)),
@@ -34,7 +34,7 @@ class AssignASTTests : StatSemanticTests() {
     fun assignASTLHSValidArrayElemCheck() {
         // x[3] = 3
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", TypeIdentifier.ArrayIdentifier(intType, 4)))
+        st.add("x", VariableIdentifier(TypeIdentifier.ArrayIdentifier(intType, 4)))
 
         StatementAST.AssignAST(
             AssignLHSAST(ExprAST.ArrayElemAST("x", arrayListOf(ExprAST.IntLiterAST("+", "3")))),
@@ -60,7 +60,7 @@ class AssignASTTests : StatSemanticTests() {
     fun assignASTLHSIncorrectTypeCheck() {
         st.add("int", intType)
         st.add("char", charType)
-        st.add("x", VariableIdentifier("x", charType))
+        st.add("x", VariableIdentifier(charType))
 
         every { seh.typeMismatch(any(), any()) } just runs
 
@@ -104,7 +104,7 @@ class AssignASTTests : StatSemanticTests() {
     fun assignASTRHSValidArrayLiterCheck() {
         // we assign an array of same type but different length to x
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", TypeIdentifier.ArrayIdentifier(intType, 4)))
+        st.add("x", VariableIdentifier(TypeIdentifier.ArrayIdentifier(intType, 4)))
 
         // x = [3]
 
@@ -120,7 +120,7 @@ class AssignASTTests : StatSemanticTests() {
 
         st.add("int", intType)
         st.add("char", charType)
-        st.add("x", VariableIdentifier("x", identifier))
+        st.add("x", VariableIdentifier(identifier))
 
         StatementAST.AssignAST(
             AssignLHSAST("x"),
@@ -136,7 +136,7 @@ class AssignASTTests : StatSemanticTests() {
 
         st.add("int", intType)
         st.add("foo", identifier)
-        st.add("x", VariableIdentifier("x", intType))
+        st.add("x", VariableIdentifier(intType))
 
         StatementAST.AssignAST(
             AssignLHSAST("x"),
@@ -148,7 +148,7 @@ class AssignASTTests : StatSemanticTests() {
     fun assignASTRHSIncorrectTypeCheck() {
         st.add("int", intType)
         st.add("char", charType)
-        st.add("x", VariableIdentifier("x", intType))
+        st.add("x", VariableIdentifier(intType))
 
         every { seh.typeMismatch(any(), any()) } just runs
 
@@ -163,7 +163,7 @@ class AssignASTTests : StatSemanticTests() {
     @Test
     fun assignASTRHSUndefinedIdentifierCheck() {
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", intType))
+        st.add("x", VariableIdentifier(intType))
 
         every { seh.invalidIdentifier(any()) } just runs
 
@@ -180,7 +180,7 @@ class AssignASTTests : StatSemanticTests() {
         // we try and assign an array of different type
         st.add("int", intType)
         st.add("char", charType)
-        st.add("x", VariableIdentifier("x", TypeIdentifier.ArrayIdentifier(intType, 4)))
+        st.add("x", VariableIdentifier(TypeIdentifier.ArrayIdentifier(intType, 4)))
 
         every { seh.typeMismatch(any(), any()) } just runs
 
@@ -202,7 +202,7 @@ class AssignASTTests : StatSemanticTests() {
         val identifier = FunctionIdentifier(charType, ArrayList(), st)
         st.add("int", intType)
         st.add("char", charType)
-        st.add("x", VariableIdentifier("x", intType))
+        st.add("x", VariableIdentifier(intType))
         st.add("foo", identifier)
 
         every { seh.typeMismatch(any(), any()) } just runs
@@ -221,7 +221,7 @@ class AssignASTTests : StatSemanticTests() {
         val charIntIdentifier = TypeIdentifier.PairIdentifier(charType, intType)
         st.add("char", charType)
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", intCharIdentifier))
+        st.add("x", VariableIdentifier(intCharIdentifier))
 
         every { seh.typeMismatch(any(), any()) } just runs
 
