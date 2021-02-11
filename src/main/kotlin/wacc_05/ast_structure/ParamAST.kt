@@ -26,4 +26,8 @@ class ParamAST(
         return name
     }
 
+    fun getType(st: SymbolTable) : TypeIdentifier{
+        return type.getType(st)
+    }
+
 }

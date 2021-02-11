@@ -25,13 +25,17 @@ class FunctionAST(
         // Create function identifier and add to symbol table
         val funcST = SymbolTable(st)
         val returnTypeIdent: TypeIdentifier = returnType.getType(st)
-        val funcIdent =
-            FunctionIdentifier(returnTypeIdent, ArrayList(), funcST)
+
+        val paramIdents: ArrayList<ParamIdentifier> = ArrayList()
+        if (paramList != null) {
+            val params: ArrayList<ParamAST> = paramList.getParams()
+            for (param in params) {
+                paramIdents.add(ParamIdentifier(param.getType(st)))
+            }
+        }
+        val funcIdent = FunctionIdentifier(returnTypeIdent, paramIdents, funcST)
         st.add(funcName, funcIdent)
 
-        // Add return type as key value pair of symbol table for function (for future reference)
-//        println("The return type of this getPair function is $returnTypeIdent")
-//        println("The return type identifier is $returnTypeIdent")
         funcST.add(returnTypeIdent.toString(), returnTypeIdent)
 
         // Check parameter list and function body
