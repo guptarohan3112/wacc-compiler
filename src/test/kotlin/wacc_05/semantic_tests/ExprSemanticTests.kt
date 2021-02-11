@@ -20,7 +20,7 @@ open class ExprSemanticTests {
     @Test
     fun varIdentPresentCheck() {
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", intType))
+        st.add("x", VariableIdentifier(intType))
 
         ExprAST.IdentAST("x").check(st, seh)
     }

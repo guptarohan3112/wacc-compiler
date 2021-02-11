@@ -117,7 +117,7 @@ class UnOpTests : ExprSemanticTests() {
     fun unOpLenValidCheck() {
         val arrIdent = TypeIdentifier.ArrayIdentifier(intType, 5)
         st.add("int", intType)
-        st.add("x", VariableIdentifier("x", arrIdent))
+        st.add("x", VariableIdentifier(arrIdent))
 
         StatementAST.DeclAST(
             TypeAST.BaseTypeAST("int"),
@@ -152,7 +152,7 @@ class UnOpTests : ExprSemanticTests() {
         val arrIdent = TypeIdentifier.ArrayIdentifier(intType, 5)
         st.add("int", intType)
         st.add("char", charType)
-        st.add("arr", VariableIdentifier("arr", arrIdent))
+        st.add("arr", VariableIdentifier(arrIdent))
 
         every { seh.typeMismatch(any(), any()) } just runs
 
