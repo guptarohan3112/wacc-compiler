@@ -4,6 +4,7 @@ import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier.GenericPairType
 
 sealed class TypeAST : AST {
 
@@ -64,8 +65,9 @@ sealed class TypeAST : AST {
             if (type != null) {
                 return type.getType(st)
             } else {
-                return TypeIdentifier.GENERIC
+                return GenericPairType()
             }
+
         }
     }
 
@@ -74,7 +76,7 @@ sealed class TypeAST : AST {
         private val sndType: PairElemTypeAST
     ) : TypeAST() {
 
-        override fun getType(st: SymbolTable) : TypeIdentifier {
+        override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.PairIdentifier(fstType.getType(st), sndType.getType(st))
         }
 
