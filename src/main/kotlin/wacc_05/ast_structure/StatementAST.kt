@@ -32,10 +32,11 @@ sealed class StatementAST : AST {
                 errorHandler.repeatVariableDeclaration(varName)
             } else {
                 // Check that right hand side and type of identifier match
-                val typeIdent: TypeIdentifier = st.lookupAll(type.toString()) as TypeIdentifier
+                val typeIdent: TypeIdentifier = type.getType(st)
                 assignment.check(st, errorHandler)
 
                 if (typeIdent != assignment.getType(st)) {
+                    println("now is this error here?")
                     errorHandler.typeMismatch(typeIdent, assignment.getType(st))
                 }
                 // Create variable identifier and add to symbol table
