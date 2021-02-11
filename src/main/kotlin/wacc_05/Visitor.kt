@@ -289,11 +289,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             ctx.baseType() != null -> {
                 visitBaseType(ctx.baseType())
             }
-            ctx.arrayType() != null -> {
-                visitArrayType(ctx.arrayType())
-            }
             ctx.pairType() != null -> {
                 visitPairType(ctx.pairType())
+            }
+            ctx.type() != null -> {
+                TypeAST.ArrayTypeAST(visitType(ctx.type()))
             }
 
             // TODO - throw suitable error
@@ -309,24 +309,24 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return TypeAST.BaseTypeAST(ctx.text)
     }
 
-    /* Function: visitArrayType()
-        ------------------------
-        Returns a ArrayTypeAST node, by matching the context with the relevant type and then calling its
-        respective visit() function
-     */
-    override fun visitArrayType(ctx: WaccParser.ArrayTypeContext): TypeAST.ArrayTypeAST {
-        return when {
-            ctx.baseType() != null -> {
-                TypeAST.ArrayTypeAST(visitBaseType(ctx.baseType()))
-            }
-            ctx.pairType() != null -> {
-                TypeAST.ArrayTypeAST(visitPairType(ctx.pairType()))
-            }
-
-            // TODO - throw suitable error
-            else -> throw Exception()
-        }
-    }
+//    /* Function: visitArrayType()
+//        ------------------------
+//        Returns a ArrayTypeAST node, by matching the context with the relevant type and then calling its
+//        respective visit() function
+//     */
+//    override fun visitArrayType(ctx: WaccParser.ArrayTypeContext): TypeAST.ArrayTypeAST {
+//        return when {
+//            ctx.baseType() != null -> {
+//                TypeAST.ArrayTypeAST(visitBaseType(ctx.baseType()))
+//            }
+//            ctx.pairType() != null -> {
+//                TypeAST.ArrayTypeAST(visitPairType(ctx.pairType()))
+//            }
+//
+//            // TODO - throw suitable error
+//            else -> throw Exception()
+//        }
+//    }
 
     /* Function: visitPairType()
         ------------------------
