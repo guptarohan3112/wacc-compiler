@@ -26,17 +26,44 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         calling visitParamList() if the paramList of ctx is not null, and visitStat() to get the statement child.
      */
     override fun visitFunc(ctx: WaccParser.FuncContext): FunctionAST {
+
+        val last = getLast(ctx.stat())
+        if ((last !is WaccParser.StatReturnContext) && (last !is WaccParser.StatExitContext)) {
+            println("Syntax Error 100: Missing Return Or Exit Statement at end of function")
+            exitProcess(Error.SYNTAX_ERROR);
+        }
+
         val paramList: ParamListAST? = if (ctx.paramList() == null) {
             null
         } else {
             visitParamList(ctx.paramList())
         }
+
         return FunctionAST(
             visitType(ctx.type()),
             ctx.IDENT().text,
             paramList,
             visitStat(ctx.stat())
         )
+    }
+
+    private fun getLast(stat: WaccParser.StatContext): WaccParser.StatContext {
+
+        val list: List<WaccParser.StatContext> = when (stat) {
+            is WaccParser.StatSequentialContext-> stat.stat()
+            is WaccParser.StatIfContext -> stat.stat()
+            else -> emptyList()
+        }
+
+        /* Case where we have a sequence of statements or an if statement */
+        if (list.isNotEmpty()) {
+            for (state in list) {
+                println(state.text)
+            }
+            return getLast(list[list.size - 1]);
+        }
+        /* Case when we have a single statement, rather than one of the above */
+        return stat;
     }
 
     /* Function: visitParamList()
@@ -411,11 +438,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return ArrayLiterAST(exprs as ArrayList<ExprAST>)
     }
 
-    /* Function: VisitArrayElem()
-        ------------------------
-        Returns a ArrayElemAST node, by matching each of the expression children in the context and adding to internal
-        ArrayList. Also matches IDENT token to get id of the ArrayElem
-     */
+/* Function: VisitArrayElem()
+    ------------------------
+    Returns a ArrayElemAST node, by matching each of the expression children in the context and adding to internal
+    ArrayList. Also matches IDENT token to get id of the ArrayElem
+ */
 
     override fun visitArrayElem(ctx: WaccParser.ArrayElemContext): ExprAST.ArrayElemAST {
         val exprs: MutableList<ExprAST> = ArrayList()
