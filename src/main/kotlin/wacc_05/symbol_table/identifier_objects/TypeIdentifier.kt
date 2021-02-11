@@ -60,7 +60,7 @@ open class TypeIdentifier : IdentifierObject() {
         }
 
         override fun equals(other: Any?): Boolean {
-            return other is ArrayIdentifier && other.elemType == elemType
+            return other is ArrayIdentifier && elemType == other.elemType
         }
 
         override fun hashCode(): Int {
@@ -73,7 +73,7 @@ open class TypeIdentifier : IdentifierObject() {
     data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
         TypeIdentifier() {
         override fun toString(): String {
-            return "PAIR(${fstType.toString()}, ${sndType.toString()})"
+            return "PAIR(${fstType}, ${sndType})"
         }
 
         fun getFstType(): TypeIdentifier {

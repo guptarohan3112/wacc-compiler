@@ -34,9 +34,9 @@ sealed class StatementAST : AST {
                 // Check that right hand side and type of identifier match
                 val typeIdent: TypeIdentifier = type.getType(st)
                 assignment.check(st, errorHandler)
+                val assignmentType: TypeIdentifier = assignment.getType(st)
 
-                if (typeIdent != assignment.getType(st)) {
-                    println("now is this error here?")
+                if (typeIdent != assignmentType && assignmentType != TypeIdentifier.GENERIC) {
                     errorHandler.typeMismatch(typeIdent, assignment.getType(st))
                 }
                 // Create variable identifier and add to symbol table
