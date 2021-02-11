@@ -11,10 +11,6 @@ class ParamAST(
     private val name: String
 ) : AST {
 
-    fun getType(st: SymbolTable) : TypeIdentifier {
-        return type.getType(st)
-    }
-
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
         // Check validity of parameter type
@@ -28,6 +24,10 @@ class ParamAST(
 
     override fun toString(): String {
         return name
+    }
+
+    fun getType(st: SymbolTable) : TypeIdentifier{
+        return type.getType(st)
     }
 
 }
