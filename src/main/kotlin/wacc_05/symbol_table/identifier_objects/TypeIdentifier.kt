@@ -70,8 +70,10 @@ open class TypeIdentifier : IdentifierObject() {
         }
     }
 
+    open class GenericPairType : TypeIdentifier()
+
     data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
-        TypeIdentifier() {
+        GenericPairType() {
         override fun toString(): String {
             return "PAIR(${fstType}, ${sndType})"
         }
@@ -83,11 +85,33 @@ open class TypeIdentifier : IdentifierObject() {
         fun getSndType(): TypeIdentifier {
             return sndType
         }
+
+        override fun equals(other: Any?): Boolean {
+            if (other is GenericPairType) {
+                return if (other is PairIdentifier) {
+                    fstType == other.fstType && sndType == other.sndType
+                } else {
+                    true
+                }
+            }
+
+            return false
+        }
+
+        override fun hashCode(): Int {
+            var result = fstType.hashCode()
+            result = 31 * result + sndType.hashCode()
+            return result
+        }
     }
 
-    object PairLiterIdentifier : TypeIdentifier() {
+    object PairLiterIdentifier : GenericPairType() {
         override fun toString(): String {
             return PAIR
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return other is GenericPairType
         }
     }
 }
