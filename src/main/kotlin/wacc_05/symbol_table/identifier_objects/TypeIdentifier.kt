@@ -17,6 +17,7 @@ open class TypeIdentifier : IdentifierObject() {
         val BOOL_TYPE = BoolIdentifier
         val STRING_TYPE = StringIdentifier
         val PAIR_LIT_TYPE = PairLiterIdentifier
+        val GENERIC_PAIR_TYPE = GenericPairType()
     }
 
     object BoolIdentifier : TypeIdentifier() {

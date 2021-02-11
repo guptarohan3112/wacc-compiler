@@ -61,7 +61,7 @@ sealed class TypeAST : AST {
         }
 
         fun getType(st: SymbolTable): TypeIdentifier {
-            return type?.getType(st) ?: TypeIdentifier.GENERIC
+            return type?.getType(st) ?: TypeIdentifier.GENERIC_PAIR_TYPE
         }
     }
 
@@ -70,7 +70,7 @@ sealed class TypeAST : AST {
         private val sndType: PairElemTypeAST
     ) : TypeAST() {
 
-        override fun getType(st: SymbolTable) : TypeIdentifier {
+        override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.PairIdentifier(fstType.getType(st), sndType.getType(st))
         }
 
