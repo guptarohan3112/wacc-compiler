@@ -28,7 +28,7 @@ class AssignLHSAST(private val ident: String?) : AST {
             val type = st.lookupAll(ident!!)
             if (type == null) {
                 errorHandler.invalidIdentifier(ident)
-                st.add(ident, VariableIdentifier(ident, TypeIdentifier.GENERIC))
+                st.add(ident, VariableIdentifier(TypeIdentifier.GENERIC))
             }
             else if (type is FunctionIdentifier) {
                 errorHandler.invalidAssignment(ident)
