@@ -38,21 +38,6 @@ class DeclASTTests : StatSemanticTests() {
     }
 
     @Test
-    fun declASTKeywordClash() {
-        st.add("int", intType)
-
-        every { seh.repeatVariableDeclaration(any()) } just Runs
-
-        StatementAST.DeclAST(
-            TypeAST.BaseTypeAST("int"),
-            "int",
-            ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
-
-        verify(exactly = 1) { seh.repeatVariableDeclaration("int") }
-    }
-
-    @Test
     fun declASTDifferentTypes() {
         st.add("int", intType)
         st.add("char", charType)
