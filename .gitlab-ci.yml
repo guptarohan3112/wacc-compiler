@@ -2,16 +2,23 @@ image: alexusher/wacc:latest
 
 stages:
     - build
-    - test
+    - testlocal
+    - testdeploy
 
 build:
     stage: build
     script:
         - make clean && make
 
-test:
+testlocal:
     script:
         - make
         - ./gradlew semanticTests
+    only:
+        - master
+testdeploy:
+    script:
+        - make
+        - ./gradlew errorTests
     only:
         - master
