@@ -17,6 +17,7 @@ open class TypeIdentifier : IdentifierObject() {
         val BOOL_TYPE = BoolIdentifier
         val STRING_TYPE = StringIdentifier
         val PAIR_LIT_TYPE = PairLiterIdentifier
+        val GENERIC_PAIR_TYPE = GenericPairType()
     }
 
     object BoolIdentifier : TypeIdentifier() {
@@ -70,7 +71,15 @@ open class TypeIdentifier : IdentifierObject() {
         }
     }
 
-    open class GenericPairType : TypeIdentifier()
+    open class GenericPairType : TypeIdentifier() {
+        override fun equals(other: Any?): Boolean {
+            return other is GenericPairType
+        }
+
+        override fun hashCode(): Int {
+            return javaClass.hashCode()
+        }
+    }
 
     data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
         GenericPairType() {

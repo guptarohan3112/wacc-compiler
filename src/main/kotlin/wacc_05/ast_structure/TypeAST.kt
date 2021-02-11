@@ -61,7 +61,7 @@ sealed class TypeAST : AST {
         }
 
         fun getType(st: SymbolTable): TypeIdentifier {
-            return type?.getType(st) ?: TypeIdentifier.GENERIC
+            return type?.getType(st) ?: TypeIdentifier.GENERIC_PAIR_TYPE
         }
     }
 
