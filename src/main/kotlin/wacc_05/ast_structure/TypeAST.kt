@@ -84,7 +84,7 @@ sealed class TypeAST : AST {
         }
 
         override fun toString(): String {
-            return fstType.toString()
+            return "pair($fstType, $sndType)"
         }
     }
 }

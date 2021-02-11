@@ -36,10 +36,6 @@ class AssignLHSAST(private val ident: String?) : AST {
         }
     }
 
-//    fun setType(st: SymbolTable, type: TypeIdentifier) {
-//        st.add(ident!!, VariableIdentifier(ident, type))
-//    }
-
     fun getType(st: SymbolTable): TypeIdentifier {
         return when {
             arrElem != null -> {
@@ -51,8 +47,11 @@ class AssignLHSAST(private val ident: String?) : AST {
             st.lookupAll(ident!!) is FunctionIdentifier -> {
                 TypeIdentifier.GENERIC
             }
-            else -> {
+            st.lookupAll(ident) is VariableIdentifier -> {
                 (st.lookupAll(ident) as VariableIdentifier).getType()
+            }
+            else -> {
+                (st.lookupAll(ident) as ParamIdentifier).getType()
             }
         }
     }

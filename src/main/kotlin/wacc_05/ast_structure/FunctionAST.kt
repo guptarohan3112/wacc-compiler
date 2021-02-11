@@ -16,7 +16,7 @@ class FunctionAST(
 
         // Check to make sure function has not already been defined
         val func: IdentifierObject? = st.lookup(funcName)
-        if (func != null) {
+        if (func != null && func is FunctionIdentifier) {
             errorHandler.repeatVariableDeclaration(funcName)
         } else {
             // Create function identifier and add to symbol table
@@ -29,8 +29,10 @@ class FunctionAST(
             val funcIdent =
                 FunctionIdentifier(returnTypeIdent as TypeIdentifier, params, funcST)
 
-            // Add return type as key value pair of symbol table for function (for future reference)
-            funcST.add(returnType.toString(), returnTypeIdent)
+            // Check parameter list and function body
+            paramList?.check(funcST, errorHandler)
+
+            funcST.add(returnTypeIdent.toString(), returnTypeIdent)
 
             // Check parameter list and function body
             paramList?.check(funcST, errorHandler)
