@@ -99,10 +99,13 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             val type = st.lookupAll(ident)
-            val typeIdent = (type as VariableIdentifier).getType()
-            return if (type == null || (typeIdent !is TypeIdentifier.ArrayIdentifier)) {
+            return if (type == null) {
                 TypeIdentifier.GENERIC
             } else {
+                val typeIdent = (type as VariableIdentifier).getType()
+                if (typeIdent !is TypeIdentifier.ArrayIdentifier) {
+                    return TypeIdentifier.GENERIC
+                }
                 typeIdent.getType()
             }
         }
@@ -120,11 +123,11 @@ sealed class ExprAST : AssignRHSAST() {
             if (variable == null) {
                 errorHandler.invalidIdentifier(ident)
             }
-
-            val variableType = (variable as VariableIdentifier).getType()
-
-            if (variableType !is TypeIdentifier.ArrayIdentifier) {
-                errorHandler.typeMismatch(variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
+            else{
+                val variableType = (variable as VariableIdentifier).getType()
+                if (variableType !is TypeIdentifier.ArrayIdentifier) {
+                    errorHandler.typeMismatch(variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
+                }
             }
         }
 

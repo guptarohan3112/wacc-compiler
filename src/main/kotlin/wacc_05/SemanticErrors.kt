@@ -24,6 +24,8 @@ interface SemanticErrors {
 
     fun invalidReturn()
 
+    fun invalidAssignment(fName: String)
+
     fun invalidReadType(actual: TypeIdentifier)
 
     fun invalidFreeType(actual: TypeIdentifier)
