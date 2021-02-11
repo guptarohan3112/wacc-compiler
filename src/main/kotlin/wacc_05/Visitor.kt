@@ -348,7 +348,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     override fun visitPairElemType(ctx: WaccParser.PairElemTypeContext): TypeAST.PairElemTypeAST {
         return when {
             ctx.type() != null -> {
-                TypeAST.PairElemTypeAST(type = visitType(ctx.type()))
+                TypeAST.PairElemTypeAST(type = TypeAST.ArrayTypeAST(visitType(ctx.type())))
             }
             ctx.baseType() != null -> {
                 TypeAST.PairElemTypeAST(type = visitBaseType(ctx.baseType()))
