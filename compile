@@ -1,15 +1,33 @@
 #!/bin/bash
-# Ruby front-end for your compiler.
-# You are free to change the language used for this script,
-# but do *not* change its name.
+# Ruby front-end for WaccCompiler.
 
+DEBUG_MODE='false'
+
+# get optional flags
+while getopts "ds" arg; do
+    case $arg in
+	d)
+	    echo "DEBUG MODE SELECTED"
+	    DEBUG_MODE='true'
+	    ;;
+	s)
+	    echo "Example"
+	    ;;
+    esac
+done
+# shift parameters so 0th argument is filepath
+shift $(($OPTIND - 1))
+
+# Exit with error if no filename supplied
 if [ $# -eq 0 ]
   then
     echo "No arguments supplied, please specify filepath as first argument"
     exit 1
 fi
 
-java -jar build/libs/wacc_05.jar $1
+FILE_NAME=$1
+
+java -jar build/libs/wacc_05.jar $FILE_NAME $DEBUG_MODE
 exit $?
 
 # with some arguments

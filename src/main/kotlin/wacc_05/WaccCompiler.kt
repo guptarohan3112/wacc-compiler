@@ -8,28 +8,43 @@ import wacc_05.ast_structure.AST
 import wacc_05.symbol_table.SymbolTable
 import java.io.File
 import kotlin.system.exitProcess
+import kotlin.system.measureTimeMillis
 
 fun main(args: Array<String>) {
-    if (args.size != 1) {
+    if (args.size <= 1) {
         println("Reason For Error : Please specify the path to a file as the argument of the program")
-        exitProcess(-1)
+        exitProcess(Error.GENERAL_ERROR)
     }
-    val ret = WaccCompiler.runCompiler(args[0])
+
+    val filePath: String = args[0]
+    val debug: Boolean = args[1] == "true"
+
+    val ret: Int
+    val time = measureTimeMillis {
+        ret = WaccCompiler.runCompiler(filePath, debug)
+    }
+
+    if (ret == Error.SUCCESS) {
+        println("Compilation Successful in $time milliseconds")
+    } else {
+        println("Compilation failed with error in $time milliseconds")
+    }
+
+    println("Exited with exit code: $ret")
+
     exitProcess(ret)
 }
 
 object WaccCompiler {
 
     @JvmStatic
-    fun runCompiler(filePath: String): Int {
-//        println("Welcome to WACC: Please enter your input below")
-//        println("Remember to click enter at the end of input in this temporary solution")
+    fun runCompiler(filePath: String, debug: Boolean): Int {
         val inputStream = File(filePath).inputStream()
         val input = CharStreams.fromStream(inputStream)
         val lexer = WaccLexer(input)
         val errorListener = ErrorListener()
 
-        lexer.removeErrorListeners()   // remove default ConsoleErrorListener
+        lexer.removeErrorListeners()
         lexer.addErrorListener(errorListener)
 
         val tokens = CommonTokenStream(lexer)
@@ -44,7 +59,8 @@ object WaccCompiler {
             return Error.SYNTAX_ERROR
         }
 
-        println('\n' + tree.toStringTree(parser) + '\n')
+        if (debug)
+            println('\n' + tree.toStringTree(parser) + '\n')
 
         val visitor = Visitor()
         val ast: AST = visitor.visit(tree)
@@ -52,7 +68,9 @@ object WaccCompiler {
         val seh = SemanticErrorHandler()
         semanticErrorCheck(ast, SymbolTable(null), seh)
 
-        println("FINISHED")
+        if (debug)
+            println("FINISHED")
+
         return seh.err
     }
 
