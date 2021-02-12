@@ -2,7 +2,6 @@ package wacc_05.semantic_tests
 
 import antlr.WaccParser
 import io.mockk.*
-import org.antlr.v4.runtime.ParserRuleContext
 import org.junit.Test
 
 import wacc_05.SemanticErrors
@@ -151,35 +150,50 @@ open class StatSemanticTests {
 
         verify(exactly = 1) { seh.invalidReturnType(any()) }
     }
-//
-//    @Test
-//    fun exitASTValidCheck() {
-//        // an exit statement is valid if its expression is of integer type
-//        st.add("int", intType)
-//
-//        StatementAST.ExitAST(ExprAST.IntLiterAST("+", "0")).check(st, seh)
-//    }
-//
-//    @Test
-//    fun exitASTValidExprCheck() {
-//        st.add("int", intType)
-//        StatementAST.ExitAST(
-//            ExprAST.BinOpAST(
-//                ExprAST.IntLiterAST("+", "3"),
-//                ExprAST.IntLiterAST("+", "4"),
-//                "+"
-//            )
-//        ).check(st, seh)
-//    }
-//
-//    @Test
-//    fun exitASTInvalidTypeCheck() {
-//        st.add("char", charType)
-//
-//        every { seh.invalidExitType(any()) } just runs
-//
-//        StatementAST.ExitAST(ExprAST.CharLiterAST("c")).check(st, seh)
-//
-//        verify(exactly = 1) { seh.invalidExitType(charType) }
-//    }
+
+    @Test
+    fun exitASTValidCheck() {
+        val exitContext = WaccParser.StatExitContext(statCtx)
+        val exprContext = WaccParser.ExprContext(exitContext, 0)
+
+        exitContext.addChild(exprContext)
+
+        // an exit statement is valid if its expression is of integer type
+        st.add("int", intType)
+
+        StatementAST.ExitAST(ExprAST.IntLiterAST("+", "0")).check(exitContext, st, seh)
+    }
+
+    @Test
+    fun exitASTValidExprCheck() {
+        val exitContext = WaccParser.StatExitContext(statCtx)
+        val exprContext = WaccParser.ExprContext(exitContext, 0)
+
+        exitContext.addChild(exprContext)
+
+        st.add("int", intType)
+        StatementAST.ExitAST(
+            ExprAST.BinOpAST(
+                ExprAST.IntLiterAST("+", "3"),
+                ExprAST.IntLiterAST("+", "4"),
+                "+"
+            )
+        ).check(exitContext, st, seh)
+    }
+
+    @Test
+    fun exitASTInvalidTypeCheck() {
+        val exitContext = WaccParser.StatExitContext(statCtx)
+        val exprContext = WaccParser.ExprContext(exitContext, 0)
+
+        exitContext.addChild(exprContext)
+
+        st.add("char", charType)
+
+        every { seh.invalidExitType(any(), any()) } just runs
+
+        StatementAST.ExitAST(ExprAST.CharLiterAST("c")).check(exitContext, st, seh)
+
+        verify(exactly = 1) { seh.invalidExitType(any(), charType) }
+    }
 }

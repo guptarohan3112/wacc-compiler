@@ -1,19 +1,21 @@
-//package wacc_05.semantic_tests
-//
-//import io.mockk.Runs
-//import io.mockk.every
-//import io.mockk.just
-//import io.mockk.verify
-//import org.junit.Test
-//import wacc_05.ast_structure.ExprAST
-//import wacc_05.ast_structure.StatementAST
-//import wacc_05.ast_structure.TypeAST
-//import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-//import wacc_05.symbol_table.identifier_objects.VariableIdentifier
-//
-//class DeclASTTests : StatSemanticTests() {
+package wacc_05.semantic_tests
+
+import io.mockk.Runs
+import io.mockk.every
+import io.mockk.just
+import io.mockk.verify
+import org.junit.Test
+import wacc_05.ast_structure.ExprAST
+import wacc_05.ast_structure.StatementAST
+import wacc_05.ast_structure.TypeAST
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+
+class DeclASTTests : StatSemanticTests() {
 //    @Test
 //    fun declASTValidCheck() {
+//        val declContext =
+//
 //        st.add("int", TypeIdentifier.IntIdentifier())
 //        StatementAST.DeclAST(
 //            TypeAST.BaseTypeAST("int"), "x",
@@ -52,4 +54,4 @@
 //
 //        verify(exactly = 1) { seh.typeMismatch(intType, charType) }
 //    }
-//}
+}
