@@ -43,27 +43,37 @@ open class StatSemanticTests {
 
         StatementAST.ReadAST(AssignLHSAST("x")).check(readCtx, st, seh)
     }
-//
-//    @Test
-//    fun readASTCharCheck() {
-//        st.add("char", charType)
-//        st.add("x", VariableIdentifier(charType))
-//
-//        StatementAST.ReadAST(AssignLHSAST("x")).check(st, seh)
-//    }
-//
-//    @Test
-//    fun readASTInvalidReadTypeCheck() {
-//        st.add("bool", boolType)
-//        st.add("x", VariableIdentifier(boolType))
-//
-//        every { seh.invalidReadType(any()) } just runs
-//
-//        StatementAST.ReadAST(AssignLHSAST("x")).check(st, seh)
-//
-//        verify(exactly = 1) { seh.invalidReadType(boolType) }
-//    }
-//
+
+    @Test
+    fun readASTCharCheck() {
+        val readCtx = WaccParser.StatReadContext(statCtx)
+        val assignLHSCtx = WaccParser.AssignLHSContext(readCtx, 0)
+
+        readCtx.addChild(assignLHSCtx)
+
+        st.add("char", charType)
+        st.add("x", VariableIdentifier(charType))
+
+        StatementAST.ReadAST(AssignLHSAST("x")).check(readCtx, st, seh)
+    }
+
+    @Test
+    fun readASTInvalidReadTypeCheck() {
+        val readCtx = WaccParser.StatReadContext(statCtx)
+        val assignLHSCtx = WaccParser.AssignLHSContext(readCtx, 0)
+
+        readCtx.addChild(assignLHSCtx)
+
+        st.add("bool", boolType)
+        st.add("x", VariableIdentifier(boolType))
+
+        every { seh.invalidReadType(any(), any()) } just runs
+
+        StatementAST.ReadAST(AssignLHSAST("x")).check(readCtx, st, seh)
+
+        verify(exactly = 1) { seh.invalidReadType(any(), boolType) }
+    }
+
 //    @Test
 //    fun freeASTPairTypeCheck() {
 //        val identifier = TypeIdentifier.PairIdentifier(intType, intType)
