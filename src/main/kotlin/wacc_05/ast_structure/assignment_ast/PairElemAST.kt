@@ -26,7 +26,7 @@ class PairElemAST(private val elem: ExprAST, private val isFst: Boolean) : Assig
     }
 
     override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
-        val pairElemContext = ctx as WaccParser.PairElemContext
+        val pairElemContext = (ctx as WaccParser.AssignRHSContext).pairElem()
 
         elem.check(pairElemContext.expr(), st, errorHandler)
 

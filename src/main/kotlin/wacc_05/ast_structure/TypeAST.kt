@@ -52,7 +52,7 @@ sealed class TypeAST : AST {
         }
     }
 
-    data class PairElemTypeAST(private val pair: String? = null, private val type: TypeAST?) : AST {
+    data class PairElemTypeAST(private val pair: String? = null, private val type: TypeAST?) : TypeAST() {
 
         override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
             if (type is BaseTypeAST) {
@@ -66,7 +66,7 @@ sealed class TypeAST : AST {
             return type.toString()
         }
 
-        fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(st: SymbolTable): TypeIdentifier {
             return type?.getType(st) ?: TypeIdentifier.GENERIC_PAIR_TYPE
         }
     }

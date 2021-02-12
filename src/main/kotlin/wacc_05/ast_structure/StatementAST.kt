@@ -28,7 +28,13 @@ sealed class StatementAST : AST {
             val declContext = ctx as WaccParser.StatDeclarationContext
 
             // Check validity of type of identifier that is being declared
-            type.check(declContext.type(), st, errorHandler)
+            type.check(
+                if (declContext.type().pairType() != null) {
+                    declContext.type().pairType()
+                } else {
+                    declContext.type()
+                }, st, errorHandler
+            )
 
             val variable: IdentifierObject? = st.lookup(varName)
             if (variable != null && variable is VariableIdentifier) {

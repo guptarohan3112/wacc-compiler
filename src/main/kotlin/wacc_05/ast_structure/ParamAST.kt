@@ -14,8 +14,16 @@ class ParamAST(
 ) : AST {
 
     override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+        val paramContext = ctx as WaccParser.ParamContext
+
         // Check validity of parameter type
-        type.check((ctx as WaccParser.ParamContext).type(), st, errorHandler)
+        type.check(
+            if (paramContext.type().pairType() != null) {
+                paramContext.type().pairType()
+            } else {
+                paramContext.type()
+            }, st, errorHandler
+        )
 
         // Create parameter identifier and add to symbol table
         val typeIdent: TypeIdentifier = type.getType(st)

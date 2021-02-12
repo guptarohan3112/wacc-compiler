@@ -1,34 +1,47 @@
-//package wacc_05.semantic_tests
-//
-//import io.mockk.every
-//import io.mockk.just
-//import io.mockk.runs
-//import io.mockk.verify
-//import org.junit.Test
-//import wacc_05.ast_structure.ExprAST
-//import wacc_05.ast_structure.StatementAST
-//import wacc_05.ast_structure.TypeAST
-//import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-//import wacc_05.symbol_table.identifier_objects.VariableIdentifier
-//
-//class BinOpTests : ExprSemanticTests() {
-//
-//    @Test
-//    fun binOpMultValidCheck() {
-//        // these tests will use DeclAST as a way of verifying the return type of the binOp
-//
-//        st.add("int", intType)
-//
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("int"),
-//            "x",
-//            ExprAST.BinOpAST(
-//                ExprAST.IntLiterAST("+", "3"),
-//                ExprAST.IntLiterAST("+", "5"),
-//                "*"
-//            )
-//        ).check(st, seh)
-//    }
+package wacc_05.semantic_tests
+
+import antlr.WaccParser
+import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
+import io.mockk.verify
+import org.junit.Test
+import wacc_05.ast_structure.ExprAST
+import wacc_05.ast_structure.StatementAST
+import wacc_05.ast_structure.TypeAST
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+
+class BinOpTests : ExprSemanticTests() {
+
+    val declContext = WaccParser.StatDeclarationContext(statContext)
+    val typeContext = WaccParser.BaseTypeContext(statContext, 0)
+    val binOpContext = WaccParser.ExprContext(declContext, 0)
+
+    init {
+        declContext.addChild(exprContext)
+        declContext.addChild(exprContext)
+        declContext.addChild(typeContext)
+        declContext.addChild(binOpContext)
+        binOpContext.addChild(exprContext)
+        binOpContext.addChild(exprContext)
+    }
+
+    @Test
+    fun binOpMultValidCheck() {
+        // these tests will use DeclAST as a way of verifying the return type of the binOp
+        st.add("int", intType)
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "x",
+            ExprAST.BinOpAST(
+                ExprAST.IntLiterAST("+", "3"),
+                ExprAST.IntLiterAST("+", "5"),
+                "*"
+            )
+        ).check(declContext, st, seh)
+    }
 //
 //    @Test
 //    fun binOpMultIncorrectArgTypeCheck() {
@@ -280,4 +293,4 @@
 //
 //        verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
 //    }
-//}
+}

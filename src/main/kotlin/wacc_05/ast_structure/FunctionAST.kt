@@ -14,7 +14,13 @@ class FunctionAST(
 ) : AST {
 
     fun preliminaryCheck(ctx: WaccParser.FuncContext, st: SymbolTable, errorHandler: SemanticErrors) {
-        returnType.check(ctx, st, errorHandler)
+        returnType.check(
+            if (ctx.type().pairType() != null) {
+                ctx.type().pairType()
+            } else {
+                ctx.type()
+            }, st, errorHandler
+        )
 
         // Check to make sure function has not already been defined
         val func: IdentifierObject? = st.lookup(funcName)

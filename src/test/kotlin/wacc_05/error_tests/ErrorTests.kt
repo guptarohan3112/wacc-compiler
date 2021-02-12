@@ -39,6 +39,7 @@ class ErrorTests {
                     else
                         failedTests.add(it.nameWithoutExtension)
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     failedTests.add(it.nameWithoutExtension)
                 }
             }

@@ -10,6 +10,18 @@ import java.sql.ParameterMetaData
 
 sealed class ExprAST : AssignRHSAST() {
 
+    companion object {
+        private fun convertToExpr(ctx: ParserRuleContext): WaccParser.ExprContext {
+            return if (ctx is WaccParser.AssignRHSContext) {
+                ctx.expr()
+            } else if (ctx is WaccParser.ExprContext) {
+                ctx
+            } else {
+                ctx as WaccParser.ExprContext
+            }
+        }
+    }
+
     data class IntLiterAST(private val sign: String, private val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
@@ -105,7 +117,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
-            val arrayElemContext = ctx as WaccParser.ArrayElemContext
+            val arrayElemContext = convertToExpr(ctx!!).arrayElem()
 
             for (i in 0 until exprs.size) {
                 exprs[i].check(arrayElemContext.expr(i), st, errorHandler)
@@ -150,7 +162,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
-            val unOpContext = ctx as WaccParser.ExprContext
+            val unOpContext = convertToExpr(ctx!!)
 
             expr.check(unOpContext.expr(0), st, errorHandler)
             val exprType = expr.getType(st)
@@ -215,7 +227,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
-            val binOpContext = ctx as WaccParser.ExprContext
+            val binOpContext = convertToExpr(ctx!!)
 
             expr1.check(binOpContext.expr(0), st, errorHandler)
             expr2.check(binOpContext.expr(1), st, errorHandler)

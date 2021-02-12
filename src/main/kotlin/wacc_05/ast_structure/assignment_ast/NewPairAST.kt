@@ -14,7 +14,7 @@ class NewPairAST(private val fst: ExprAST, private val snd: ExprAST) : AssignRHS
     }
 
     override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
-        val newPairContext = ctx as WaccParser.NewPairContext
+        val newPairContext = (ctx as WaccParser.AssignRHSContext).newPair()
 
         fst.check(newPairContext.expr(0), st, errorHandler)
         snd.check(newPairContext.expr(1), st, errorHandler)

@@ -20,7 +20,7 @@ class ArrayLiterAST(private val elems: ArrayList<ExprAST>) : AssignRHSAST() {
     }
 
     override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
-        val arrayLitContext = ctx as WaccParser.ArrayLitContext
+        val arrayLitContext = (ctx as WaccParser.AssignRHSContext).arrayLit()
 
         // If the array literal is empty, no semantic check need to be done
         if (elems.size != 0) {

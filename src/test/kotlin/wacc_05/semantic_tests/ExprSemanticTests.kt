@@ -21,7 +21,6 @@ open class ExprSemanticTests {
     val statContext = WaccParser.StatContext()
     val exprContext = WaccParser.ExprContext(statContext, 0)
 
-
     @Test
     fun varIdentPresentCheck() {
         st.add("int", intType)

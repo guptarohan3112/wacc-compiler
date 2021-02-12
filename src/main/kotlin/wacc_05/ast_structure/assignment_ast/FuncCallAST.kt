@@ -17,7 +17,7 @@ class FuncCallAST(private val funcName: String, private val args: ArrayList<Expr
     }
 
     override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
-        val funcCallContext = ctx as WaccParser.FuncCallContext
+        val funcCallContext = (ctx as WaccParser.AssignRHSContext).funcCall()
 
         val funcIdentifier: IdentifierObject? = st.lookupAll(funcName)
         when (funcIdentifier) {
@@ -36,7 +36,7 @@ class FuncCallAST(private val funcName: String, private val args: ArrayList<Expr
 
                 // Check that arg type match up with corresponding parameter type
                 for (i in 0 until args.size.coerceAtMost(noOfArgs)) {
-                    args[i].check(funcCallContext.argList(), st, errorHandler)
+                    args[i].check(funcCallContext.argList().expr(i), st, errorHandler)
                     val expectedType: TypeIdentifier = funcIdentifier.getParams()[i].getType()
                     val actualType: TypeIdentifier = args[i].getType(st)
                     if (expectedType != actualType) {
