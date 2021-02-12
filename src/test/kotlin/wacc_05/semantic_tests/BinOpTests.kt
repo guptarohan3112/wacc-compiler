@@ -1,18 +1,19 @@
-//package wacc_05.semantic_tests
-//
-//import io.mockk.every
-//import io.mockk.just
-//import io.mockk.runs
-//import io.mockk.verify
-//import org.junit.Test
-//import wacc_05.ast_structure.ExprAST
-//import wacc_05.ast_structure.StatementAST
-//import wacc_05.ast_structure.TypeAST
-//import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-//import wacc_05.symbol_table.identifier_objects.VariableIdentifier
-//
-//class BinOpTests : ExprSemanticTests() {
-//
+package wacc_05.semantic_tests
+
+import antlr.WaccParser
+import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
+import io.mockk.verify
+import org.junit.Test
+import wacc_05.ast_structure.ExprAST
+import wacc_05.ast_structure.StatementAST
+import wacc_05.ast_structure.TypeAST
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+
+class BinOpTests : ExprSemanticTests() {
+    //
 //    @Test
 //    fun binOpMultValidCheck() {
 //        // these tests will use DeclAST as a way of verifying the return type of the binOp
@@ -227,57 +228,66 @@
 //
 //        verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
 //    }
-//
-//    @Test
-//    fun binOpLogicalValidCheck() {
-//        st.add("bool", boolType)
-//
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("bool"),
-//            "x",
-//            ExprAST.BinOpAST(
-//                ExprAST.BoolLiterAST("true"),
-//                ExprAST.BoolLiterAST("false"),
-//                "&&"
-//            )
-//        ).check(st, seh)
-//    }
-//
-//    @Test
-//    fun binOpLogicalInvalidArgumentTypeCheck() {
-//        st.add("bool", boolType)
-//
-//        every { seh.typeMismatch(any(), any()) } just runs
-//
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("bool"),
-//            "x",
-//            ExprAST.BinOpAST(
-//                ExprAST.CharLiterAST("c"),
-//                ExprAST.BoolLiterAST("true"),
-//                "&&"
-//            )
-//        ).check(st, seh)
-//
-//        verify(exactly = 1) { seh.typeMismatch(boolType, charType) }
-//    }
-//
-//    @Test
-//    fun binOpLogicalReturnTypeCheck() {
-//        st.add("char", charType)
-//
-//        every { seh.typeMismatch(any(), any()) } just runs
-//
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("char"),
-//            "x",
-//            ExprAST.BinOpAST(
-//                ExprAST.BoolLiterAST("true"),
-//                ExprAST.BoolLiterAST("false"),
-//                "||"
-//            )
-//        ).check(st, seh)
-//
-//        verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
-//    }
-//}
+
+    @Test
+    fun binOpLogicalValidCheck() {
+        st.add("bool", boolType)
+
+        StatementAST.DeclAST(
+            WaccParser.StatDeclarationContext(WaccParser.StatContext()),
+            TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "bool"),
+            "x",
+            ExprAST.BinOpAST(
+                WaccParser.ExprContext(WaccParser.StatContext(), 0),
+                ExprAST.BoolLiterAST("true"),
+                ExprAST.BoolLiterAST("false"),
+                "&&"
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun binOpLogicalInvalidArgumentTypeCheck() {
+        st.add("bool", boolType)
+
+        every { seh.typeMismatch(any(), any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            WaccParser.StatDeclarationContext(WaccParser.StatContext()),
+            TypeAST.BaseTypeAST(
+                WaccParser.BaseTypeContext(WaccParser.StatContext(), 0),
+                "bool"
+            ),
+            "x",
+            ExprAST.BinOpAST(
+                WaccParser.ExprContext(WaccParser.StatContext(), 0),
+                ExprAST.CharLiterAST("c"),
+                ExprAST.BoolLiterAST("true"),
+                "&&"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(any(), boolType, charType) }
+    }
+
+    @Test
+    fun binOpLogicalReturnTypeCheck() {
+        st.add("char", charType)
+
+        every { seh.typeMismatch(any(), any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            WaccParser.StatDeclarationContext(WaccParser.StatContext()),
+            TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "char"),
+            "x",
+            ExprAST.BinOpAST(
+                WaccParser.ExprContext(WaccParser.StatContext(), 0),
+                ExprAST.BoolLiterAST("true"),
+                ExprAST.BoolLiterAST("false"),
+                "||"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(any(), charType, boolType) }
+    }
+}
