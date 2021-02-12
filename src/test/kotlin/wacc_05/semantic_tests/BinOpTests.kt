@@ -1,73 +1,88 @@
-//package wacc_05.semantic_tests
-//
-//import io.mockk.every
-//import io.mockk.just
-//import io.mockk.runs
-//import io.mockk.verify
-//import org.junit.Test
-//import wacc_05.ast_structure.ExprAST
-//import wacc_05.ast_structure.StatementAST
-//import wacc_05.ast_structure.TypeAST
-//import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-//import wacc_05.symbol_table.identifier_objects.VariableIdentifier
-//
-//class BinOpTests : ExprSemanticTests() {
-//
-//    @Test
-//    fun binOpMultValidCheck() {
-//        // these tests will use DeclAST as a way of verifying the return type of the binOp
-//
-//        st.add("int", intType)
-//
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("int"),
-//            "x",
-//            ExprAST.BinOpAST(
-//                ExprAST.IntLiterAST("+", "3"),
-//                ExprAST.IntLiterAST("+", "5"),
-//                "*"
-//            )
-//        ).check(st, seh)
-//    }
-//
-//    @Test
-//    fun binOpMultIncorrectArgTypeCheck() {
-//        st.add("int", intType)
-//
-//        every { seh.typeMismatch(any(), any()) } just runs
-//
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("int"),
-//            "x",
-//            ExprAST.BinOpAST(
-//                ExprAST.IntLiterAST("+", "4"),
-//                ExprAST.CharLiterAST("c"),
-//                "*"
-//            )
-//        ).check(st, seh)
-//
-//        verify(exactly = 1) { seh.typeMismatch(intType, charType) }
-//    }
-//
-//    @Test
-//    fun binOpMultReturnTypeCheck() {
-//        st.add("char", charType)
-//        st.add("int", intType)
-//
-//        every { seh.typeMismatch(any(), any()) } just runs
-//
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("char"),
-//            "x",
-//            ExprAST.BinOpAST(
-//                ExprAST.IntLiterAST("+", "4"),
-//                ExprAST.IntLiterAST("+", "5"),
-//                "*"
-//            )
-//        ).check(st, seh)
-//
-//        verify { seh.typeMismatch(charType, intType) }
-//    }
+package wacc_05.semantic_tests
+
+import antlr.WaccParser
+import io.mockk.every
+import io.mockk.just
+import io.mockk.runs
+import io.mockk.verify
+import org.junit.Test
+import wacc_05.ast_structure.ExprAST
+import wacc_05.ast_structure.StatementAST
+import wacc_05.ast_structure.TypeAST
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+
+class BinOpTests : ExprSemanticTests() {
+    val statDeclarationContext: WaccParser.StatDeclarationContext =
+        WaccParser.StatDeclarationContext(WaccParser.StatContext())
+
+    val baseTypeContext: WaccParser.BaseTypeContext =
+        WaccParser.BaseTypeContext(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), 0)
+
+    val exprContext: WaccParser.ExprContext =
+        WaccParser.ExprContext(WaccParser.StatContext(), 0)
+
+    @Test
+    fun binOpMultValidCheck() {
+        // these tests will use DeclAST as a way of verifying the return type of the binOp
+
+        st.add("int", intType)
+
+        StatementAST.DeclAST(
+            statDeclarationContext,
+            TypeAST.BaseTypeAST(baseTypeContext, "int"),
+            "x",
+            ExprAST.BinOpAST(
+                exprContext,
+                ExprAST.IntLiterAST("+", "3"),
+                ExprAST.IntLiterAST("+", "5"),
+                "*"
+            )
+        ).check(st, seh)
+    }
+
+    @Test
+    fun binOpMultIncorrectArgTypeCheck() {
+        st.add("int", intType)
+
+        every { seh.typeMismatch(any(), any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            statDeclarationContext,
+            TypeAST.BaseTypeAST(baseTypeContext, "int"),
+            "x",
+            ExprAST.BinOpAST(
+                exprContext,
+                ExprAST.IntLiterAST("+", "4"),
+                ExprAST.CharLiterAST("c"),
+                "*"
+            )
+        ).check(st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(any(), intType, charType) }
+    }
+
+    @Test
+    fun binOpMultReturnTypeCheck() {
+        st.add("char", charType)
+        st.add("int", intType)
+
+        every { seh.typeMismatch(any(), any(), any()) } just runs
+
+        StatementAST.DeclAST(
+            statDeclarationContext,
+            TypeAST.BaseTypeAST(baseTypeContext, "char"),
+            "x",
+            ExprAST.BinOpAST(
+                exprContext,
+                ExprAST.IntLiterAST("+", "4"),
+                ExprAST.IntLiterAST("+", "5"),
+                "*"
+            )
+        ).check(st, seh)
+
+        verify { seh.typeMismatch(any(), charType, intType) }
+    }
 //
 //    @Test
 //    fun binOpGTIntValidCheck() {
@@ -280,4 +295,4 @@
 //
 //        verify(exactly = 1) { seh.typeMismatch(charType, boolType) }
 //    }
-//}
+}
