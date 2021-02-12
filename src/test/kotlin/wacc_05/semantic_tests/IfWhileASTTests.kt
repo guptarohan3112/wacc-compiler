@@ -12,10 +12,12 @@ import wacc_05.ast_structure.StatementAST
 class IfWhileASTTests : StatSemanticTests() {
 
     val ifContext = WaccParser.StatIfContext(statCtx)
+    val whileContext = WaccParser.StatWhileContext(statCtx)
     val exprContext = WaccParser.ExprContext(ifContext, 0)
 
     init {
         ifContext.addChild(exprContext)
+        whileContext.addChild(exprContext)
     }
 
     @Test
@@ -112,67 +114,78 @@ class IfWhileASTTests : StatSemanticTests() {
         verify(exactly = 1) { seh.typeMismatch(any(), boolType, intType) }
     }
 
-//    @Test
-//    fun whileASTValidCheck() {
-//        // a very basic while loop check
-//        StatementAST.WhileAST(
-//            ExprAST.BoolLiterAST("true"),
-//            StatementAST.SkipAST
-//        ).check(st, seh)
-//    }
-//
-//    @Test
-//    fun whileASTValidExprCheck() {
-//        // a slightly more complex expr check
-//
-//        StatementAST.WhileAST(
-//            ExprAST.BinOpAST(
-//                ExprAST.BoolLiterAST("true"),
-//                ExprAST.BoolLiterAST("false"),
-//                "||"
-//            ),
-//            StatementAST.SkipAST
-//        ).check(st, seh)
-//    }
-//
-//    @Test
-//    fun nestedWhileValidCheck() {
-//        // a simple nested while loop test
-//        StatementAST.WhileAST(
-//            ExprAST.BoolLiterAST("true"),
-//            StatementAST.WhileAST(
-//                ExprAST.BoolLiterAST("false"),
-//                StatementAST.SkipAST
-//            )
-//        ).check(st, seh)
-//    }
-//
-//    @Test
-//    fun nestedWhileInvalidCheck() {
-//        // invalid nested while loop test
-//
-//        every { seh.typeMismatch(any(), any()) } just runs
-//
-//        StatementAST.WhileAST(
-//            ExprAST.BoolLiterAST("true"),
-//            StatementAST.WhileAST(
-//                ExprAST.IntLiterAST("+", "3"),
-//                StatementAST.SkipAST
-//            )
-//        ).check(st, seh)
-//
-//        verify(exactly = 1) { seh.typeMismatch(boolType, intType) }
-//    }
-//
-//    @Test
-//    fun whileASTInvalidExprCheck() {
-//        every { seh.typeMismatch(any(), any()) } just runs
-//
-//        StatementAST.WhileAST(
-//            ExprAST.CharLiterAST("c"),
-//            StatementAST.SkipAST
-//        ).check(st, seh)
-//
-//        verify(exactly = 1) { seh.typeMismatch(boolType, charType) }
-//    }
+    @Test
+    fun whileASTValidCheck() {
+        // a very basic while loop check
+        StatementAST.WhileAST(
+            ExprAST.BoolLiterAST("true"),
+            StatementAST.SkipAST
+        ).check(whileContext, st, seh)
+    }
+
+    @Test
+    fun whileASTValidExprCheck() {
+        // a slightly more complex expr check
+        val exprContext1 = WaccParser.ExprContext(whileContext, 0)
+
+        exprContext.addChild(exprContext1)
+        exprContext.addChild(exprContext1)
+
+        StatementAST.WhileAST(
+            ExprAST.BinOpAST(
+                ExprAST.BoolLiterAST("true"),
+                ExprAST.BoolLiterAST("false"),
+                "||"
+            ),
+            StatementAST.SkipAST
+        ).check(whileContext, st, seh)
+    }
+
+    @Test
+    fun nestedWhileValidCheck() {
+        whileContext.addChild(whileContext)
+
+        // a simple nested while loop test
+        StatementAST.WhileAST(
+            ExprAST.BoolLiterAST("true"),
+            StatementAST.WhileAST(
+                ExprAST.BoolLiterAST("false"),
+                StatementAST.SkipAST
+            )
+        ).check(whileContext, st, seh)
+    }
+
+    @Test
+    fun nestedWhileInvalidCheck() {
+        // invalid nested while loop test
+        every { seh.typeMismatch(any(), any(), any()) } just runs
+
+        val statContext1 = WaccParser.StatWhileContext(whileContext)
+        val exprContext1 = WaccParser.ExprContext(whileContext, 0)
+
+        whileContext.addChild(statContext1)
+        statContext1.addChild(exprContext1)
+
+        StatementAST.WhileAST(
+            ExprAST.BoolLiterAST("true"),
+            StatementAST.WhileAST(
+                ExprAST.IntLiterAST("+", "3"),
+                StatementAST.SkipAST
+            )
+        ).check(whileContext, st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(any(), boolType, intType) }
+    }
+
+    @Test
+    fun whileASTInvalidExprCheck() {
+        every { seh.typeMismatch(any(), any(), any()) } just runs
+
+        StatementAST.WhileAST(
+            ExprAST.CharLiterAST("c"),
+            StatementAST.SkipAST
+        ).check(whileContext, st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(any(), boolType, charType) }
+    }
 }

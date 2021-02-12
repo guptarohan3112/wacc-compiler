@@ -12,7 +12,7 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-/* NOTE: these tests do not test the contexts. Hence, we use configurations of the
+/* NOTE: these tests do not test the contexts being passed through. Hence, we use configurations of the
  * contexts that are enough to make the test pass (i.e. not cause any errors) - these
  * are not always correct.
  */
