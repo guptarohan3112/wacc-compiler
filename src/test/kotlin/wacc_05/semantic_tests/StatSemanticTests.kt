@@ -1,39 +1,46 @@
-//package wacc_05.semantic_tests
-//
-//import io.mockk.*
-//import org.junit.Test
-//
-//import wacc_05.SemanticErrors
-//import wacc_05.ast_structure.ExprAST
-//import wacc_05.ast_structure.StatementAST
-//import wacc_05.ast_structure.assignment_ast.AssignLHSAST
-//import wacc_05.symbol_table.SymbolTable
-//import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-//import wacc_05.symbol_table.identifier_objects.VariableIdentifier
-//
-//open class StatSemanticTests {
-//
-//    val intType: TypeIdentifier.IntIdentifier = TypeIdentifier.INT_TYPE
-//    val charType: TypeIdentifier.CharIdentifier = TypeIdentifier.CHAR_TYPE
-//    val boolType: TypeIdentifier.BoolIdentifier = TypeIdentifier.BOOL_TYPE
-//
-//    var st: SymbolTable = SymbolTable(null)
-//    var childSt: SymbolTable = SymbolTable(st)
-//    var seh: SemanticErrors = mockk()
-//
-//    @Test
-//    fun skipASTCheck() {
-//        // a skip AST check should not find any errors
-//        StatementAST.SkipAST.check(st, seh)
-//    }
-//
-//    @Test
-//    fun readASTIntCheck() {
-//        st.add("int", intType)
-//        st.add("x", VariableIdentifier(intType))
-//
-//        StatementAST.ReadAST(AssignLHSAST("x")).check(st, seh)
-//    }
+package wacc_05.semantic_tests
+
+import antlr.WaccParser
+import io.mockk.*
+import org.junit.Test
+
+import wacc_05.SemanticErrors
+import wacc_05.ast_structure.ExprAST
+import wacc_05.ast_structure.StatementAST
+import wacc_05.ast_structure.assignment_ast.AssignLHSAST
+import wacc_05.symbol_table.SymbolTable
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+
+open class StatSemanticTests {
+
+    val intType: TypeIdentifier.IntIdentifier = TypeIdentifier.INT_TYPE
+    val charType: TypeIdentifier.CharIdentifier = TypeIdentifier.CHAR_TYPE
+    val boolType: TypeIdentifier.BoolIdentifier = TypeIdentifier.BOOL_TYPE
+
+    var st: SymbolTable = SymbolTable(null)
+    var childSt: SymbolTable = SymbolTable(st)
+    var seh: SemanticErrors = mockk()
+
+    @Test
+    fun skipASTCheck() {
+        // a skip AST check should not find any errors
+        StatementAST.SkipAST.check(st, seh)
+    }
+
+    @Test
+    fun readASTIntCheck() {
+        st.add("int", intType)
+        st.add("x", VariableIdentifier(intType))
+
+        StatementAST.ReadAST(
+            WaccParser.StatReadContext(WaccParser.StatContext()),
+            AssignLHSAST(
+                WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
+                "x"
+            )
+        ).check(st, seh)
+    }
 //
 //    @Test
 //    fun readASTCharCheck() {
@@ -138,4 +145,4 @@
 //
 //        verify(exactly = 1) { seh.invalidExitType(charType) }
 //    }
-//}
+}
