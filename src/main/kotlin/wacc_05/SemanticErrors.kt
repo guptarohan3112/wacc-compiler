@@ -1,34 +1,35 @@
 package wacc_05
 
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import kotlin.system.exitProcess
 
 interface SemanticErrors {
 
-    fun invalidIdentifier(name: String)
+    fun invalidIdentifier(ctx: ParserRuleContext, name: String)
 
-    fun invalidType(typeName: String)
+    fun invalidType(ctx: ParserRuleContext, typeName: String)
 
-    fun invalidFunction(funcName: String)
+    fun invalidFunction(ctx: ParserRuleContext, funcName: String)
 
-    fun repeatVariableDeclaration(varName: String)
+    fun repeatVariableDeclaration(ctx: ParserRuleContext, varName: String)
 
-    fun typeMismatch(expected: TypeIdentifier, actual: TypeIdentifier)
+    fun typeMismatch(ctx: ParserRuleContext, expected: TypeIdentifier, actual: TypeIdentifier)
 
-    fun identifierMismatch(expected: IdentifierObject, actual: IdentifierObject)
+    fun identifierMismatch(ctx: ParserRuleContext, expected: IdentifierObject, actual: IdentifierObject)
 
-    fun argNumberError(fName: String, expected: Int, actual: Int)
+    fun argNumberError(ctx: ParserRuleContext, fName: String, expected: Int, actual: Int)
 
-    fun invalidReturnType()
+    fun invalidReturnType(ctx: ParserRuleContext, )
 
-    fun invalidReturn()
+    fun invalidReturn(ctx: ParserRuleContext, )
 
-    fun invalidAssignment(fName: String)
+    fun invalidAssignment(ctx: ParserRuleContext, fName: String)
 
-    fun invalidReadType(actual: TypeIdentifier)
+    fun invalidReadType(ctx: ParserRuleContext, actual: TypeIdentifier)
 
-    fun invalidFreeType(actual: TypeIdentifier)
+    fun invalidFreeType(ctx: ParserRuleContext, actual: TypeIdentifier)
 
-    fun invalidExitType(actual: TypeIdentifier)
+    fun invalidExitType(ctx: ParserRuleContext, actual: TypeIdentifier)
 }

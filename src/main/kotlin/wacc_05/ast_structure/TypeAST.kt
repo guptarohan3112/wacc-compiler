@@ -1,5 +1,7 @@
 package wacc_05.ast_structure
 
+import antlr.WaccParser
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
@@ -20,13 +22,13 @@ sealed class TypeAST : AST {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
             val typeIdent: IdentifierObject? = st.lookupAll(typeName)
 
             if (typeIdent == null) {
-                errorHandler.invalidIdentifier(typeName)
+                errorHandler.invalidIdentifier(ctx!!, typeName)
             } else if (typeIdent !is TypeIdentifier) {
-                errorHandler.invalidType(typeName)
+                errorHandler.invalidType(ctx!!, typeName)
             }
         }
 
@@ -37,8 +39,8 @@ sealed class TypeAST : AST {
 
     data class ArrayTypeAST(private val elemsType: TypeAST) : TypeAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            elemsType.check(st, errorHandler)
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+            elemsType.check((ctx as WaccParser.TypeContext).type(), st, errorHandler)
         }
 
         override fun getType(st: SymbolTable): TypeIdentifier {
@@ -52,8 +54,12 @@ sealed class TypeAST : AST {
 
     data class PairElemTypeAST(private val pair: String? = null, private val type: TypeAST?) : AST {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            type?.check(st, errorHandler)
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+            if (type is BaseTypeAST) {
+                type.check((ctx as WaccParser.PairElemTypeContext).baseType(), st, errorHandler)
+            } else {
+                type?.check((ctx as WaccParser.PairElemTypeContext).type(), st, errorHandler)
+            }
         }
 
         override fun toString(): String {
@@ -74,9 +80,11 @@ sealed class TypeAST : AST {
             return TypeIdentifier.PairIdentifier(fstType.getType(st), sndType.getType(st))
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            fstType.check(st, errorHandler)
-            sndType.check(st, errorHandler)
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+            val pairContext = ctx as WaccParser.PairTypeContext
+
+            fstType.check(pairContext.pairElemType(0), st, errorHandler)
+            sndType.check(pairContext.pairElemType(1), st, errorHandler)
         }
 
         override fun toString(): String {

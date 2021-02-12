@@ -1,5 +1,7 @@
 package wacc_05.ast_structure.assignment_ast
 
+import antlr.WaccParser
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.SemanticErrors
 import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
@@ -37,19 +39,21 @@ class AssignLHSAST(private val ident: String?) : AST {
         }
     }
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+    override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+        val assignLHSContext: WaccParser.AssignLHSContext = ctx as WaccParser.AssignLHSContext
+
         if (arrElem != null) {
-            arrElem!!.check(st, errorHandler)
+            arrElem!!.check(assignLHSContext.arrayElem(), st, errorHandler)
         } else if (pairElem != null) {
-            pairElem!!.check(st, errorHandler)
+            pairElem!!.check(assignLHSContext.pairElem(), st, errorHandler)
         } else {
             val type = st.lookupAll(ident!!)
             if (type == null) {
-                errorHandler.invalidIdentifier(ident)
+                errorHandler.invalidIdentifier(assignLHSContext, ident)
                 // Add the identifier into symbol table for error recovery
                 st.add(ident, VariableIdentifier(TypeIdentifier.GENERIC))
             } else if (type is FunctionIdentifier) {
-                errorHandler.invalidAssignment(ident)
+                errorHandler.invalidAssignment(assignLHSContext, ident)
             }
         }
     }

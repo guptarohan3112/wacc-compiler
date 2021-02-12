@@ -1,5 +1,7 @@
 package wacc_05.ast_structure
 
+import antlr.WaccParser
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.ParamIdentifier
@@ -8,9 +10,9 @@ import kotlin.collections.ArrayList
 
 class ParamListAST(private val paramList: ArrayList<ParamAST>) : AST {
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        for (param in paramList) {
-            param.check(st, errorHandler)
+    override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+        for (i in 0 until paramList.size) {
+            paramList[i].check((ctx as WaccParser.ParamListContext).param(i), st, errorHandler)
         }
     }
 

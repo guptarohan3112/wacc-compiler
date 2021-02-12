@@ -1,5 +1,7 @@
 package wacc_05.ast_structure.assignment_ast
 
+import antlr.WaccParser
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.SemanticErrors
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
@@ -23,8 +25,10 @@ class PairElemAST(private val elem: ExprAST, private val isFst: Boolean) : Assig
         }
     }
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        elem.check(st, errorHandler)
+    override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+        val pairElemContext = ctx as WaccParser.PairElemContext
+
+        elem.check(pairElemContext.expr(), st, errorHandler)
 
         val elemType = elem.getType(st)
 
@@ -33,7 +37,7 @@ class PairElemAST(private val elem: ExprAST, private val isFst: Boolean) : Assig
             && elemType !is TypeIdentifier.PairIdentifier
             && elemType !is TypeIdentifier.PairLiterIdentifier
         ) {
-            errorHandler.typeMismatch(TypeIdentifier.PairLiterIdentifier, elemType)
+            errorHandler.typeMismatch(pairElemContext.expr(), TypeIdentifier.PairLiterIdentifier, elemType)
         }
     }
 

@@ -1,5 +1,7 @@
 package wacc_05.ast_structure.assignment_ast
 
+import antlr.WaccParser
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.SemanticErrors
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
@@ -17,17 +19,19 @@ class ArrayLiterAST(private val elems: ArrayList<ExprAST>) : AssignRHSAST() {
         }
     }
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+    override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+        val arrayLitContext = ctx as WaccParser.ArrayLitContext
+
         // If the array literal is empty, no semantic check need to be done
         if (elems.size != 0) {
-            elems[0].check(st, errorHandler)
+            elems[0].check(arrayLitContext.expr(0), st, errorHandler)
             val firstElemType = elems[0].getType(st)
 
             // Verify that individual elements are semantically correct and that they are all the same type
             for (i in 1 until elems.size) {
-                elems[i].check(st, errorHandler)
+                elems[i].check(arrayLitContext.expr(i), st, errorHandler)
                 if (elems[i].getType(st) != firstElemType) {
-                    errorHandler.typeMismatch(firstElemType, elems[i].getType(st))
+                    errorHandler.typeMismatch(arrayLitContext.expr(i), firstElemType, elems[i].getType(st))
                 }
             }
         }

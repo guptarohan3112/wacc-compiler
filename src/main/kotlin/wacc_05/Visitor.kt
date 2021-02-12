@@ -18,7 +18,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         for (funcCtx in ctx.func()) {
             funcs.add(visitFunc(funcCtx))
         }
-        return ProgramAST(funcs as ArrayList, visitStat(ctx.stat()))
+        return ProgramAST(ctx, funcs as ArrayList, visitStat(ctx.stat()))
     }
 
     /* Function: visitFunc()
@@ -30,9 +30,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
         val last = getEndOfBody(ctx.stat())
         if ((last !is WaccParser.StatReturnContext) && (last !is WaccParser.StatExitContext)) {
-            println("Syntax Error 100:\n" +
-                    "Missing Return Or Exit Statement at end of function ${ctx.IDENT()} " +
-                    "on line ${ctx.start.line}:${ctx.start.charPositionInLine}")
+            println(
+                "Syntax Error 100:\n" +
+                        "Missing Return Or Exit Statement at end of function ${ctx.IDENT()} " +
+                        "on line ${ctx.start.line}:${ctx.start.charPositionInLine}"
+            )
             exitProcess(Error.SYNTAX_ERROR)
         }
 
@@ -54,7 +56,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     private fun getEndOfBody(stat: WaccParser.StatContext): WaccParser.StatContext {
 
         val statements: List<WaccParser.StatContext> = when (stat) {
-            is WaccParser.StatSequentialContext-> stat.stat()
+            is WaccParser.StatSequentialContext -> stat.stat()
             is WaccParser.StatIfContext -> stat.stat()
             else -> emptyList()
         }
@@ -353,9 +355,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         }
 
         if (ctx.INT_LIT().text.toDouble() > limit) {
-            println("Syntax Error (Error 100)\n : " +
-                    "Integer value ${ctx.INT_LIT().text} on line ${ctx.start.line} is badly formatted " +
-                    "(either it has a badly defined sign or it is too large for a 32-bit signed integer)")
+            println(
+                "Syntax Error (Error 100)\n : " +
+                        "Integer value ${ctx.INT_LIT().text} on line ${ctx.start.line} is badly formatted " +
+                        "(either it has a badly defined sign or it is too large for a 32-bit signed integer)"
+            )
             exitProcess(Error.SYNTAX_ERROR)
         }
         return ExprAST.IntLiterAST(sign, ctx.INT_LIT().text)

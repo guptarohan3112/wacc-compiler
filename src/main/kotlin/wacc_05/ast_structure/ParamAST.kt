@@ -1,5 +1,7 @@
 package wacc_05.ast_structure
 
+import antlr.WaccParser
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
@@ -11,10 +13,9 @@ class ParamAST(
     private val name: String
 ) : AST {
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
+    override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
         // Check validity of parameter type
-        type.check(st, errorHandler)
+        type.check((ctx as WaccParser.ParamContext).type(), st, errorHandler)
 
         // Create parameter identifier and add to symbol table
         val typeIdent: TypeIdentifier = type.getType(st)
@@ -26,7 +27,7 @@ class ParamAST(
         return name
     }
 
-    fun getType(st: SymbolTable) : TypeIdentifier{
+    fun getType(st: SymbolTable): TypeIdentifier {
         return type.getType(st)
     }
 

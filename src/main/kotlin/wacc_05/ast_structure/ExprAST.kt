@@ -1,5 +1,7 @@
 package wacc_05.ast_structure
 
+import antlr.WaccParser
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
@@ -14,7 +16,7 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.INT_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
     }
@@ -25,7 +27,7 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.BOOL_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
     }
@@ -36,7 +38,7 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.CHAR_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
     }
@@ -47,7 +49,7 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.STRING_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
     }
@@ -58,7 +60,7 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.PAIR_LIT_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
     }
@@ -77,14 +79,9 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-
-//        fun setType(st: SymbolTable, type: TypeIdentifier) {
-//            st.add(value, VariableIdentifier(value, type))
-//        }
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
             if (st.lookupAll(value) == null) {
-                errorHandler.invalidIdentifier(value)
+                errorHandler.invalidIdentifier(ctx!!, value)
             }
         }
     }
@@ -107,22 +104,28 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            for (expr in exprs) {
-                expr.check(st, errorHandler)
-                if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr.getType(st))
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+            val arrayElemContext = ctx as WaccParser.ArrayElemContext
+
+            for (i in 0 until exprs.size) {
+                exprs[i].check(arrayElemContext.expr(i), st, errorHandler)
+                if (exprs[i].getType(st) !is TypeIdentifier.IntIdentifier) {
+                    errorHandler.typeMismatch(arrayElemContext.expr(i), TypeIdentifier.INT_TYPE, exprs[i].getType(st))
                 }
             }
 
             val variable: IdentifierObject? = st.lookupAll(ident)
 
             if (variable == null) {
-                errorHandler.invalidIdentifier(ident)
+                errorHandler.invalidIdentifier(arrayElemContext, ident)
             } else {
                 val variableType = variable.getType()
                 if (variableType !is TypeIdentifier.ArrayIdentifier) {
-                    errorHandler.typeMismatch(variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
+                    errorHandler.typeMismatch(
+                        arrayElemContext,
+                        variableType,
+                        TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0)
+                    )
                 }
             }
         }
@@ -146,35 +149,40 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+            val unOpContext = ctx as WaccParser.ExprContext
 
-            expr.check(st, errorHandler)
+            expr.check(unOpContext.expr(0), st, errorHandler)
             val exprType = expr.getType(st)
 
             when (operator) {
                 "len" -> {
                     if (exprType !is TypeIdentifier.ArrayIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0), exprType)
+                        errorHandler.typeMismatch(
+                            unOpContext,
+                            TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0),
+                            exprType
+                        )
                     }
                 }
                 "ord" -> {
                     if (exprType !is TypeIdentifier.CharIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.CHAR_TYPE, exprType)
+                        errorHandler.typeMismatch(unOpContext, TypeIdentifier.CHAR_TYPE, exprType)
                     }
                 }
                 "chr" -> {
                     if (exprType !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, exprType)
+                        errorHandler.typeMismatch(unOpContext, TypeIdentifier.INT_TYPE, exprType)
                     }
                 }
                 "!" -> {
                     if (exprType !is TypeIdentifier.BoolIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, exprType)
+                        errorHandler.typeMismatch(unOpContext, TypeIdentifier.BOOL_TYPE, exprType)
                     }
                 }
                 "-" -> {
                     if (exprType !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, exprType)
+                        errorHandler.typeMismatch(unOpContext, TypeIdentifier.INT_TYPE, exprType)
                     }
                 }
                 else -> {
@@ -195,8 +203,6 @@ sealed class ExprAST : AssignRHSAST() {
 
             val intCharFunctions = hashSetOf(">", ">=", "<", "<=")
 
-            val anyTypeFunctions = hashSetOf("==", "!=")
-
             val boolBoolFunctions = hashSetOf("&&", "||")
         }
 
@@ -208,10 +214,11 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun check(ctx: ParserRuleContext?, st: SymbolTable, errorHandler: SemanticErrors) {
+            val binOpContext = ctx as WaccParser.ExprContext
 
-            expr1.check(st, errorHandler)
-            expr2.check(st, errorHandler)
+            expr1.check(binOpContext.expr(0), st, errorHandler)
+            expr2.check(binOpContext.expr(1), st, errorHandler)
 
             val expr1Type = expr1.getType(st)
             val expr2Type = expr2.getType(st)
@@ -219,11 +226,11 @@ sealed class ExprAST : AssignRHSAST() {
             when {
                 intIntFunctions.contains(operator) -> {
                     if (expr1Type !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr1Type)
+                        errorHandler.typeMismatch(binOpContext, TypeIdentifier.INT_TYPE, expr1Type)
                     }
 
                     if (expr2Type !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr2Type)
+                        errorHandler.typeMismatch(binOpContext, TypeIdentifier.INT_TYPE, expr2Type)
                     }
                 }
                 intCharFunctions.contains(operator) -> {
@@ -233,28 +240,28 @@ sealed class ExprAST : AssignRHSAST() {
 
                     if (expr1Type is TypeIdentifier.IntIdentifier || expr1Type is TypeIdentifier.CharIdentifier) {
                         if (expr1Type != expr2Type) {
-                            errorHandler.typeMismatch(expr1Type, expr2Type)
+                            errorHandler.typeMismatch(binOpContext, expr1Type, expr2Type)
                         }
                         return
                     }
 
                     if (expr2Type is TypeIdentifier.IntIdentifier || expr2Type is TypeIdentifier.CharIdentifier) {
                         // we already know type 1 isn't valid
-                        errorHandler.typeMismatch(expr2Type, expr1Type)
+                        errorHandler.typeMismatch(binOpContext, expr2Type, expr1Type)
                         return
                     }
 
                     // both aren't valid
-                    errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr1Type)
-                    errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr2Type)
+                    errorHandler.typeMismatch(binOpContext, TypeIdentifier.INT_TYPE, expr1Type)
+                    errorHandler.typeMismatch(binOpContext, TypeIdentifier.INT_TYPE, expr2Type)
                 }
                 boolBoolFunctions.contains(operator) -> {
                     if (expr1Type !is TypeIdentifier.BoolIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, expr1Type)
+                        errorHandler.typeMismatch(binOpContext, TypeIdentifier.BOOL_TYPE, expr1Type)
                     }
 
                     if (expr2Type !is TypeIdentifier.BoolIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, expr2Type)
+                        errorHandler.typeMismatch(binOpContext, TypeIdentifier.BOOL_TYPE, expr2Type)
                     }
                 }
                 else -> {

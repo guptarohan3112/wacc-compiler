@@ -37,7 +37,6 @@ fun main(args: Array<String>) {
 
 object WaccCompiler {
 
-    @JvmStatic
     fun runCompiler(filePath: String, debug: Boolean): Int {
         val inputStream = File(filePath).inputStream()
         val input = CharStreams.fromStream(inputStream)
@@ -59,8 +58,9 @@ object WaccCompiler {
             return Error.SYNTAX_ERROR
         }
 
-        if (debug)
+        if (debug) {
             println('\n' + tree.toStringTree(parser) + '\n')
+        }
 
         val visitor = Visitor()
         val ast: AST = visitor.visit(tree)
@@ -68,16 +68,19 @@ object WaccCompiler {
         val seh = SemanticErrorHandler()
         semanticErrorCheck(ast, SymbolTable(null), seh)
 
-        if (debug)
+        if (debug) {
             println("FINISHED")
+        }
 
         return seh.err
     }
 
     private fun semanticErrorCheck(ast: AST, st: SymbolTable, errorHandler: SemanticErrors) {
         SymbolTable.makeTopLevel(st)
+
         // semantic checks
-        ast.check(st, errorHandler)
+        // we pass the context in as null since the top level of a program stores it in the object
+        ast.check(null, st, errorHandler)
     }
 
 }
