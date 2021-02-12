@@ -74,58 +74,83 @@ open class StatSemanticTests {
         verify(exactly = 1) { seh.invalidReadType(any(), boolType) }
     }
 
-//    @Test
-//    fun freeASTPairTypeCheck() {
-//        val identifier = TypeIdentifier.PairIdentifier(intType, intType)
-//        st.add("int", intType)
-//        st.add("x", VariableIdentifier(identifier))
-//
-//        StatementAST.FreeAST(ExprAST.IdentAST("x")).check(st, seh)
-//    }
-//
-//    @Test
-//    fun freeASTArrayTypeCheck() {
-//        val identifier = TypeIdentifier.ArrayIdentifier(intType, 5)
-//        st.add("int", intType)
-//        st.add("x", VariableIdentifier(identifier))
-//
-//        StatementAST.FreeAST(ExprAST.IdentAST("x")).check(st, seh)
-//    }
-//
-//    @Test
-//    fun freeASTInvalidFreeTypeCheck() {
-//        // anything not a pair or array type is an invalid free type
-//        st.add("int", intType)
-//        st.add("x", VariableIdentifier(intType))
-//
-//        every { seh.invalidFreeType(any()) } just runs
-//
-//        StatementAST.FreeAST(ExprAST.IdentAST("x")).check(st, seh)
-//
-//        verify(exactly = 1) { seh.invalidFreeType(intType) }
-//    }
-//
-//    @Test
-//    fun returnASTValidReturnType() {
-//        // we recreate this just by giving the return ast a symbol table with the desired return type
-//        // in it
-//
-//        st.add("bool", boolType)
-//        childSt.add("returnType", boolType)
-//
-//        StatementAST.ReturnAST(ExprAST.BoolLiterAST("true")).check(childSt, seh)
-//    }
-//
-//    @Test
-//    fun returnASTInvalidReturnType() {
-//        st.add("bool", boolType)
-//
-//        every { seh.invalidReturnType() } just runs
-//
-//        StatementAST.ReturnAST(ExprAST.IntLiterAST("+", "3")).check(childSt, seh)
-//
-//        verify(exactly = 1) { seh.invalidReturnType() }
-//    }
+    @Test
+    fun freeASTPairTypeCheck() {
+        val freeContext = WaccParser.StatFreeContext(statCtx)
+        val exprContext = WaccParser.ExprContext(freeContext, 0)
+
+        freeContext.addChild(exprContext)
+
+        val identifier = TypeIdentifier.PairIdentifier(intType, intType)
+        st.add("int", intType)
+        st.add("x", VariableIdentifier(identifier))
+
+        StatementAST.FreeAST(ExprAST.IdentAST("x")).check(freeContext, st, seh)
+    }
+
+    @Test
+    fun freeASTArrayTypeCheck() {
+        val freeContext = WaccParser.StatFreeContext(statCtx)
+        val exprContext = WaccParser.ExprContext(freeContext, 0)
+
+        freeContext.addChild(exprContext)
+
+        val identifier = TypeIdentifier.ArrayIdentifier(intType, 5)
+        st.add("int", intType)
+        st.add("x", VariableIdentifier(identifier))
+
+        StatementAST.FreeAST(ExprAST.IdentAST("x")).check(freeContext, st, seh)
+    }
+
+    @Test
+    fun freeASTInvalidFreeTypeCheck() {
+        val freeContext = WaccParser.StatFreeContext(statCtx)
+        val exprContext = WaccParser.ExprContext(freeContext, 0)
+
+        freeContext.addChild(exprContext)
+
+        // anything not a pair or array type is an invalid free type
+        st.add("int", intType)
+        st.add("x", VariableIdentifier(intType))
+
+        every { seh.invalidFreeType(any(), any()) } just runs
+
+        StatementAST.FreeAST(ExprAST.IdentAST("x")).check(freeContext, st, seh)
+
+        verify(exactly = 1) { seh.invalidFreeType(any(), intType) }
+    }
+
+    @Test
+    fun returnASTValidReturnType() {
+        // we recreate this just by giving the return ast a symbol table with the desired return type
+        // in it
+
+        val returnContext = WaccParser.StatReturnContext(statCtx)
+        val exprContext = WaccParser.ExprContext(returnContext, 0)
+
+        returnContext.addChild(exprContext)
+
+        st.add("bool", boolType)
+        childSt.add("returnType", boolType)
+
+        StatementAST.ReturnAST(ExprAST.BoolLiterAST("true")).check(returnContext, childSt, seh)
+    }
+
+    @Test
+    fun returnASTInvalidReturnType() {
+        val returnContext = WaccParser.StatReturnContext(statCtx)
+        val exprContext = WaccParser.ExprContext(returnContext, 0)
+
+        returnContext.addChild(exprContext)
+
+        st.add("bool", boolType)
+
+        every { seh.invalidReturnType(any()) } just runs
+
+        StatementAST.ReturnAST(ExprAST.IntLiterAST("+", "3")).check(returnContext, childSt, seh)
+
+        verify(exactly = 1) { seh.invalidReturnType(any()) }
+    }
 //
 //    @Test
 //    fun exitASTValidCheck() {
