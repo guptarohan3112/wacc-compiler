@@ -1,5 +1,6 @@
 package wacc_05.ast_structure.assignment_ast
 
+import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
@@ -7,16 +8,16 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
 // This class accounts for whether the left hand side of assignment is a identifier, array element or pair element
-class AssignLHSAST(private val ident: String?) : AST {
+class AssignLHSAST(private val ctx: WaccParser.AssignLHSContext, private val ident: String?) : AST {
 
     private var arrElem: ExprAST.ArrayElemAST? = null
     private var pairElem: PairElemAST? = null
 
-    constructor(arrElem: ExprAST.ArrayElemAST) : this(null) {
+    constructor(ctx: WaccParser.AssignLHSContext,arrElem: ExprAST.ArrayElemAST) : this(ctx, null) {
         this.arrElem = arrElem
     }
 
-    constructor(pairElem: PairElemAST) : this(null) {
+    constructor(ctx: WaccParser.AssignLHSContext,pairElem: PairElemAST) : this(ctx, null) {
         this.pairElem = pairElem
     }
 
@@ -45,11 +46,11 @@ class AssignLHSAST(private val ident: String?) : AST {
         } else {
             val type = st.lookupAll(ident!!)
             if (type == null) {
-                errorHandler.invalidIdentifier(ident)
+                errorHandler.invalidIdentifier(ctx, ident)
                 // Add the identifier into symbol table for error recovery
                 st.add(ident, VariableIdentifier(TypeIdentifier.GENERIC))
             } else if (type is FunctionIdentifier) {
-                errorHandler.invalidAssignment(ident)
+                errorHandler.invalidAssignment(ctx, ident)
             }
         }
     }

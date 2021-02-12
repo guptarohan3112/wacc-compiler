@@ -1,5 +1,6 @@
 package wacc_05.ast_structure
 
+import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
@@ -9,7 +10,7 @@ sealed class TypeAST : AST {
 
     abstract fun getType(st: SymbolTable): TypeIdentifier
 
-    data class BaseTypeAST(private val typeName: String) : TypeAST() {
+    data class BaseTypeAST(private val ctx: WaccParser.BaseTypeContext, private val typeName: String) : TypeAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             val typeIdent: IdentifierObject? = st.lookupAll(typeName)
@@ -24,9 +25,9 @@ sealed class TypeAST : AST {
             val typeIdent: IdentifierObject? = st.lookupAll(typeName)
 
             if (typeIdent == null) {
-                errorHandler.invalidIdentifier(typeName)
+                errorHandler.invalidIdentifier(ctx, typeName)
             } else if (typeIdent !is TypeIdentifier) {
-                errorHandler.invalidType(typeName)
+                errorHandler.invalidType(ctx, typeName)
             }
         }
 

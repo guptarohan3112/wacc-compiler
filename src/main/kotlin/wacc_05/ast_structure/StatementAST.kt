@@ -1,5 +1,6 @@
 package wacc_05.ast_structure
 
+import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
@@ -18,6 +19,7 @@ sealed class StatementAST : AST {
     }
 
     data class DeclAST(
+        private val ctx: WaccParser.StatDeclarationContext,
         private val type: TypeAST,
         private val varName: String,
         private val assignment: AssignRHSAST
@@ -29,7 +31,7 @@ sealed class StatementAST : AST {
 
             val variable: IdentifierObject? = st.lookup(varName)
             if (variable != null && variable is VariableIdentifier) {
-                errorHandler.repeatVariableDeclaration(varName)
+                errorHandler.repeatVariableDeclaration(ctx, varName)
             } else {
                 // Check that right hand side and type of identifier match
                 val typeIdent: TypeIdentifier = type.getType(st)
@@ -37,7 +39,7 @@ sealed class StatementAST : AST {
                 val assignmentType: TypeIdentifier = assignment.getType(st)
 
                 if (typeIdent != assignmentType && assignmentType != TypeIdentifier.GENERIC) {
-                    errorHandler.typeMismatch(typeIdent, assignment.getType(st))
+                    errorHandler.typeMismatch(ctx, typeIdent, assignment.getType(st))
                 }
 
                 // Create variable identifier and add to symbol table
@@ -48,6 +50,7 @@ sealed class StatementAST : AST {
     }
 
     data class AssignAST(
+        private val ctx: WaccParser.StatAssignContext,
         private val lhs: AssignLHSAST,
         private val rhs: AssignRHSAST
     ) : StatementAST() {
@@ -60,27 +63,8 @@ sealed class StatementAST : AST {
             val rhsType = rhs.getType(st)
 
             if (lhsType != rhsType && lhsType != TypeIdentifier.GENERIC && rhsType != TypeIdentifier.GENERIC) {
-                errorHandler.typeMismatch(lhsType, rhsType)
+                errorHandler.typeMismatch(ctx, lhsType, rhsType)
             }
-
-//            if(lhsType != TypeIdentifier.GENERIC) {
-//                if(rhsType == TypeIdentifier.GENERIC) {
-//                    (rhs as ExprAST.IdentAST).setType(st, lhsType)
-//                }
-//            }
-//
-//            if (rhsType != TypeIdentifier.GENERIC) {
-//                if (lhsType == TypeIdentifier.GENERIC) {
-//                    // we've had a semantic error where lhs is not defined
-//                    // set lhs to type to rhs and continue
-//                    lhs.setType(st, rhsType)
-//                } else {
-//                    // Check that both sides match up in their types
-//                    if (lhsType != rhsType) {
-//                        errorHandler.typeMismatch(lhs.getType(st), rhs.getType(st))
-//                    }
-//                }
-//            }
         }
     }
 
@@ -92,7 +76,7 @@ sealed class StatementAST : AST {
 
     }
 
-    data class ReadAST(private val lhs: AssignLHSAST) : StatementAST() {
+    data class ReadAST(private val ctx: WaccParser.StatReadContext, private val lhs: AssignLHSAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             lhs.check(st, errorHandler)
@@ -100,24 +84,24 @@ sealed class StatementAST : AST {
             val type = lhs.getType(st)
 
             if (!(type is TypeIdentifier.IntIdentifier || type is TypeIdentifier.CharIdentifier)) {
-                errorHandler.invalidReadType(type)
+                errorHandler.invalidReadType(ctx, type)
             }
         }
     }
 
-    data class ExitAST(private val expr: ExprAST) : StatementAST() {
+    data class ExitAST(private val ctx: WaccParser.StatExitContext, private val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
             // Ensure exit is only on an integer
             if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
-                errorHandler.invalidExitType(expr.getType(st))
+                errorHandler.invalidExitType(ctx, expr.getType(st))
             }
         }
 
     }
 
-    data class FreeAST(private val expr: ExprAST) : StatementAST() {
+    data class FreeAST(private val ctx: WaccParser.StatFreeContext, private val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
@@ -125,12 +109,13 @@ sealed class StatementAST : AST {
             val type = expr.getType(st)
 
             if (!(type is TypeIdentifier.PairIdentifier || type is TypeIdentifier.ArrayIdentifier)) {
-                errorHandler.invalidFreeType(type)
+                errorHandler.invalidFreeType(ctx, type)
             }
         }
     }
 
     data class IfAST(
+        private val ctx: WaccParser.StatIfContext,
         private val condExpr: ExprAST,
         private val thenStat: StatementAST,
         private val elseStat: StatementAST
@@ -142,7 +127,7 @@ sealed class StatementAST : AST {
 
             // Ensure that the condition expression evaluates to a boolean
             if (condExpr.getType(st) != TypeIdentifier.BOOL_TYPE) {
-                errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, condExpr.getType(st))
+                errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, condExpr.getType(st))
             } else {
                 val returnTypeIdent: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?
                 val thenSt = SymbolTable(st)
@@ -167,15 +152,14 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
         }
-
     }
 
-    data class ReturnAST(private val expr: ExprAST) : StatementAST() {
+    data class ReturnAST(private val ctx: WaccParser.StatReturnContext, private val expr: ExprAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
             if (st.isMain()) {
-                errorHandler.invalidReturn()
+                errorHandler.invalidReturn(ctx)
             }
 
             // Check validity of expression
@@ -185,7 +169,7 @@ sealed class StatementAST : AST {
             val returnType: TypeIdentifier = expr.getType(st)
             val funcReturnType: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?
             if (funcReturnType != returnType) {
-                errorHandler.invalidReturnType()
+                errorHandler.invalidReturnType(ctx)
             }
         }
 
@@ -202,6 +186,7 @@ sealed class StatementAST : AST {
     }
 
     data class WhileAST(
+        private val ctx: WaccParser.StatWhileContext,
         private val loopExpr: ExprAST,
         private val body: StatementAST
     ) : StatementAST() {
@@ -212,7 +197,7 @@ sealed class StatementAST : AST {
 
             // Check that looping expression evaluates to a boolean
             if (loopExpr.getType(st) != TypeIdentifier.BOOL_TYPE) {
-                errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, loopExpr.getType(st))
+                errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, loopExpr.getType(st))
             } else {
                 val bodySt = SymbolTable(st)
                 val returnTypeIdent: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?

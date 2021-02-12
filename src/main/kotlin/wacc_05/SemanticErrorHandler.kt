@@ -1,75 +1,81 @@
 package wacc_05
 
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class SemanticErrorHandler : SemanticErrors {
 
-    var err : Int = Error.SUCCESS
+    var err: Int = Error.SUCCESS
 
-    override fun invalidIdentifier(name: String) {
-        println("Semantic error: $name is an unknown element in the context of this program")
+    override fun invalidIdentifier(ctx: ParserRuleContext, name: String) {
+        println(semanticErrStr(ctx) + "$name is an unknown identifier in the context of this scope")
         semanticErr()
     }
 
-    override fun invalidType(typeName: String) {
-        println("Semantic error: $typeName is not a valid type")
+    override fun invalidType(ctx: ParserRuleContext, typeName: String) {
+        println(semanticErrStr(ctx) + "$typeName is not a valid type")
         semanticErr()
     }
 
-    override fun invalidFunction(funcName: String) {
-        println("Semantic error: $funcName is not a valid function that has been predefined")
+    override fun invalidFunction(ctx: ParserRuleContext, funcName: String) {
+        println(semanticErrStr(ctx) + "$funcName is not a valid function that has been predefined")
         semanticErr()
     }
 
-    override fun repeatVariableDeclaration(varName: String) {
-        println("Semantic error: $varName has already been declared earlier on in the current scope.")
+    override fun repeatVariableDeclaration(ctx: ParserRuleContext, varName: String) {
+        println(semanticErrStr(ctx) + "$varName has already been declared earlier on in the current scope.")
         semanticErr()
     }
 
-    override fun typeMismatch(expected: TypeIdentifier, actual: TypeIdentifier) {
-        println("Semantic error: Could not match the expected type of $expected to the actual type of $actual")
+    override fun typeMismatch(ctx: ParserRuleContext, expected: TypeIdentifier, actual: TypeIdentifier) {
+        println(semanticErrStr(ctx) + "Could not match the expected type of $expected to the actual type of $actual")
         semanticErr()
     }
 
-    override fun identifierMismatch(expected: IdentifierObject, actual: IdentifierObject) {
-        println("Semantic error: Could not match the expected identifier of $expected to the actual identifier of $actual")
+    override fun identifierMismatch(ctx: ParserRuleContext, expected: IdentifierObject, actual: IdentifierObject) {
+        println(semanticErrStr(ctx) + "Could not match the expected identifier of $expected to the actual identifier of $actual")
         semanticErr()
     }
 
-    override fun argNumberError(fName: String, expected: Int, actual: Int) {
-        println("Semantic error: The function $fName is expecting $expected argument(s), but is given $actual")
+    override fun argNumberError(ctx: ParserRuleContext, fName: String, expected: Int, actual: Int) {
+        println(semanticErrStr(ctx) + "The function $fName is expecting $expected argument(s), but is given $actual")
         semanticErr()
     }
 
-    override fun invalidReturnType() {
-        println("Semantic error: This return statement is of the wrong return type for the function")
+    override fun invalidReturnType(ctx: ParserRuleContext) {
+        println(semanticErrStr(ctx) + "This return statement is of the wrong return type for the function")
         semanticErr()
     }
 
-    override fun invalidReturn() {
-        println("Semantic error: Cannot return from the main program")
+    override fun invalidReturn(ctx: ParserRuleContext) {
+        println(semanticErrStr(ctx) + "Cannot return from the main program")
         semanticErr()
     }
 
-    override fun invalidAssignment(fName: String) {
-        println("Semantic error: Cannot assign a value to the function $fName")
+    override fun invalidAssignment(ctx: ParserRuleContext, fName: String) {
+        println(semanticErrStr(ctx) + "Cannot assign a value to the function $fName")
         semanticErr()
     }
 
-    override fun invalidReadType(actual: TypeIdentifier) {
-        println("Semantic error: Invalid read type. Could not match expected type of {int, char} to $actual")
+    override fun invalidReadType(ctx: ParserRuleContext, actual: TypeIdentifier) {
+        println(semanticErrStr(ctx) + "Invalid read type. Could not match expected type of {int, char} to $actual")
         semanticErr()
     }
 
-    override fun invalidFreeType(actual: TypeIdentifier) {
-        println("Semantic error: Invalid free type. Could not match expected type of {pair(T1, T2), T[]} to $actual")
+    override fun invalidFreeType(ctx: ParserRuleContext, actual: TypeIdentifier) {
+        println(semanticErrStr(ctx) + "Invalid free type. Could not match expected type of {pair(T1, T2), T[]} to $actual")
         semanticErr()
     }
 
-    override fun invalidExitType(actual: TypeIdentifier) {
-        println("Semantic error: Invalid exit type. Could not match expected type of int to $actual")
+    override fun invalidExitType(ctx: ParserRuleContext, actual: TypeIdentifier) {
+        println(semanticErrStr(ctx) + "Invalid exit type. Could not match expected type of int to $actual")
         semanticErr()
+    }
+
+    private fun semanticErrStr(ctx: ParserRuleContext): String {
+        return "Semantic error at (${ctx.getStart().line}:${ctx.getStart().charPositionInLine})" +
+                "-(${ctx.getStop().line}:${ctx.getStop().charPositionInLine}): "
     }
 
     private fun semanticErr() {

@@ -1,5 +1,6 @@
 package wacc_05.ast_structure.assignment_ast
 
+import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
@@ -7,7 +8,7 @@ import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class FuncCallAST(private val funcName: String, private val args: ArrayList<ExprAST>) :
+class FuncCallAST(private val ctx: WaccParser.FuncCallContext, private val funcName: String, private val args: ArrayList<ExprAST>) :
     AssignRHSAST() {
 
     override fun getType(st: SymbolTable): TypeIdentifier {
@@ -18,16 +19,16 @@ class FuncCallAST(private val funcName: String, private val args: ArrayList<Expr
         val funcIdentifier: IdentifierObject? = st.lookupAll(funcName)
         when (funcIdentifier) {
             null -> {
-                errorHandler.invalidIdentifier(funcName)
+                errorHandler.invalidIdentifier(ctx, funcName)
             }
             !is FunctionIdentifier -> {
-                errorHandler.invalidFunction(funcName)
+                errorHandler.invalidFunction(ctx, funcName)
             }
             else -> {
                 // Check that the number of args is as expected
                 val noOfArgs: Int = funcIdentifier.getParams().size
                 if (noOfArgs != args.size) {
-                    errorHandler.argNumberError(funcName, noOfArgs, args.size)
+                    errorHandler.argNumberError(ctx, funcName, noOfArgs, args.size)
                 }
 
                 // Check that arg type match up with corresponding parameter type
@@ -36,7 +37,7 @@ class FuncCallAST(private val funcName: String, private val args: ArrayList<Expr
                     val expectedType: TypeIdentifier = funcIdentifier.getParams()[i].getType()
                     val actualType: TypeIdentifier = args[i].getType(st)
                     if (expectedType != actualType) {
-                        errorHandler.typeMismatch(expectedType, actualType)
+                        errorHandler.typeMismatch(ctx, expectedType, actualType)
                     }
                 }
             }

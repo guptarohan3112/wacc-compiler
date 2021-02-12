@@ -30,9 +30,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
         val last = getEndOfBody(ctx.stat())
         if ((last !is WaccParser.StatReturnContext) && (last !is WaccParser.StatExitContext)) {
-            println("Syntax Error 100:\n" +
-                    "Missing Return Or Exit Statement at end of function ${ctx.IDENT()} " +
-                    "on line ${ctx.start.line}:${ctx.start.charPositionInLine}")
+            println(
+                "Syntax Error 100:\n" +
+                        "Missing Return Or Exit Statement at end of function ${ctx.IDENT()} " +
+                        "on line ${ctx.start.line}:${ctx.start.charPositionInLine}"
+            )
             exitProcess(Error.SYNTAX_ERROR)
         }
 
@@ -43,6 +45,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         }
 
         return FunctionAST(
+            ctx,
             visitType(ctx.type()),
             ctx.IDENT().text,
             paramList,
@@ -54,7 +57,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     private fun getEndOfBody(stat: WaccParser.StatContext): WaccParser.StatContext {
 
         val statements: List<WaccParser.StatContext> = when (stat) {
-            is WaccParser.StatSequentialContext-> stat.stat()
+            is WaccParser.StatSequentialContext -> stat.stat()
             is WaccParser.StatIfContext -> stat.stat()
             else -> emptyList()
         }
@@ -114,6 +117,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitStatDeclaration(ctx: WaccParser.StatDeclarationContext): StatementAST {
         return StatementAST.DeclAST(
+            ctx,
             visitType(ctx.type()),
             ctx.IDENT().text,
             visitAssignRHS(ctx.assignRHS())
@@ -127,6 +131,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitStatAssign(ctx: WaccParser.StatAssignContext): StatementAST {
         return StatementAST.AssignAST(
+            ctx,
             visitAssignLHS(ctx.assignLHS()),
             visitAssignRHS(ctx.assignRHS())
         )
@@ -138,7 +143,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
        context's assignLHS child.
      */
     override fun visitStatRead(ctx: WaccParser.StatReadContext): StatementAST {
-        return StatementAST.ReadAST(visitAssignLHS(ctx.assignLHS()))
+        return StatementAST.ReadAST(ctx, visitAssignLHS(ctx.assignLHS()))
     }
 
     /* Function: visitStatFree()
@@ -147,7 +152,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
        context's expr child.
      */
     override fun visitStatFree(ctx: WaccParser.StatFreeContext): StatementAST {
-        return StatementAST.FreeAST(visitExpr(ctx.expr()))
+        return StatementAST.FreeAST(ctx, visitExpr(ctx.expr()))
     }
 
     /* Function: visitStatReturn()
@@ -156,7 +161,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
        expr child.
      */
     override fun visitStatReturn(ctx: WaccParser.StatReturnContext): StatementAST {
-        return StatementAST.ReturnAST(visitExpr(ctx.expr()))
+        return StatementAST.ReturnAST(ctx, visitExpr(ctx.expr()))
     }
 
     /* Function: visitStatExit()
@@ -165,7 +170,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
        expr child.
      */
     override fun visitStatExit(ctx: WaccParser.StatExitContext): StatementAST {
-        return StatementAST.ExitAST(visitExpr(ctx.expr()))
+        return StatementAST.ExitAST(ctx, visitExpr(ctx.expr()))
     }
 
     /* Function: visitStatPrint()
@@ -193,6 +198,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitStatIf(ctx: WaccParser.StatIfContext): StatementAST {
         return StatementAST.IfAST(
+            ctx,
             visitExpr(ctx.expr()),
             visitStat(ctx.stat(0)),
             visitStat(ctx.stat(1))
@@ -204,7 +210,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
        Returns a WhileAST node with children corresponding to calls to visitExpr() and visitStat().
      */
     override fun visitStatWhile(ctx: WaccParser.StatWhileContext): StatementAST {
-        return StatementAST.WhileAST(visitExpr(ctx.expr()), visitStat(ctx.stat()))
+        return StatementAST.WhileAST(ctx, visitExpr(ctx.expr()), visitStat(ctx.stat()))
     }
 
     /* Function: visitStatBeginEnd()
@@ -262,13 +268,13 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         // node accordingly
         return when {
             ctx.IDENT() != null -> {
-                AssignLHSAST(ident = ctx.IDENT().text)
+                AssignLHSAST(ctx = ctx, ident = ctx.IDENT().text)
             }
             ctx.pairElem() != null -> {
-                AssignLHSAST(pairElem = visitPairElem(ctx.pairElem()))
+                AssignLHSAST(ctx = ctx, pairElem = visitPairElem(ctx.pairElem()))
             }
             ctx.arrayElem() != null -> {
-                AssignLHSAST(arrElem = visitArrayElem(ctx.arrayElem()))
+                AssignLHSAST(ctx = ctx, arrElem = visitArrayElem(ctx.arrayElem()))
             }
             else -> throw Exception("Error : Cannot match context with type")
         }
@@ -301,7 +307,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         Returns a BaseTypeAST node with the actual type as a string field
      */
     override fun visitBaseType(ctx: WaccParser.BaseTypeContext): TypeAST.BaseTypeAST {
-        return TypeAST.BaseTypeAST(ctx.text)
+        return TypeAST.BaseTypeAST(ctx, ctx.text)
     }
 
     /* Function: visitPairType()
@@ -353,9 +359,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         }
 
         if (ctx.INT_LIT().text.toDouble() > limit) {
-            println("Syntax Error (Error 100)\n : " +
-                    "Integer value ${ctx.INT_LIT().text} on line ${ctx.start.line} is badly formatted " +
-                    "(either it has a badly defined sign or it is too large for a 32-bit signed integer)")
+            println(
+                "Syntax Error (Error 100)\n : " +
+                        "Integer value ${ctx.INT_LIT().text} on line ${ctx.start.line} is badly formatted " +
+                        "(either it has a badly defined sign or it is too large for a 32-bit signed integer)"
+            )
             exitProcess(Error.SYNTAX_ERROR)
         }
         return ExprAST.IntLiterAST(sign, ctx.INT_LIT().text)
@@ -399,7 +407,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         Generates a PairElemAST, which has expr child generated by calling visitExpr on the context's expr child.
      */
     override fun visitPairElem(ctx: WaccParser.PairElemContext): PairElemAST {
-        return PairElemAST(visitExpr(ctx.expr()), ctx.FST() != null)
+        return PairElemAST(ctx, visitExpr(ctx.expr()), ctx.FST() != null)
     }
 
 
@@ -413,7 +421,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         for (exprCtx in ctx.expr()) {
             exprs.add(visitExpr(exprCtx))
         }
-        return ArrayLiterAST(exprs as ArrayList<ExprAST>)
+        return ArrayLiterAST(ctx, exprs as ArrayList<ExprAST>)
     }
 
 /* Function: VisitArrayElem()
@@ -427,7 +435,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         for (exprCtx in ctx.expr()) {
             exprs.add(visitExpr(exprCtx))
         }
-        return ExprAST.ArrayElemAST(ctx.IDENT().text, exprs as ArrayList<ExprAST>)
+        return ExprAST.ArrayElemAST(ctx, ctx.IDENT().text, exprs as ArrayList<ExprAST>)
     }
 
     /* Function: VisitFuncCall()
@@ -445,7 +453,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             }
         }
 
-        return FuncCallAST(ctx.IDENT().text, exprs as ArrayList<ExprAST>)
+        return FuncCallAST(ctx, ctx.IDENT().text, exprs as ArrayList<ExprAST>)
     }
 
     /* Function: visitExpr()
@@ -473,58 +481,58 @@ class Visitor : WaccParserBaseVisitor<AST>() {
                 ExprAST.PairLiterAST
             }
             ctx.IDENT() != null -> {
-                ExprAST.IdentAST(value = ctx.IDENT().text)
+                ExprAST.IdentAST(ctx, value = ctx.IDENT().text)
             }
             ctx.arrayElem() != null -> {
                 visitArrayElem(ctx.arrayElem())
             }
             ctx.unaryOper() != null -> {
-                ExprAST.UnOpAST(visitExpr(ctx.expr(0)), ctx.unaryOper().text)
+                ExprAST.UnOpAST(ctx.unaryOper(), visitExpr(ctx.expr(0)), ctx.unaryOper().text)
             }
             ctx.OPEN_PARENTHESES() != null -> {
                 visitExpr(ctx.expr(0))
             }
             ctx.MULT() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MULT().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MULT().text)
             }
             ctx.DIV() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.DIV().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.DIV().text)
             }
             ctx.MOD() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MOD().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MOD().text)
             }
             ctx.PLUS() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.PLUS().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.PLUS().text)
             }
             ctx.MINUS() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MINUS().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MINUS().text)
             }
             ctx.PLUS() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.PLUS().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.PLUS().text)
             }
             ctx.GT() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.GT().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.GT().text)
             }
             ctx.GTE() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.GTE().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.GTE().text)
             }
             ctx.LT() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.LT().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.LT().text)
             }
             ctx.LTE() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.LTE().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.LTE().text)
             }
             ctx.EQ() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.EQ().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.EQ().text)
             }
             ctx.NOTEQ() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.NOTEQ().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.NOTEQ().text)
             }
             ctx.AND() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.AND().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.AND().text)
             }
             ctx.OR() != null -> {
-                ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.OR().text)
+                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.OR().text)
             }
             else -> throw Exception("Error : Cannot match context with type")
         }

@@ -1,10 +1,12 @@
 package wacc_05.ast_structure
 
+import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
 class FunctionAST(
+    private val ctx: WaccParser.FuncContext,
     private val returnType: TypeAST,
     private val funcName: String,
     private val paramList: ParamListAST?,
@@ -17,7 +19,7 @@ class FunctionAST(
         // Check to make sure function has not already been defined
         val func: IdentifierObject? = st.lookup(funcName)
         if (func != null && func is FunctionIdentifier) {
-            errorHandler.repeatVariableDeclaration(funcName)
+            errorHandler.repeatVariableDeclaration(ctx, funcName)
         } else {
             // Create function identifier and add to symbol table
             val funcST = SymbolTable(st)

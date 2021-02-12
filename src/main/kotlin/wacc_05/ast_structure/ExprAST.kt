@@ -1,5 +1,6 @@
 package wacc_05.ast_structure
 
+import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
@@ -63,7 +64,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class IdentAST(private val value: String) : ExprAST() {
+    data class IdentAST(private val ctx: WaccParser.ExprContext, private val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             val type = st.lookupAll(value)
@@ -77,19 +78,15 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-
-//        fun setType(st: SymbolTable, type: TypeIdentifier) {
-//            st.add(value, VariableIdentifier(value, type))
-//        }
-
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             if (st.lookupAll(value) == null) {
-                errorHandler.invalidIdentifier(value)
+                errorHandler.invalidIdentifier(ctx, value)
             }
         }
     }
 
     data class ArrayElemAST(
+        private val ctx: WaccParser.ArrayElemContext,
         private val ident: String,
         private val exprs: ArrayList<ExprAST>
     ) : ExprAST() {
@@ -111,18 +108,18 @@ sealed class ExprAST : AssignRHSAST() {
             for (expr in exprs) {
                 expr.check(st, errorHandler)
                 if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr.getType(st))
+                    errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr.getType(st))
                 }
             }
 
             val variable: IdentifierObject? = st.lookupAll(ident)
 
             if (variable == null) {
-                errorHandler.invalidIdentifier(ident)
+                errorHandler.invalidIdentifier(ctx, ident)
             } else {
                 val variableType = variable.getType()
                 if (variableType !is TypeIdentifier.ArrayIdentifier) {
-                    errorHandler.typeMismatch(variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
+                    errorHandler.typeMismatch(ctx, variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
                 }
             }
         }
@@ -130,6 +127,7 @@ sealed class ExprAST : AssignRHSAST() {
     }
 
     data class UnOpAST(
+        private val ctx: WaccParser.UnaryOperContext,
         private val expr: ExprAST,
         private val operator: String
     ) : ExprAST() {
@@ -154,27 +152,27 @@ sealed class ExprAST : AssignRHSAST() {
             when (operator) {
                 "len" -> {
                     if (exprType !is TypeIdentifier.ArrayIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0), exprType)
+                        errorHandler.typeMismatch(ctx, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0), exprType)
                     }
                 }
                 "ord" -> {
                     if (exprType !is TypeIdentifier.CharIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.CHAR_TYPE, exprType)
+                        errorHandler.typeMismatch(ctx, TypeIdentifier.CHAR_TYPE, exprType)
                     }
                 }
                 "chr" -> {
                     if (exprType !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, exprType)
+                        errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, exprType)
                     }
                 }
                 "!" -> {
                     if (exprType !is TypeIdentifier.BoolIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, exprType)
+                        errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, exprType)
                     }
                 }
                 "-" -> {
                     if (exprType !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, exprType)
+                        errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, exprType)
                     }
                 }
                 else -> {
@@ -185,6 +183,7 @@ sealed class ExprAST : AssignRHSAST() {
     }
 
     data class BinOpAST(
+        private val ctx: WaccParser.ExprContext,
         private val expr1: ExprAST,
         private val expr2: ExprAST,
         private val operator: String
@@ -194,8 +193,6 @@ sealed class ExprAST : AssignRHSAST() {
             val intIntFunctions = hashSetOf("*", "/", "+", "-", "%")
 
             val intCharFunctions = hashSetOf(">", ">=", "<", "<=")
-
-            val anyTypeFunctions = hashSetOf("==", "!=")
 
             val boolBoolFunctions = hashSetOf("&&", "||")
         }
@@ -219,11 +216,11 @@ sealed class ExprAST : AssignRHSAST() {
             when {
                 intIntFunctions.contains(operator) -> {
                     if (expr1Type !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr1Type)
+                        errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr1Type)
                     }
 
                     if (expr2Type !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr2Type)
+                        errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr2Type)
                     }
                 }
                 intCharFunctions.contains(operator) -> {
@@ -233,28 +230,28 @@ sealed class ExprAST : AssignRHSAST() {
 
                     if (expr1Type is TypeIdentifier.IntIdentifier || expr1Type is TypeIdentifier.CharIdentifier) {
                         if (expr1Type != expr2Type) {
-                            errorHandler.typeMismatch(expr1Type, expr2Type)
+                            errorHandler.typeMismatch(ctx, expr1Type, expr2Type)
                         }
                         return
                     }
 
                     if (expr2Type is TypeIdentifier.IntIdentifier || expr2Type is TypeIdentifier.CharIdentifier) {
                         // we already know type 1 isn't valid
-                        errorHandler.typeMismatch(expr2Type, expr1Type)
+                        errorHandler.typeMismatch(ctx, expr2Type, expr1Type)
                         return
                     }
 
                     // both aren't valid
-                    errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr1Type)
-                    errorHandler.typeMismatch(TypeIdentifier.INT_TYPE, expr2Type)
+                    errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr1Type)
+                    errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr2Type)
                 }
                 boolBoolFunctions.contains(operator) -> {
                     if (expr1Type !is TypeIdentifier.BoolIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, expr1Type)
+                        errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, expr1Type)
                     }
 
                     if (expr2Type !is TypeIdentifier.BoolIdentifier) {
-                        errorHandler.typeMismatch(TypeIdentifier.BOOL_TYPE, expr2Type)
+                        errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, expr2Type)
                     }
                 }
                 else -> {
