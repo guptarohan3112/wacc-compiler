@@ -34,7 +34,7 @@ class ErrorTests {
         File(directoryPath).walk().forEach {
             if (it.extension == "wacc") {
                 try {
-                    if (WaccCompiler.runCompiler(it.absolutePath) == expected)
+                    if (WaccCompiler.runCompiler(it.absolutePath, false) == expected)
                         passedTests.add(it.nameWithoutExtension)
                     else
                         failedTests.add(it.nameWithoutExtension)

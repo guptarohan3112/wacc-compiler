@@ -7,29 +7,27 @@ import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class FuncCallAST(private val function: String, private val args: ArrayList<ExprAST>) : AssignRHSAST() {
-
+class FuncCallAST(private val funcName: String, private val args: ArrayList<ExprAST>) :
+    AssignRHSAST() {
 
     override fun getType(st: SymbolTable): TypeIdentifier {
-        return (st.lookupAll(function) as FunctionIdentifier).getReturnType()
+        return (st.lookupAll(funcName) as FunctionIdentifier).getReturnType()
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        val funcIdentifier: IdentifierObject? = st.lookupAll(function)
+        val funcIdentifier: IdentifierObject? = st.lookupAll(funcName)
         when (funcIdentifier) {
             null -> {
-                errorHandler.invalidIdentifier(function)
+                errorHandler.invalidIdentifier(funcName)
             }
-
             !is FunctionIdentifier -> {
-                errorHandler.invalidFunction(function)
+                errorHandler.invalidFunction(funcName)
             }
-
             else -> {
                 // Check that the number of args is as expected
                 val noOfArgs: Int = funcIdentifier.getParams().size
                 if (noOfArgs != args.size) {
-                    errorHandler.argNumberError(function, noOfArgs, args.size)
+                    errorHandler.argNumberError(funcName, noOfArgs, args.size)
                 }
 
                 // Check that arg type match up with corresponding parameter type
@@ -44,4 +42,5 @@ class FuncCallAST(private val function: String, private val args: ArrayList<Expr
             }
         }
     }
+
 }

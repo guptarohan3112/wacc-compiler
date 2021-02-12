@@ -4,6 +4,7 @@ import antlr.WaccParser
 import antlr.WaccParserBaseVisitor
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
+import kotlin.math.pow
 import kotlin.system.exitProcess
 
 class Visitor : WaccParserBaseVisitor<AST>() {
@@ -27,9 +28,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitFunc(ctx: WaccParser.FuncContext): FunctionAST {
 
-        val last = getLast(ctx.stat())
+        val last = getEndOfBody(ctx.stat())
         if ((last !is WaccParser.StatReturnContext) && (last !is WaccParser.StatExitContext)) {
-            println("Syntax Error 100: Missing Return Or Exit Statement at end of function")
+            println("Syntax Error 100:\n" +
+                    "Missing Return Or Exit Statement at end of function ${ctx.IDENT()} " +
+                    "on line ${ctx.start.line}:${ctx.start.charPositionInLine}")
             exitProcess(Error.SYNTAX_ERROR)
         }
 
@@ -47,19 +50,20 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         )
     }
 
-    private fun getLast(stat: WaccParser.StatContext): WaccParser.StatContext {
+    /* Private Helper Method for visitFunc() which gets last statement in body of function */
+    private fun getEndOfBody(stat: WaccParser.StatContext): WaccParser.StatContext {
 
-        val list: List<WaccParser.StatContext> = when (stat) {
+        val statements: List<WaccParser.StatContext> = when (stat) {
             is WaccParser.StatSequentialContext-> stat.stat()
             is WaccParser.StatIfContext -> stat.stat()
             else -> emptyList()
         }
 
-        /* Case where we have a sequence of statements or an if statement */
-        if (list.isNotEmpty()) {
-            return getLast(list[list.size - 1])
+        // Case where we have a sequence of statements or an if statement
+        if (statements.isNotEmpty()) {
+            return getEndOfBody(statements[statements.size - 1])
         }
-        /* Case when we have a single statement, rather than one of the above */
+        // Case when we have a single statement, rather than one of the above */
         return stat
     }
 
@@ -244,9 +248,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             ctx.funcCall() != null -> {
                 visitFuncCall(ctx.funcCall())
             }
-
-            // TODO - throw suitable error
-            else -> throw Exception()
+            else -> throw Exception("Error : Cannot match context with type")
         }
     }
 
@@ -268,9 +270,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             ctx.arrayElem() != null -> {
                 AssignLHSAST(arrElem = visitArrayElem(ctx.arrayElem()))
             }
-
-            // TODO - throw suitable error
-            else -> throw Exception()
+            else -> throw Exception("Error : Cannot match context with type")
         }
 
     }
@@ -292,9 +292,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             ctx.type() != null -> {
                 TypeAST.ArrayTypeAST(visitType(ctx.type()))
             }
-
-            // TODO - throw suitable error
-            else -> throw Exception()
+            else -> throw Exception("Error : Cannot match context with type")
         }
     }
 
@@ -305,25 +303,6 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     override fun visitBaseType(ctx: WaccParser.BaseTypeContext): TypeAST.BaseTypeAST {
         return TypeAST.BaseTypeAST(ctx.text)
     }
-
-//    /* Function: visitArrayType()
-//        ------------------------
-//        Returns a ArrayTypeAST node, by matching the context with the relevant type and then calling its
-//        respective visit() function
-//     */
-//    override fun visitArrayType(ctx: WaccParser.ArrayTypeContext): TypeAST.ArrayTypeAST {
-//        return when {
-//            ctx.baseType() != null -> {
-//                TypeAST.ArrayTypeAST(visitBaseType(ctx.baseType()))
-//            }
-//            ctx.pairType() != null -> {
-//                TypeAST.ArrayTypeAST(visitPairType(ctx.pairType()))
-//            }
-//
-//            // TODO - throw suitable error
-//            else -> throw Exception()
-//        }
-//    }
 
     /* Function: visitPairType()
         ------------------------
@@ -353,9 +332,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             ctx.PAIR() != null -> {
                 TypeAST.PairElemTypeAST(pair = ctx.PAIR().text, type = null)
             }
-
-            // TODO - throw suitable error
-            else -> throw Exception()
+            else -> throw Exception("Error : Cannot match context with type")
         }
     }
 
@@ -365,7 +342,8 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitIntLit(ctx: WaccParser.IntLitContext): ExprAST.IntLiterAST {
         var sign = ""
-        var limit = Math.pow(2.0, 31.0)
+        var limit = 2.0.pow(31.0)
+
         if (ctx.PLUS() != null) {
             sign = ctx.PLUS().text
             limit -= 1
@@ -373,8 +351,11 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         if (ctx.MINUS() != null) {
             sign = ctx.MINUS().text
         }
+
         if (ctx.INT_LIT().text.toDouble() > limit) {
-            println("SYNTAX ERROR 100 : INTEGER OVERFLOW DETECTED")
+            println("Syntax Error (Error 100)\n : " +
+                    "Integer value ${ctx.INT_LIT().text} on line ${ctx.start.line} is badly formatted " +
+                    "(either it has a badly defined sign or it is too large for a 32-bit signed integer)")
             exitProcess(Error.SYNTAX_ERROR)
         }
         return ExprAST.IntLiterAST(sign, ctx.INT_LIT().text)
@@ -545,8 +526,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             ctx.OR() != null -> {
                 ExprAST.BinOpAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.OR().text)
             }
-            // TODO - throw suitable error
-            else -> throw Exception()
+            else -> throw Exception("Error : Cannot match context with type")
         }
     }
 }
