@@ -1,5 +1,6 @@
 package wacc_05.semantic_tests
 
+import antlr.WaccParser
 import io.mockk.Runs
 import io.mockk.every
 import io.mockk.just
@@ -12,46 +13,53 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class DeclASTTests : StatSemanticTests() {
-//    @Test
-//    fun declASTValidCheck() {
-//        val declContext =
-//
-//        st.add("int", TypeIdentifier.IntIdentifier())
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("int"), "x",
-//            ExprAST.IntLiterAST("+", "3")
-//        ).check(st, seh)
-//    }
-//
-//    @Test
-//    fun declASTRepeatDeclaration() {
-//        st.add("int", intType)
-//        st.add("x", VariableIdentifier(intType))
-//
-//        every { seh.repeatVariableDeclaration("x") } just Runs
-//
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("int"),
-//            "x",
-//            ExprAST.IntLiterAST("+", "3")
-//        ).check(st, seh)
-//
-//        verify(exactly = 1) { seh.repeatVariableDeclaration("x") }
-//    }
-//
-//    @Test
-//    fun declASTDifferentTypes() {
-//        st.add("int", intType)
-//        st.add("char", charType)
-//
-//        every { seh.typeMismatch(any(), any()) } just Runs
-//
-//        StatementAST.DeclAST(
-//            TypeAST.BaseTypeAST("int"),
-//            "x",
-//            ExprAST.CharLiterAST("c")
-//        ).check(st, seh)
-//
-//        verify(exactly = 1) { seh.typeMismatch(intType, charType) }
-//    }
+    val declContext = WaccParser.StatDeclarationContext(statCtx)
+    val typeContext = WaccParser.TypeContext(declContext, 0)
+    val exprContext = WaccParser.ExprContext(declContext, 0)
+
+    init {
+        declContext.addChild(typeContext)
+        declContext.addChild(exprContext)
+    }
+
+    @Test
+    fun declASTValidCheck() {
+        st.add("int", TypeIdentifier.IntIdentifier())
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"), "x",
+            ExprAST.IntLiterAST("+", "3")
+        ).check(declContext, st, seh)
+    }
+
+    @Test
+    fun declASTRepeatDeclaration() {
+        st.add("int", intType)
+        st.add("x", VariableIdentifier(intType))
+
+        every { seh.repeatVariableDeclaration(any(), "x") } just Runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "x",
+            ExprAST.IntLiterAST("+", "3")
+        ).check(declContext, st, seh)
+
+        verify(exactly = 1) { seh.repeatVariableDeclaration(any(), "x") }
+    }
+
+    @Test
+    fun declASTDifferentTypes() {
+        st.add("int", intType)
+        st.add("char", charType)
+
+        every { seh.typeMismatch(any(), any(), any()) } just Runs
+
+        StatementAST.DeclAST(
+            TypeAST.BaseTypeAST("int"),
+            "x",
+            ExprAST.CharLiterAST("c")
+        ).check(declContext, st, seh)
+
+        verify(exactly = 1) { seh.typeMismatch(any(), intType, charType) }
+    }
 }
