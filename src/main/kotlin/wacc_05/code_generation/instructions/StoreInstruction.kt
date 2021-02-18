@@ -1,9 +1,12 @@
 package wacc_05.code_generation.instructions
 
-class StoreInstruction() : Instruction {
+import wacc_05.code_generation.AddressingMode.AddressingMode2
+import wacc_05.code_generation.Register
+
+class StoreInstruction(private val reg: Register, private val addrMode: AddressingMode2) : Instruction {
 
     override fun toString(): String {
-        return "STR"
+        return "STR $reg, $addrMode"
     }
 
 }
