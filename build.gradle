@@ -113,6 +113,7 @@ task semanticTests(type: Test) {
         }
     }
 
+    exclude 'wacc_05/back_end_tests/execution_tests/'
     exclude 'wacc_05/error_tests'
 }
 
@@ -133,6 +134,28 @@ task errorTests(type: Test) {
         }
     }
 
+    exclude 'wacc_05/back_end_tests/execution_tests/'
+    exclude 'wacc_05/semantic_tests'
+}
+
+task executionTests(type: Test) {
+    sourceSets {
+        main {
+            kotlin {
+                srcDirs += 'src/main/kotlin/'
+            }
+            java {
+                srcDirs += 'src/main/java/'
+            }
+        }
+        test {
+            kotlin {
+                srcDirs += 'src/test/kotlin/wacc_05/back_end_tests/execution_tests/'
+            }
+        }
+    }
+
+    exclude 'wacc_05/error_tests'
     exclude 'wacc_05/semantic_tests'
 }
 
