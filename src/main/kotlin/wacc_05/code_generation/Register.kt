@@ -8,6 +8,6 @@ package wacc_05.code_generation
 class Register(private val number: Int) : Operand() {
 
     override fun toString(): String {
-        TODO("Not yet implemented")
+        return "r$number"
     }
 }
