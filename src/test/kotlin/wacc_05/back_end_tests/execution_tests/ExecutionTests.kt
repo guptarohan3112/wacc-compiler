@@ -5,6 +5,7 @@ import org.junit.Test
 import wacc_05.WaccCompiler
 import java.io.File
 import java.io.IOException
+import java.io.InputStream
 import java.nio.file.Files
 import java.nio.file.Paths
 import java.util.concurrent.TimeUnit
@@ -45,15 +46,15 @@ class ExecutionTests {
                         val run = Runtime.getRuntime().exec(emulate)
                         val buf = run.inputStream
                         val progOutput = buf.bufferedReader().use { it.readText() }
+                        val progExit = 0 // TODO: Get actual exit of program
                         println("OUTPUT $prog: $progOutput")
 
-                        // TODO: All the below
-                        val assemblyFile: File = File("Hello.S")
-
-                        val assemblyOutput: String = getExpectedOutput("assemblyFile")
-                        val assemblyExit: Int = getExpectedExit("assemblyFile")
-                        compareOutput(progOutput, assemblyOutput)
-
+                        val (assemblyOutput, assemblyExit) = getExpectedOutput(File(it.absolutePath))
+                        if (progOutput == assemblyOutput && progExit == assemblyExit) {
+                            passedTests.add(it.nameWithoutExtension)
+                        } else {
+                            failedTests.add(it.nameWithoutExtension)
+                        }
 
                         // delete executable file TODO: Remove associated assembly file as well
                         Runtime.getRuntime().exec("rm $prog").waitFor()
@@ -83,15 +84,35 @@ class ExecutionTests {
         return failedTests.size == 0
     }
 
-    private fun compareOutput(progOutput: String, assemblyOutput: String):Boolean {
-        return true
-    }
+    private fun getExpectedOutput(assembly: File): Pair<String, Int> {
+        val inputStream: InputStream = assembly.inputStream()
+        val lines = mutableListOf<String>()
+        val outputLines = mutableListOf<String>()
+        var outputFlag: Boolean = false
+        var exitFlag: Boolean = false
+        var exitCode: Int = 0
 
-    private fun getExpectedOutput(assemblyString: String):String {
-        return ""
-    }
+        inputStream.bufferedReader().forEachLine { lines.add(it) }
+        lines.forEach {
+            if (it.isNotEmpty() && it[0] == '#') {
+                val line: String = it.substring(2)
+                if (line == "Output:") {
+                    outputFlag = true
+                } else if (outputFlag) {
+                    outputLines.add(line)
+                }
+                if (line == "Exit:") {
+                    exitFlag = true
+                } else if (exitFlag) {
+                    exitCode = line.toInt()
+                }
+            }
+            else {
+                outputFlag = false
+                exitFlag = false
+            }
 
-    private fun getExpectedExit(assemblyString: String):Int {
-        return 0
+        }
+        return Pair(outputLines.joinToString(separator = "\n"), exitCode)
     }
 }
