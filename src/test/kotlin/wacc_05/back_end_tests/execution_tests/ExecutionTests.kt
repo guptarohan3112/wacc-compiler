@@ -30,7 +30,8 @@ class ExecutionTests {
                 try {
                     // Run the compiler- this should generate the assembly file (to be executed)
                     WaccCompiler.runCompiler(it.absolutePath, false)
-                    val assembly = File(it.nameWithoutExtension + ".s")
+                    val assemblyName = it.nameWithoutExtension + ".s"
+                    val assembly = File(assemblyName)
                     if (!assembly.exists()) {
                         // the file cannot be found, some sort of error, add to failedTests
                         println("Assembly file ${it.nameWithoutExtension}.s was not created")
@@ -53,11 +54,17 @@ class ExecutionTests {
                         if (progOutput == assemblyOutput && progExit == assemblyExit) {
                             passedTests.add(it.nameWithoutExtension)
                         } else {
+                            if (progOutput != assemblyOutput) {
+                                println("ERROR IN EXECUTING $assemblyName: output is not as expected")
+                            } else {
+                                println("ERROR IN EXECUTING $assemblyName: exit code is $progExit when it should be $assemblyExit")
+                            }
                             failedTests.add(it.nameWithoutExtension)
                         }
 
-                        // delete executable file TODO: Remove associated assembly file as well
+                        // Not sure if we need to remove the assembly file
                         Runtime.getRuntime().exec("rm $prog").waitFor()
+                        Runtime.getRuntime().exec("rm $assemblyName").waitFor()
 
 //                         Calls a function to parse the wacc file to get Exit(default 0) and Output
 //                         Compare exit of compiling (similar as before) and output (pipe output to temporary file output.txt)
