@@ -257,29 +257,33 @@ sealed class ExprAST : AssignRHSAST() {
 
         private fun translateAdd(regs: Registers): ArrayList<Instruction> {
             val results: ArrayList<Instruction> = ArrayList()
-            if (expr1 is IntLiterAST) {
-                results.addAll(expr2.translate(regs))
-                val dest: Register = expr2.dest!!
-                results.add(AddInstruction(dest, dest, Immediate(expr1.getValue())))
+            when {
+                expr1 is IntLiterAST -> {
+                    results.addAll(expr2.translate(regs))
+                    val dest: Register = expr2.dest!!
+                    results.add(AddInstruction(dest, dest, Immediate(expr1.getValue())))
 
-                this.dest = dest
-            } else if (expr2 is IntLiterAST) {
-                results.addAll(expr1.translate(regs))
-                val dest: Register = expr2.dest!!
-                results.add(AddInstruction(dest, dest, Immediate(expr2.getValue())))
+                    this.dest = dest
+                }
+                expr2 is IntLiterAST -> {
+                    results.addAll(expr1.translate(regs))
+                    val dest: Register = expr2.dest!!
+                    results.add(AddInstruction(dest, dest, Immediate(expr2.getValue())))
 
-                this.dest = dest
-            } else {
-                results.addAll(expr1.translate(regs))
-                results.addAll(expr2.translate(regs))
+                    this.dest = dest
+                }
+                else -> {
+                    results.addAll(expr1.translate(regs))
+                    results.addAll(expr2.translate(regs))
 
-                val dest1: Register = expr1.dest!!
-                val dest2: Register = expr2.dest!!
+                    val dest1: Register = expr1.dest!!
+                    val dest2: Register = expr2.dest!!
 
-                results.add(AddInstruction(dest1, dest1, dest2))
+                    results.add(AddInstruction(dest1, dest1, dest2))
 
-                regs.free(dest2)
-                this.dest = dest1
+                    regs.free(dest2)
+                    this.dest = dest1
+                }
             }
 
             return results
