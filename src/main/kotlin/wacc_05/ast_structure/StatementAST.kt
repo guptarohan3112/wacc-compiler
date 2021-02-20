@@ -8,8 +8,13 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.code_generation.Immediate
+import wacc_05.code_generation.Register
 import wacc_05.code_generation.Registers
+import wacc_05.code_generation.instructions.BranchInstruction
+import wacc_05.code_generation.instructions.CompareInstruction
 import wacc_05.code_generation.instructions.Instruction
+import wacc_05.code_generation.instructions.LabelInstruction
 
 sealed class StatementAST : AST {
 
@@ -193,7 +198,6 @@ sealed class StatementAST : AST {
 
     }
 
-    // TODO: Complete translation method here
     data class SequentialAST(private val stat1: StatementAST, private val stat2: StatementAST) :
         StatementAST() {
 
@@ -239,5 +243,52 @@ sealed class StatementAST : AST {
                 body.check(bodySt, errorHandler)
             }
         }
+
+        fun translate(regs: Registers) : ArrayList<Instruction> {
+            val instrs: ArrayList<Instruction> = ArrayList()
+
+            // TODO: Change name of label below
+            instrs.add(LabelInstruction("bodyCondition"))
+//            instrs.add(loopExpr.translate(regs))
+            val dummyReg = Register(3)
+            // TODO: Replace dummyReg with destination register for the evaluation of the loop expression
+            instrs.add(CompareInstruction(dummyReg, Immediate(0)))
+            // TODO: Need to include conditional branching as part of the instruction set
+            // If equal, branch to label of next statement (again, need to know name of this
+            // label and make sure it has not been used anywhere else).
+//            instrs.addAll(body.translate(regs))
+            instrs.add(BranchInstruction("bodyCondition"))
+
+            // Create label for loop condition comparison (note that the label must be the same to
+            // one that was referred to above)
+            // Evaluation of loop expression
+            // Compare value in some register (that the above put the output in) to 1
+            // If not equal, branch to label of next statement (again, need to know name of this
+            // label and make sure it has not been used anywhere else)
+            // Instructions for body of loop
+            // Unconditional branch to the top of the loop again(condition evaluation)
+
+            // OR
+
+            // Branch off to a label for the evaluation of the loop condition (need to make sure
+            // that the label generated has not been used before in the program
+            // Create label for body of loop
+            // Instructions for body of loop
+            // Create label for loop condition comparison (note that the label must be the same to
+            // one that was referred to above)
+            // Evaluation of loop expression
+            // Compare value in some register (that the above put the output in to 1
+            // If equal, branch to label above (again, need to know name of this label and make sure
+            // it has not been used anywhere else)
+
+            return ArrayList()
+        }
     }
 }
+
+// Things to think about:
+// Need to make sure that the label we create is not a label that has been used before
+// Need a way of knowing the register where the result of some evaluation or calculation is being held
+// What do we do in the cases where we branch to a label before creating that label? When we create
+// the instructions underneath that label, they need to know to create that specific label instead
+// of any other label.
