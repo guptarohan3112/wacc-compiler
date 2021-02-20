@@ -1,5 +1,8 @@
 package wacc_05.code_generation
 
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
+
 class Registers {
 
     companion object {
@@ -20,26 +23,46 @@ class Registers {
         val sp = Register(13)
         val lr = Register(14)
         val pc = Register(15)
+
+        val allRegisters: ArrayList<Register> = arrayListOf(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12)
     }
 
-    private val allRegisters: Array<Register> = arrayOf(r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12)
+    private val available: ArrayList<Register> = allRegisters
 
     // should only use registers R0 - R12 (general purpose)
     private val inUse: HashSet<Register> = HashSet()
 
     fun allocate(): Register {
-        for (register in allRegisters) {
-            if (!inUse.contains(register)) {
-                inUse.add(register)
-                return register
-            }
+        if (available.isNotEmpty()) {
+            val result: Register = available.removeAt(0)
+            inUse.add(result)
+            return result
         }
 
         // use stack or accumulator machine approach
         throw Exception()
     }
 
-    fun free(reg : Register) {
-        inUse.remove(reg)
+    fun peekDestination(): Register {
+        if (available.isNotEmpty()) {
+            return available[0]
+        }
+
+        throw Exception()
+    }
+
+    fun free(reg: Register) {
+        if (inUse.remove(reg)) {
+            available.insert(reg)
+        }
+    }
+
+    private fun ArrayList<Register>.insert(reg: Register) {
+        var i: Int = 0;
+        while (reg > get(i)) {
+            i++
+        }
+
+        add(i, reg)
     }
 }

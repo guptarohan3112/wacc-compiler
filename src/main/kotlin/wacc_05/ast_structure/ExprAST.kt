@@ -4,6 +4,11 @@ import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.code_generation.Immediate
+import wacc_05.code_generation.Register
+import wacc_05.code_generation.Registers
+import wacc_05.code_generation.instructions.AddInstruction
+import wacc_05.code_generation.instructions.Instruction
 import wacc_05.symbol_table.identifier_objects.*
 
 sealed class ExprAST : AssignRHSAST() {
@@ -12,6 +17,10 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
+        }
+
+        fun getValue(): Int {
+            return (sign + value).toInt()
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -201,6 +210,15 @@ sealed class ExprAST : AssignRHSAST() {
                 // Need valid min and max integers to put here
                 "+", "%", "/", "*", "-" -> TypeIdentifier.INT_TYPE
                 else -> TypeIdentifier.BoolIdentifier
+            }
+        }
+
+        fun translate(regs: Registers): ArrayList<Instruction> {
+            return when (operator) {
+                in intIntFunctions -> ArrayList()
+                in intCharFunctions -> ArrayList()
+                in boolBoolFunctions -> ArrayList()
+                else -> ArrayList()
             }
         }
 
