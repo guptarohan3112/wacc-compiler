@@ -29,7 +29,7 @@ class ExecutionTests {
             if (it.extension == "wacc") {
                 try {
                     // Run the compiler- this should generate the assembly file (to be executed)
-                    WaccCompiler.runCompiler(it.absolutePath, false)
+                    val progExit: Int = WaccCompiler.runCompiler(it.absolutePath, false)
                     val assemblyName = it.nameWithoutExtension + ".s"
                     val assembly = File(assemblyName)
                     if (!assembly.exists()) {
@@ -47,7 +47,6 @@ class ExecutionTests {
                         val run = Runtime.getRuntime().exec(emulate)
                         val buf = run.inputStream
                         val progOutput = buf.bufferedReader().use { it.readText() }
-                        val progExit = 0 // TODO: Get actual exit of program
                         println("OUTPUT $prog: $progOutput")
 
                         val (assemblyOutput, assemblyExit) = getExpectedOutput(File(it.absolutePath))
@@ -106,7 +105,9 @@ class ExecutionTests {
                 if (line == "Output:") {
                     outputFlag = true
                 } else if (outputFlag) {
-                    outputLines.add(line)
+                    if (line != "#empty#") {
+                        outputLines.add(line)
+                    }
                 }
                 if (line == "Exit:") {
                     exitFlag = true
