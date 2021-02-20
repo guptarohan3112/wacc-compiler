@@ -3,6 +3,8 @@ package wacc_05.ast_structure.assignment_ast
 import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.ast_structure.ExprAST
+import wacc_05.code_generation.Registers
+import wacc_05.code_generation.instructions.Instruction
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
@@ -34,6 +36,10 @@ class PairElemAST(private val ctx: WaccParser.PairElemContext, private val elem:
         ) {
             errorHandler.typeMismatch(ctx, TypeIdentifier.PairLiterIdentifier, elemType)
         }
+    }
+
+    override fun translate(regs: Registers): ArrayList<Instruction> {
+        return ArrayList()
     }
 
 }

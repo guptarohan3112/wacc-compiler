@@ -4,6 +4,8 @@ import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.code_generation.Registers
+import wacc_05.code_generation.instructions.Instruction
 import wacc_05.symbol_table.identifier_objects.*
 
 sealed class ExprAST : AssignRHSAST() {
@@ -17,6 +19,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     data class BoolLiterAST(private val value: String) : ExprAST() {
@@ -27,6 +33,10 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 
@@ -39,6 +49,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     data class StrLiterAST(private val value: String) : ExprAST() {
@@ -50,6 +64,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     object PairLiterAST : ExprAST() {
@@ -60,6 +78,10 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 
@@ -81,6 +103,10 @@ sealed class ExprAST : AssignRHSAST() {
             if (st.lookupAll(value) == null) {
                 errorHandler.invalidIdentifier(ctx, value)
             }
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 
@@ -121,6 +147,10 @@ sealed class ExprAST : AssignRHSAST() {
                     errorHandler.typeMismatch(ctx, variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
                 }
             }
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
 
     }
@@ -178,6 +208,10 @@ sealed class ExprAST : AssignRHSAST() {
                     //do nothing
                 }
             }
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 
@@ -257,6 +291,10 @@ sealed class ExprAST : AssignRHSAST() {
                     // do nothing
                 }
             }
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 }

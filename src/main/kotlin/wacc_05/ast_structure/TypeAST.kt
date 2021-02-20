@@ -2,6 +2,8 @@ package wacc_05.ast_structure
 
 import antlr.WaccParser
 import wacc_05.SemanticErrors
+import wacc_05.code_generation.Registers
+import wacc_05.code_generation.instructions.Instruction
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
@@ -31,6 +33,10 @@ sealed class TypeAST : AST {
             }
         }
 
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
+
         override fun toString(): String {
             return typeName
         }
@@ -40,6 +46,10 @@ sealed class TypeAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             elemsType.check(st, errorHandler)
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
 
         override fun getType(st: SymbolTable): TypeIdentifier {
@@ -55,6 +65,10 @@ sealed class TypeAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             type?.check(st, errorHandler)
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
 
         override fun toString(): String {
@@ -78,6 +92,10 @@ sealed class TypeAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             fstType.check(st, errorHandler)
             sndType.check(st, errorHandler)
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
 
         override fun toString(): String {

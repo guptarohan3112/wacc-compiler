@@ -1,8 +1,11 @@
 package wacc_05.ast_structure
 
 import wacc_05.SemanticErrors
+import wacc_05.code_generation.Registers
+import wacc_05.code_generation.instructions.Instruction
 import wacc_05.symbol_table.SymbolTable
 import java.util.*
+import kotlin.collections.ArrayList
 
 class ProgramAST(
     private val functionList: ArrayList<FunctionAST>,
@@ -23,6 +26,10 @@ class ProgramAST(
 
         // Check validity of statement
         stat.check(st, errorHandler)
+    }
+
+    override fun translate(regs: Registers): ArrayList<Instruction> {
+        return ArrayList()
     }
 
 }

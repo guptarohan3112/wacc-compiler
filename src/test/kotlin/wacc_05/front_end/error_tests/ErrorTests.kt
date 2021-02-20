@@ -1,4 +1,4 @@
-package wacc_05.error_tests
+package wacc_05.front_end.error_tests
 
 import org.junit.Test
 
