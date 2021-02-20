@@ -33,23 +33,25 @@ class ExecutionTests {
                     val assemblyName = it.nameWithoutExtension + ".s"
                     val assembly = File(assemblyName)
                     if (!assembly.exists()) {
-                        // the file cannot be found, some sort of error, add to failedTests
-                        println("Assembly file ${it.nameWithoutExtension}.s was not created")
+                        // The file cannot be found, some sort of error, add to failedTests
+                        println("Assembly file $assemblyName was not created")
                         failedTests.add(it.nameWithoutExtension)
                     } else {
-                        // The file has been found- the output and exit code must be compared to what is indicated in the comments of the wacc file
+                        // The output and exit code must be compared to the particular comments of the wacc file
                         val prog: String = it.nameWithoutExtension
-                        // Compile executable file, run it on the emulator and capture program output TODO: Replace 'hello.S'
+                        // Compile executable file, run it on the emulator and capture program output
+                        // TODO: Replace 'hello.S'. For now, create a dummy folder of created assembly files taken from output of reference compiler
                         Runtime.getRuntime()
                             .exec("arm-linux-gnueabi-gcc -o $prog -mcpu=arm1176jzf-s -mtune=arm1176jz-s hello.S")
                             .waitFor()
                         val emulate: String = "qemu-arm -L /usr/arm-linux-gnueabi/ $prog"
                         val run = Runtime.getRuntime().exec(emulate)
-                        val buf = run.inputStream
+                        val buf: InputStream = run.inputStream
                         val progOutput = buf.bufferedReader().use { it.readText() }
                         val progExit = 0 // TODO: Get actual exit of program
                         println("OUTPUT $prog: $progOutput")
 
+                        // TODO: Think about corner cases where the wacc file doesn't have an output comment/exit comment
                         val (assemblyOutput, assemblyExit) = getExpectedOutput(File(it.absolutePath))
                         if (progOutput == assemblyOutput && progExit == assemblyExit) {
                             passedTests.add(it.nameWithoutExtension)
@@ -62,13 +64,8 @@ class ExecutionTests {
                             failedTests.add(it.nameWithoutExtension)
                         }
 
-                        // Not sure if we need to remove the assembly file
                         Runtime.getRuntime().exec("rm $prog").waitFor()
                         Runtime.getRuntime().exec("rm $assemblyName").waitFor()
-
-//                         Calls a function to parse the wacc file to get Exit(default 0) and Output
-//                         Compare exit of compiling (similar as before) and output (pipe output to temporary file output.txt)
-
                     }
 
                 } catch (e: Exception) {
@@ -86,8 +83,6 @@ class ExecutionTests {
         // Show the tests that return the wrong output from execution
         println(failedTests.toString())
 
-        // Delete the output.txt file
-
         return failedTests.size == 0
     }
 
@@ -95,9 +90,9 @@ class ExecutionTests {
         val inputStream: InputStream = assembly.inputStream()
         val lines = mutableListOf<String>()
         val outputLines = mutableListOf<String>()
-        var outputFlag: Boolean = false
-        var exitFlag: Boolean = false
-        var exitCode: Int = 0
+        var outputFlag = false
+        var exitFlag = false
+        var exitCode = 0
 
         inputStream.bufferedReader().forEachLine { lines.add(it) }
         lines.forEach {
