@@ -43,14 +43,6 @@ class Registers {
         throw Exception()
     }
 
-    fun peekDestination(): Register {
-        if (available.isNotEmpty()) {
-            return available[0]
-        }
-
-        throw Exception()
-    }
-
     fun free(reg: Register) {
         if (inUse.remove(reg)) {
             available.insert(reg)
