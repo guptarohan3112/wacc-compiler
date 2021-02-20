@@ -108,12 +108,13 @@ task semanticTests(type: Test) {
         }
         test {
             kotlin {
-                srcDirs += 'src/test/kotlin/wacc_05/semantic_tests/'
+                srcDirs += 'src/test/kotlin/wacc_05/front_end/semantic_tests/'
             }
         }
     }
 
-    exclude 'wacc_05/error_tests'
+    exclude 'wacc_05/back_end/execution_tests/'
+    exclude 'wacc_05/front_end/error_tests'
 }
 
 task errorTests(type: Test) {
@@ -128,12 +129,34 @@ task errorTests(type: Test) {
         }
         test {
             kotlin {
-                srcDirs += 'src/test/kotlin/wacc_05/error_tests/'
+                srcDirs += 'src/test/kotlin/wacc_05/front_end/error_tests/'
             }
         }
     }
 
-    exclude 'wacc_05/semantic_tests'
+    exclude 'wacc_05/back_end/execution_tests/'
+    exclude 'wacc_05/front_end/semantic_tests/'
+}
+
+task executionTests(type: Test) {
+    sourceSets {
+        main {
+            kotlin {
+                srcDirs += 'src/main/kotlin/'
+            }
+            java {
+                srcDirs += 'src/main/java/'
+            }
+        }
+        test {
+            kotlin {
+                srcDirs += 'src/test/kotlin/wacc_05/back_end/execution_tests/'
+            }
+        }
+    }
+
+    exclude 'wacc_05/front_end/error_tests/'
+    exclude 'wacc_05/front_end/semantic_tests/'
 }
 
 /* THE BELOW CODE WAS TAKEN FROM

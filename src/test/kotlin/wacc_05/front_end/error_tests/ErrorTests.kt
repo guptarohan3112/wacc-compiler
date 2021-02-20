@@ -1,4 +1,4 @@
-package wacc_05.error_tests
+package wacc_05.front_end.error_tests
 
 import org.junit.Test
 
@@ -48,9 +48,10 @@ class ErrorTests {
         println(passedTests.size.toString() + " tests passed.")
         println(failedTests.size.toString() + " tests failed.")
         println("---------------------------------------------")
-        if (expected == 100 || expected == 200) {
-            println(failedTests.toString())
-        }
+
+        // Show the tests that return the wrong exit code (to what was expected)
+        println(failedTests.toString())
+
         return failedTests.size == 0
     }
 }

@@ -26,6 +26,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     data class BoolLiterAST(private val value: String) : ExprAST() {
@@ -36,6 +40,10 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 
@@ -48,6 +56,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     data class StrLiterAST(private val value: String) : ExprAST() {
@@ -59,6 +71,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     object PairLiterAST : ExprAST() {
@@ -69,6 +85,10 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 
@@ -90,6 +110,10 @@ sealed class ExprAST : AssignRHSAST() {
             if (st.lookupAll(value) == null) {
                 errorHandler.invalidIdentifier(ctx, value)
             }
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 
@@ -130,6 +154,10 @@ sealed class ExprAST : AssignRHSAST() {
                     errorHandler.typeMismatch(ctx, variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
                 }
             }
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
 
     }
@@ -188,6 +216,10 @@ sealed class ExprAST : AssignRHSAST() {
                 }
             }
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     data class BinOpAST(
@@ -213,7 +245,7 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(regs: Registers): ArrayList<Instruction> {
             return when (operator) {
                 in intIntFunctions -> ArrayList()
                 in intCharFunctions -> ArrayList()

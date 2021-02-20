@@ -1,4 +1,4 @@
-package wacc_05.semantic_tests
+package wacc_05.front_end.semantic_tests
 
 import antlr.WaccParser
 import io.mockk.every
