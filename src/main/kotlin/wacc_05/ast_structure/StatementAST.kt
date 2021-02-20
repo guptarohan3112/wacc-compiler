@@ -23,6 +23,10 @@ sealed class StatementAST : AST {
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             return
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     data class DeclAST(
@@ -54,6 +58,10 @@ sealed class StatementAST : AST {
                 st.add(varName, varIdent)
             }
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     data class AssignAST(
@@ -73,12 +81,20 @@ sealed class StatementAST : AST {
                 errorHandler.typeMismatch(ctx, lhsType, rhsType)
             }
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     data class BeginAST(private val stat: StatementAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             stat.check(SymbolTable(st), errorHandler)
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
 
     }
@@ -95,6 +111,10 @@ sealed class StatementAST : AST {
                 errorHandler.invalidReadType(ctx, type)
             }
         }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
     }
 
     data class ExitAST(private val ctx: WaccParser.StatExitContext, private val expr: ExprAST) :
@@ -106,6 +126,10 @@ sealed class StatementAST : AST {
             if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
                 errorHandler.invalidExitType(ctx, expr.getType(st))
             }
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
 
     }
@@ -121,6 +145,10 @@ sealed class StatementAST : AST {
             if (!(type is TypeIdentifier.PairIdentifier || type is TypeIdentifier.ArrayIdentifier)) {
                 errorHandler.invalidFreeType(ctx, type)
             }
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 
@@ -153,7 +181,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(regs: Registers): ArrayList<Instruction> {
             // Instructions for evaluating the boolean instruction
             // Compare value in dest register (of condition evaluation- how do we know that) to 0
             // Branch if equals to a label signifying else branch (which we will create later and
@@ -173,6 +201,10 @@ sealed class StatementAST : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
+        }
+
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
         }
     }
 
@@ -196,6 +228,10 @@ sealed class StatementAST : AST {
             }
         }
 
+        override fun translate(regs: Registers): ArrayList<Instruction> {
+            return ArrayList()
+        }
+
     }
 
     data class SequentialAST(private val stat1: StatementAST, private val stat2: StatementAST) :
@@ -206,7 +242,7 @@ sealed class StatementAST : AST {
             stat2.check(st, errorHandler)
         }
 
-        fun translate(regs: Registers) : ArrayList<Instruction> {
+        override fun translate(regs: Registers) : ArrayList<Instruction> {
 //            val stat1Instrs: ArrayList<Instruction> = stat1.translate(regs)
 //            val stat2Instrs: ArrayList<Instruction> = stat2.translate(regs)
 //            val instrs: ArrayList<Instruction> = ArrayList()
@@ -244,7 +280,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        fun translate(regs: Registers) : ArrayList<Instruction> {
+        override fun translate(regs: Registers) : ArrayList<Instruction> {
             val instrs: ArrayList<Instruction> = ArrayList()
 
             // TODO: Change name of label below
