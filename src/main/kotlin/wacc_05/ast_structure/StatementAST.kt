@@ -8,6 +8,8 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.code_generation.Registers
+import wacc_05.code_generation.instructions.Instruction
 
 sealed class StatementAST : AST {
 
@@ -76,7 +78,8 @@ sealed class StatementAST : AST {
 
     }
 
-    data class ReadAST(private val ctx: WaccParser.StatReadContext, private val lhs: AssignLHSAST) : StatementAST() {
+    data class ReadAST(private val ctx: WaccParser.StatReadContext, private val lhs: AssignLHSAST) :
+        StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             lhs.check(st, errorHandler)
@@ -89,7 +92,8 @@ sealed class StatementAST : AST {
         }
     }
 
-    data class ExitAST(private val ctx: WaccParser.StatExitContext, private val expr: ExprAST) : StatementAST() {
+    data class ExitAST(private val ctx: WaccParser.StatExitContext, private val expr: ExprAST) :
+        StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
@@ -101,7 +105,8 @@ sealed class StatementAST : AST {
 
     }
 
-    data class FreeAST(private val ctx: WaccParser.StatFreeContext, private val expr: ExprAST) : StatementAST() {
+    data class FreeAST(private val ctx: WaccParser.StatFreeContext, private val expr: ExprAST) :
+        StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             expr.check(st, errorHandler)
@@ -114,6 +119,7 @@ sealed class StatementAST : AST {
         }
     }
 
+    // TODO: Complete translation method here
     data class IfAST(
         private val ctx: WaccParser.StatIfContext,
         private val condExpr: ExprAST,
@@ -142,6 +148,17 @@ sealed class StatementAST : AST {
             }
         }
 
+        fun translate(regs: Registers): ArrayList<Instruction> {
+            // Instructions for evaluating the boolean instruction
+            // Compare value in dest register (of condition evaluation- how do we know that) to 0
+            // Branch if equals to a label signifying else branch (which we will create later and
+            // need to make sure we are not reusing a label- how do we know this)
+            // Instructions for the then statement
+            // Create label for else branch
+            // Instructions for else branch
+            return ArrayList()
+        }
+
     }
 
     data class PrintAST(
@@ -154,7 +171,8 @@ sealed class StatementAST : AST {
         }
     }
 
-    data class ReturnAST(private val ctx: WaccParser.StatReturnContext, private val expr: ExprAST) : StatementAST() {
+    data class ReturnAST(private val ctx: WaccParser.StatReturnContext, private val expr: ExprAST) :
+        StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
@@ -175,6 +193,7 @@ sealed class StatementAST : AST {
 
     }
 
+    // TODO: Complete translation method here
     data class SequentialAST(private val stat1: StatementAST, private val stat2: StatementAST) :
         StatementAST() {
 
@@ -183,8 +202,21 @@ sealed class StatementAST : AST {
             stat2.check(st, errorHandler)
         }
 
+        fun translate(regs: Registers) : ArrayList<Instruction> {
+//            val stat1Instrs: ArrayList<Instruction> = stat1.translate(regs)
+//            val stat2Instrs: ArrayList<Instruction> = stat2.translate(regs)
+//            val instrs: ArrayList<Instruction> = ArrayList()
+//            instrs.addAll(stat1Instrs)
+//            instrs.addAll(stat2Instrs)
+//
+//            return instrs
+
+            return ArrayList()
+        }
+
     }
 
+    // TODO: Complete translation method here
     data class WhileAST(
         private val ctx: WaccParser.StatWhileContext,
         private val loopExpr: ExprAST,
