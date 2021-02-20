@@ -1,4 +1,4 @@
-package wacc_05.semantic_tests
+package wacc_05.front_end.semantic_tests
 
 import antlr.WaccParser
 import io.mockk.every
@@ -9,9 +9,6 @@ import org.junit.Test
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.TypeAST
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
-import kotlin.math.exp
 
 class BinOpTests : ExprSemanticTests() {
 
