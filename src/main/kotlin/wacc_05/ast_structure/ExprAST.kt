@@ -2,15 +2,19 @@ package wacc_05.ast_structure
 
 import antlr.WaccParser
 import wacc_05.SemanticErrors
-import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.code_generation.AddressingMode
 import wacc_05.code_generation.Immediate
 import wacc_05.code_generation.Register
 import wacc_05.code_generation.Registers
+import wacc_05.code_generation.Registers.Companion.sp
 import wacc_05.code_generation.instructions.AddInstruction
 import wacc_05.code_generation.instructions.Instruction
-import wacc_05.code_generation.instructions.MoveInstruction
-import wacc_05.symbol_table.identifier_objects.*
+import wacc_05.code_generation.instructions.LoadInstruction
+import wacc_05.code_generation.instructions.ReverseSubtractInstruction
+import wacc_05.symbol_table.SymbolTable
+import wacc_05.symbol_table.identifier_objects.IdentifierObject
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 sealed class ExprAST : AssignRHSAST() {
 
@@ -221,8 +225,23 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+            return when (operator) {
+                "-" -> translateNeg(regs)
+                else -> ArrayList()
+            }
         }
+
+        private fun translateNeg(regs: Registers): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            results.addAll(expr.translate(regs))
+            val dest: Register = expr.dest!!
+            results.add(LoadInstruction(dest, AddressingMode.AddressingMode2(sp, null)))
+            results.add(ReverseSubtractInstruction(dest, dest, Immediate(0)))
+            return results
+        }
+
+
     }
 
     data class BinOpAST(
