@@ -2,10 +2,13 @@ package wacc_05.ast_structure
 
 import antlr.WaccParser
 import wacc_05.SemanticErrors
+import wacc_05.WaccCompiler
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
-import wacc_05.code_generation.Registers
+import wacc_05.code_generation.*
 import wacc_05.code_generation.instructions.Instruction
+import wacc_05.code_generation.instructions.LoadInstruction
+import wacc_05.code_generation.instructions.MoveInstruction
 import wacc_05.symbol_table.identifier_objects.*
 
 sealed class ExprAST : AssignRHSAST() {
@@ -21,7 +24,11 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+            val intValue = Integer.parseInt(sign+value)
+            val register = regs.allocate()
+            val mode: AddressingMode = AddressingMode.AddressingMode2(register, Immediate(intValue))
+//            this.dest = register
+            return arrayListOf(LoadInstruction(register, mode))
         }
     }
 
@@ -36,7 +43,8 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+            val intValue = if (value == "true") 1 else 0
+            return arrayListOf(MoveInstruction(regs.allocate(), Immediate(intValue)))
         }
     }
 
@@ -51,7 +59,11 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+            return if (value == "'\\0'") {
+                arrayListOf(MoveInstruction(regs.allocate(), Immediate(0)))
+            } else {
+                arrayListOf(MoveInstruction(regs.allocate(), ImmediateChar(value)))
+            }
         }
     }
 
@@ -66,6 +78,8 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
+            // TODO: ADD LABEL FOR MSG
+//            return arrayListOf(LoadInstruction(regs.allocate(), //load instruction)
             return ArrayList()
         }
     }
@@ -81,7 +95,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+            return arrayListOf(MoveInstruction(regs.allocate(), Immediate(0)))
         }
     }
 
@@ -155,7 +169,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     }
 
-    data class UnOpAST(
+    data class UnOpAST( 
         private val ctx: WaccParser.UnaryOperContext,
         private val expr: ExprAST,
         private val operator: String
