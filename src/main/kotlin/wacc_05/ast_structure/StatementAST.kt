@@ -152,7 +152,6 @@ sealed class StatementAST : AST {
         }
     }
 
-    // TODO: Complete translation method here
     data class IfAST(
         private val ctx: WaccParser.StatIfContext,
         private val condExpr: ExprAST,
@@ -183,12 +182,13 @@ sealed class StatementAST : AST {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             // Instructions for evaluating the boolean instruction
-            // Compare value in dest register (of condition evaluation- how do we know that) to 0
-            // Branch if equals to a label signifying else branch (which we will create later and
-            // need to make sure we are not reusing a label- how do we know this)
+            // Compare value in dest register to 0
+            // Branch if equals to a label signifying else branch
             // Instructions for the then statement
+            // Unconditional branch to label where program after if statement continues
             // Create label for else branch
             // Instructions for else branch
+            // Label instruction, where the next code in the program will sit
             return ArrayList()
         }
 
@@ -243,15 +243,13 @@ sealed class StatementAST : AST {
         }
 
         override fun translate(regs: Registers) : ArrayList<Instruction> {
-//            val stat1Instrs: ArrayList<Instruction> = stat1.translate(regs)
-//            val stat2Instrs: ArrayList<Instruction> = stat2.translate(regs)
-//            val instrs: ArrayList<Instruction> = ArrayList()
-//            instrs.addAll(stat1Instrs)
-//            instrs.addAll(stat2Instrs)
-//
-//            return instrs
+            val stat1Instrs: ArrayList<Instruction> = stat1.translate(regs)
+            val stat2Instrs: ArrayList<Instruction> = stat2.translate(regs)
+            val instrs: ArrayList<Instruction> = ArrayList()
+            instrs.addAll(stat1Instrs)
+            instrs.addAll(stat2Instrs)
 
-            return ArrayList()
+            return instrs
         }
 
     }
@@ -295,36 +293,7 @@ sealed class StatementAST : AST {
 //            instrs.addAll(body.translate(regs))
             instrs.add(BranchInstruction("bodyCondition"))
 
-            // Create label for loop condition comparison (note that the label must be the same to
-            // one that was referred to above)
-            // Evaluation of loop expression
-            // Compare value in some register (that the above put the output in) to 1
-            // If not equal, branch to label of next statement (again, need to know name of this
-            // label and make sure it has not been used anywhere else)
-            // Instructions for body of loop
-            // Unconditional branch to the top of the loop again(condition evaluation)
-
-            // OR
-
-            // Branch off to a label for the evaluation of the loop condition (need to make sure
-            // that the label generated has not been used before in the program
-            // Create label for body of loop
-            // Instructions for body of loop
-            // Create label for loop condition comparison (note that the label must be the same to
-            // one that was referred to above)
-            // Evaluation of loop expression
-            // Compare value in some register (that the above put the output in to 1
-            // If equal, branch to label above (again, need to know name of this label and make sure
-            // it has not been used anywhere else)
-
-            return ArrayList()
+            return instrs
         }
     }
 }
-
-// Things to think about:
-// Need to make sure that the label we create is not a label that has been used before
-// Need a way of knowing the register where the result of some evaluation or calculation is being held
-// What do we do in the cases where we branch to a label before creating that label? When we create
-// the instructions underneath that label, they need to know to create that specific label instead
-// of any other label.
