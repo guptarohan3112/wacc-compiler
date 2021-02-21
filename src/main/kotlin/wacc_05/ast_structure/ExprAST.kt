@@ -7,6 +7,8 @@ import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.code_generation.Immediate
 import wacc_05.code_generation.Register
 import wacc_05.code_generation.Registers
+import wacc_05.code_generation.Registers.Companion.r0
+import wacc_05.code_generation.Registers.Companion.r1
 import wacc_05.code_generation.instructions.*
 import wacc_05.symbol_table.identifier_objects.*
 
@@ -251,6 +253,8 @@ sealed class ExprAST : AssignRHSAST() {
                 "+" -> translateAdd(regs)
                 "-" -> translateSub(regs)
                 "*" -> translateMultiply(regs)
+                "/" -> translateDivide(regs)
+                "%" -> translateModulo(regs)
                 else -> ArrayList()
             }
         }
@@ -336,6 +340,48 @@ sealed class ExprAST : AssignRHSAST() {
             this.dest = dest1
 
             return results
+        }
+
+        // NOTE: use caller save when calling translateDivide() ??
+        private fun translateDivide(regs: Registers): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            results.addAll(expr1.translate(regs))
+            results.addAll(expr2.translate(regs))
+
+            val dest1: Register = expr1.dest!!
+            val dest2: Register = expr2.dest!!
+
+            val p = regs.saveRegisters(hashSetOf(dest1, dest2))
+
+            results.addAll(p.first)
+
+            if(dest1 != r0) {
+                regs.allocate()
+                results.add(MoveInstruction(r0, dest1))
+                regs.free(dest1)
+            }
+
+            if(dest2 != r1) {
+                regs.allocate()
+                results.add(MoveInstruction(r1, dest2))
+                regs.free(dest2)
+            }
+
+            results.add(BranchInstruction("L", "__aeabi_idiv"))
+
+            // not sure about this - we need to move R3 into a destination register
+            // but I am concerned about overwriting it when restoring, or overwriting
+            // a register we are restoring
+
+            regs.restoreRegisters(p.second)
+
+            return results
+        }
+
+        private fun translateModulo(regs: Registers): ArrayList<Instruction> {
+            // to follow translateDivide()
+            return ArrayList()
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {

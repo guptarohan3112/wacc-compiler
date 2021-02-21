@@ -1,5 +1,9 @@
 package wacc_05.code_generation
 
+import wacc_05.code_generation.instructions.Instruction
+import wacc_05.code_generation.instructions.PopInstruction
+import wacc_05.code_generation.instructions.PushInstruction
+import java.util.*
 import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 
@@ -41,6 +45,33 @@ class Registers {
 
         // use stack or accumulator machine approach
         throw Exception()
+    }
+
+    fun saveRegisters(exceptions: HashSet<Register>): Pair<ArrayList<Instruction>, Stack<Register>> {
+        val list: ArrayList<Instruction> = ArrayList()
+        val saved: Stack<Register> = Stack()
+
+        for (reg: Register in inUse) {
+            if (!exceptions.contains(reg)) {
+                list.add(PushInstruction(reg))
+                saved.push(reg)
+                inUse.remove(reg)
+            }
+        }
+
+        return Pair(list, saved)
+    }
+
+    fun restoreRegisters(saved: Stack<Register>): ArrayList<Instruction> {
+        val list: ArrayList<Instruction> = ArrayList()
+
+        while (saved.isNotEmpty()) {
+            val reg: Register = saved.pop()
+            inUse.add(reg)
+            list.add(PopInstruction(reg))
+        }
+
+        return list
     }
 
     fun free(reg: Register) {
