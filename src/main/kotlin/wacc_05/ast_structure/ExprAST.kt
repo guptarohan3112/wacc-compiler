@@ -7,9 +7,7 @@ import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.code_generation.Immediate
 import wacc_05.code_generation.Register
 import wacc_05.code_generation.Registers
-import wacc_05.code_generation.instructions.AddInstruction
-import wacc_05.code_generation.instructions.Instruction
-import wacc_05.code_generation.instructions.MoveInstruction
+import wacc_05.code_generation.instructions.*
 import wacc_05.symbol_table.identifier_objects.*
 
 sealed class ExprAST : AssignRHSAST() {
@@ -251,6 +249,8 @@ sealed class ExprAST : AssignRHSAST() {
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return when (operator) {
                 "+" -> translateAdd(regs)
+                "-" -> translateSub(regs)
+                "*" -> translateMultiply(regs)
                 else -> ArrayList()
             }
         }
@@ -285,6 +285,55 @@ sealed class ExprAST : AssignRHSAST() {
                     this.dest = dest1
                 }
             }
+
+            return results
+        }
+
+        private fun translateSub(regs: Registers): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            results.addAll(expr1.translate(regs))
+            val dest: Register = expr1.dest!!
+
+            /* we can only optimise for expr2 being int liter since we have
+             * SUB rd, rn, op -> rd = rn - op, so expr1 must always be placed
+             * in a register */
+            when {
+                expr2 is IntLiterAST -> {
+                    results.add(SubtractInstruction(dest, dest, Immediate(expr2.getValue())))
+                }
+
+                else -> {
+                    results.addAll(expr2.translate(regs))
+                    val dest2: Register = expr2.dest!!
+
+                    results.add(SubtractInstruction(dest, dest, dest2))
+                    regs.free(dest2)
+                }
+            }
+
+            this.dest = dest
+
+            return results
+        }
+
+        private fun translateMultiply(regs: Registers): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            /* here we can't do any optimisation on registers since ARM
+             * requires MULT rd, rm, rs -> rd = rm * rs
+             */
+
+            results.addAll(expr1.translate(regs))
+            results.addAll(expr2.translate(regs))
+
+            val dest1: Register = expr1.dest!!
+            val dest2: Register = expr2.dest!!
+
+            results.add(MultiplyInstruction(dest1, dest1, dest2))
+
+            regs.free(dest2)
+            this.dest = dest1
 
             return results
         }
