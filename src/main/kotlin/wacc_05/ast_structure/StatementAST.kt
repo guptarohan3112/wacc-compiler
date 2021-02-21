@@ -285,24 +285,15 @@ sealed class StatementAST : AST {
 
             // TODO: Change name of label below
             instrs.add(LabelInstruction("bodyCondition"))
-//            instrs.add(loopExpr.translate(regs))
+            instrs.addAll(loopExpr.translate(regs))
             val dummyReg = Register(3)
             // TODO: Replace dummyReg with destination register for the evaluation of the loop expression
             instrs.add(CompareInstruction(dummyReg, Immediate(0)))
             // TODO: Need to include conditional branching as part of the instruction set
             // If equal, branch to label of next statement (again, need to know name of this
             // label and make sure it has not been used anywhere else).
-//            instrs.addAll(body.translate(regs))
+            instrs.addAll(body.translate(regs))
             instrs.add(BranchInstruction("bodyCondition"))
-
-            // Create label for loop condition comparison (note that the label must be the same to
-            // one that was referred to above)
-            // Evaluation of loop expression
-            // Compare value in some register (that the above put the output in) to 1
-            // If not equal, branch to label of next statement (again, need to know name of this
-            // label and make sure it has not been used anywhere else)
-            // Instructions for body of loop
-            // Unconditional branch to the top of the loop again(condition evaluation)
 
             // OR
 
@@ -328,3 +319,6 @@ sealed class StatementAST : AST {
 // What do we do in the cases where we branch to a label before creating that label? When we create
 // the instructions underneath that label, they need to know to create that specific label instead
 // of any other label.
+// Thoughts:
+// Need to have some way of storing meta information, like what labels have been used and where the
+// destination registers are (which have values that we need)
