@@ -47,16 +47,14 @@ class Registers {
         throw Exception()
     }
 
-    fun saveRegisters(exceptions: HashSet<Register>): Pair<ArrayList<Instruction>, Stack<Register>> {
+    fun saveRegisters(): Pair<ArrayList<Instruction>, Stack<Register>> {
         val list: ArrayList<Instruction> = ArrayList()
         val saved: Stack<Register> = Stack()
 
         for (reg: Register in inUse) {
-            if (!exceptions.contains(reg)) {
                 list.add(PushInstruction(reg))
                 saved.push(reg)
                 inUse.remove(reg)
-            }
         }
 
         return Pair(list, saved)

@@ -45,6 +45,13 @@ sealed class ExprAST : AssignRHSAST() {
             return
         }
 
+        fun getValue(): Int {
+            return when (value) {
+                "true" -> 1
+                else -> 0
+            }
+        }
+
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
@@ -255,6 +262,7 @@ sealed class ExprAST : AssignRHSAST() {
                 "*" -> translateMultiply(regs)
                 "/" -> translateDivide(regs)
                 "%" -> translateModulo(regs)
+                "&&" -> translateAnd(regs)
                 else -> ArrayList()
             }
         }
@@ -346,23 +354,22 @@ sealed class ExprAST : AssignRHSAST() {
         private fun translateDivide(regs: Registers): ArrayList<Instruction> {
             val results: ArrayList<Instruction> = ArrayList()
 
+            val p = regs.saveRegisters()
+            results.addAll(p.first)
+
             results.addAll(expr1.translate(regs))
             results.addAll(expr2.translate(regs))
 
             val dest1: Register = expr1.dest!!
             val dest2: Register = expr2.dest!!
 
-            val p = regs.saveRegisters(hashSetOf(dest1, dest2))
-
-            results.addAll(p.first)
-
-            if(dest1 != r0) {
+            if (dest1 != r0) {
                 regs.allocate()
                 results.add(MoveInstruction(r0, dest1))
                 regs.free(dest1)
             }
 
-            if(dest2 != r1) {
+            if (dest2 != r1) {
                 regs.allocate()
                 results.add(MoveInstruction(r1, dest2))
                 regs.free(dest2)
@@ -382,6 +389,74 @@ sealed class ExprAST : AssignRHSAST() {
         private fun translateModulo(regs: Registers): ArrayList<Instruction> {
             // to follow translateDivide()
             return ArrayList()
+        }
+
+        private fun translateAnd(regs: Registers): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            when {
+                expr1 is BoolLiterAST -> {
+                    results.addAll(expr2.translate(regs))
+                    val dest: Register = expr2.dest!!
+                    results.add(AndInstruction(dest, dest, Immediate(expr1.getValue())))
+
+                    this.dest = dest
+                }
+                expr2 is BoolLiterAST -> {
+                    results.addAll(expr1.translate(regs))
+                    val dest: Register = expr1.dest!!
+                    results.add(AndInstruction(dest, dest, Immediate(expr2.getValue())))
+
+                    this.dest = dest
+                }
+                else -> {
+                    results.addAll(expr1.translate(regs))
+                    results.addAll(expr2.translate(regs))
+                    val dest1: Register = expr1.dest!!
+                    val dest2: Register = expr2.dest!!
+
+                    results.add(AndInstruction(dest1, dest1, dest2))
+                    regs.free(dest2)
+
+                    this.dest = dest1
+                }
+            }
+
+            return results
+        }
+
+        private fun translateOr(regs: Registers): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            when {
+                expr1 is BoolLiterAST -> {
+                    results.addAll(expr2.translate(regs))
+                    val dest: Register = expr2.dest!!
+                    results.add(OrInstruction(dest, dest, Immediate(expr1.getValue())))
+
+                    this.dest = dest
+                }
+                expr2 is BoolLiterAST -> {
+                    results.addAll(expr1.translate(regs))
+                    val dest: Register = expr1.dest!!
+                    results.add(OrInstruction(dest, dest, Immediate(expr2.getValue())))
+
+                    this.dest = dest
+                }
+                else -> {
+                    results.addAll(expr1.translate(regs))
+                    results.addAll(expr2.translate(regs))
+                    val dest1: Register = expr1.dest!!
+                    val dest2: Register = expr2.dest!!
+
+                    results.add(OrInstruction(dest1, dest1, dest2))
+                    regs.free(dest2)
+
+                    this.dest = dest1
+                }
+            }
+
+            return results
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
