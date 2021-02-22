@@ -293,7 +293,7 @@ sealed class StatementAST : AST {
             // If equal, branch to label of next statement (again, need to know name of this
             // label and make sure it has not been used anywhere else).
 //            instrs.addAll(body.translate(regs))
-            instrs.add(BranchInstruction("bodyCondition"))
+            instrs.add(BranchInstruction("", "bodyCondition"))
 
             // Create label for loop condition comparison (note that the label must be the same to
             // one that was referred to above)

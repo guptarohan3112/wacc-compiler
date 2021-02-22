@@ -263,6 +263,7 @@ sealed class ExprAST : AssignRHSAST() {
                 "/" -> translateDivide(regs)
                 "%" -> translateModulo(regs)
                 "&&" -> translateAnd(regs)
+                "||" -> translateOr(regs)
                 else -> ArrayList()
             }
         }
