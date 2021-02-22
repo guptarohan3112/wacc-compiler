@@ -1,6 +1,7 @@
 package wacc_05.code_generation
 
 import wacc_05.code_generation.instructions.Instruction
+import wacc_05.code_generation.instructions.LabelInstruction
 import java.io.File
 
 
@@ -9,8 +10,10 @@ object AssemblyRepresentation {
 
     // Global variables
     private val dataInstrs: ArrayList<Instruction>
+
     // Instructions in the program, including those in user defined functions and the main function
     private val mainInstrs: ArrayList<Instruction>
+
     // IO functions that are called in the user defined program
     private val ioInstrs: HashSet<IOInstruction>
 
@@ -33,14 +36,13 @@ object AssemblyRepresentation {
     }
 
 
-
     // This function builds the '.s' file with the information stored in fields (after translation)
     fun buildAssembly(file_name: String) {
 
         File("$file_name.s").printWriter().use { out ->
             out.println("\t.data")
-            dataInstrs.forEach {
-                out.println("$it")
+            dataInstrs.forEach { instr->
+                out.println(printInstr(instr))
             }
 
             out.println()
@@ -50,21 +52,20 @@ object AssemblyRepresentation {
             out.println("\t.global main")
             out.println("\tmain:")
 
-            mainInstrs.forEach {
-                out.println("\t\t$it")
+            mainInstrs.forEach { instr->
+                out.println(printInstr(instr))
             }
 
             out.println()
 
             ioInstrs.forEach {
                 val instructions = it.applyIO()
-                val label = it.getLabel()
-                out.println("\t$label")
                 instructions.forEach { instr ->
-                    out.println("\t\t$instr")
+                    out.println(printInstr(instr))
                 }
             }
         }
+
 
         // Create '.s' file with file_name
 
@@ -77,4 +78,11 @@ object AssemblyRepresentation {
         // Close the file after writing to it
     }
 
+    private fun printInstr(instr: Instruction): String {
+        return if (instr is LabelInstruction) {
+            "\t$instr"
+        } else {
+            "\t\t$instr"
+        }
+    }
 }
