@@ -1,10 +1,11 @@
 package wacc_05.code_generation
 
 import wacc_05.code_generation.instructions.Instruction
+import java.io.File
 
 
 // This class stores all of the information that we need in order to write to an assembly file
-class AssemblyRepresentation() {
+object AssemblyRepresentation {
 
     // Global variables
     private val dataInstrs: ArrayList<Instruction>
@@ -19,8 +20,51 @@ class AssemblyRepresentation() {
         ioInstrs = HashSet()
     }
 
+    fun addDataInstr(instr: Instruction) {
+        dataInstrs.add(instr)
+    }
+
+    fun addMainInstr(instr: Instruction) {
+        mainInstrs.add(instr)
+    }
+
+    fun addIOInstr(io_instr: IOInstruction) {
+        ioInstrs.add(io_instr)
+    }
+
+
+
     // This function builds the '.s' file with the information stored in fields (after translation)
     fun buildAssembly(file_name: String) {
+
+        File("$file_name.s").printWriter().use { out ->
+            out.println("\t.data")
+            dataInstrs.forEach {
+                out.println("$it")
+            }
+
+            out.println()
+            out.println("\t.text")
+            out.println()
+
+            out.println("\t.global main")
+            out.println("\tmain:")
+
+            mainInstrs.forEach {
+                out.println("\t\t$it")
+            }
+
+            out.println()
+
+            ioInstrs.forEach {
+                val instructions = it.applyIO()
+                val label = it.getLabel()
+                out.println("\t$label")
+                instructions.forEach { instr ->
+                    out.println("\t\t$instr")
+                }
+            }
+        }
 
         // Create '.s' file with file_name
 
@@ -32,8 +76,5 @@ class AssemblyRepresentation() {
 
         // Close the file after writing to it
     }
-
-
-
 
 }

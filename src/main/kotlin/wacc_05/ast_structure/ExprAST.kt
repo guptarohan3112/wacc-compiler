@@ -2,11 +2,9 @@ package wacc_05.ast_structure
 
 import antlr.WaccParser
 import wacc_05.SemanticErrors
+import wacc_05.WaccCompiler
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
-import wacc_05.code_generation.AddressingMode
-import wacc_05.code_generation.Immediate
-import wacc_05.code_generation.Register
-import wacc_05.code_generation.Registers
+import wacc_05.code_generation.*
 import wacc_05.code_generation.Registers.Companion.sp
 import wacc_05.code_generation.instructions.AddInstruction
 import wacc_05.code_generation.instructions.Instruction
@@ -269,43 +267,40 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return when (operator) {
-                "+" -> translateAdd(regs)
+//                "+" -> translateAdd(regs)
                 else -> ArrayList()
             }
         }
 
-        private fun translateAdd(regs: Registers): ArrayList<Instruction> {
-            val results: ArrayList<Instruction> = ArrayList()
+        private fun translateAdd(regs: Registers) {
             when {
                 expr1 is IntLiterAST -> {
-                    results.addAll(expr2.translate(regs))
+                    expr2.translate(regs)
                     val dest: Register = expr2.dest!!
-                    results.add(AddInstruction(dest, dest, Immediate(expr1.getValue())))
+                    AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr1.getValue())))
 
                     this.dest = dest
                 }
                 expr2 is IntLiterAST -> {
-                    results.addAll(expr1.translate(regs))
+                    expr1.translate(regs)
                     val dest: Register = expr2.dest!!
-                    results.add(AddInstruction(dest, dest, Immediate(expr2.getValue())))
+                    AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr2.getValue())))
 
                     this.dest = dest
                 }
                 else -> {
-                    results.addAll(expr1.translate(regs))
-                    results.addAll(expr2.translate(regs))
+                    expr1.translate(regs)
+                    expr2.translate(regs)
 
                     val dest1: Register = expr1.dest!!
                     val dest2: Register = expr2.dest!!
 
-                    results.add(AddInstruction(dest1, dest1, dest2))
+                    AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
 
                     regs.free(dest2)
                     this.dest = dest1
                 }
             }
-
-            return results
         }
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
