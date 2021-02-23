@@ -70,7 +70,7 @@ class SemanticVisitor(
         } else {
             // Check that right hand side and type of identifier match
             val typeIdent: TypeIdentifier = decl.type.getType(decl.st())
-            visit(decl.assignment)
+            visitChild(decl.st(), decl.assignment)
             val assignmentType: TypeIdentifier = decl.assignment.getType(decl.st())
 
             if (typeIdent != assignmentType && assignmentType != TypeIdentifier.GENERIC) {
