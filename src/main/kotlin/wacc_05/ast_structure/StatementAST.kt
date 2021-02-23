@@ -18,7 +18,7 @@ import wacc_05.code_generation.instructions.LabelInstruction
 
 sealed class StatementAST : AST {
 
-    abstract fun accept()
+//    abstract fun accept()
 
     object SkipAST : StatementAST() {
 
