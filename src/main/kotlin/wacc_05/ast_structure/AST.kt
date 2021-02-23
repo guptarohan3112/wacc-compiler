@@ -11,15 +11,19 @@ abstract class AST {
     private var set: Boolean = false
     var st: SymbolTable? = null
         set(table) {
-            if(field == null && table != null) {
+            if (field == null && table != null) {
                 field = table
             }
         }
 
+    fun st(): SymbolTable {
+        return st!!
+    }
+
     // Function that applies semantic checks
     abstract fun check(st: SymbolTable, errorHandler: SemanticErrors)
 
-    abstract fun translate(regs: Registers) : ArrayList<Instruction>
+    abstract fun translate(regs: Registers): ArrayList<Instruction>
 
     abstract fun <T> accept(visitor: ASTVisitor<T>): T
 }

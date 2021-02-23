@@ -4,18 +4,18 @@ import wacc_05.SemanticErrors
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
-import wacc_05.symbol_table.identifier_objects.IdentifierObject
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+import wacc_05.symbol_table.identifier_objects.*
 
-class SemanticVisitor(private val st: SymbolTable, private val errorHandler: SemanticErrors) : ASTVisitor<Unit> {
+class SemanticVisitor(private val st: SymbolTable, private val errorHandler: SemanticErrors) :
+    ASTVisitor<Unit> {
 
     override fun visitProgramAST(prog: ProgramAST) {
+        prog.st = st
+
         // preliminary pass through the function list to add all function
         // identifiers to the symbol table
         for (func in prog.functionList) {
-            func.preliminaryCheck(st, errorHandler)
+            func.preliminaryCheck(prog.st(), errorHandler)
         }
 
         for (func in prog.functionList) {
@@ -23,14 +23,11 @@ class SemanticVisitor(private val st: SymbolTable, private val errorHandler: Sem
         }
 
         // Check validity of statement
+        // we have checked this chain and there is not a better way to do this
+        // without compromising our visitor design
+        prog.stat.st = prog.st()
         visit(prog.stat)
     }
-
-    // begin {funcs} <stat> end
-    // ProgramAST - TopLevelST
-    // {FunctionAST - InnerST(TopLevelST)
-    //       Body: StatementAST - InnerST}
-    // StatementAST - TopLevel
 
     override fun visitFunctionAST(func: FunctionAST) {
         val funcIdentifier = st.lookupAll(func.funcName)
@@ -38,16 +35,20 @@ class SemanticVisitor(private val st: SymbolTable, private val errorHandler: Sem
         // we don't give another semantic error if this is not null as it will be a semantic error
         // caused by the inner specifics of the compiler
         if (funcIdentifier != null) {
-            visit(func.body) //((funcIdentifier as FunctionIdentifier).getSymbolTable(), errorHandler)
+            func.body.st = func.st
+            visit(func.body)
         }
     }
 
     override fun visitParamListAST(list: ParamListAST) {
-        TODO("Not yet implemented")
+        for (param in list.paramList) {
+            param.st = list.st
+            visitParamAST(param)
+        }
     }
 
     override fun visitParamAST(param: ParamAST) {
-        TODO("Not yet implemented")
+        // TODO
     }
 
     override fun visitSkipAST(skip: StatementAST.SkipAST) {
@@ -160,7 +161,11 @@ class SemanticVisitor(private val st: SymbolTable, private val errorHandler: Sem
             for (i in 1 until arrayLiter.elems.size) {
                 arrayLiter.elems[i].check(st, errorHandler)
                 if (arrayLiter.elems[i].getType(st) != firstElemType) {
-                    errorHandler.typeMismatch(arrayLiter.ctx, firstElemType, arrayLiter.elems[i].getType(st))
+                    errorHandler.typeMismatch(
+                        arrayLiter.ctx,
+                        firstElemType,
+                        arrayLiter.elems[i].getType(st)
+                    )
                 }
             }
         }
@@ -195,7 +200,12 @@ class SemanticVisitor(private val st: SymbolTable, private val errorHandler: Sem
                 // Check that the number of args is as expected
                 val noOfArgs: Int = funcIdentifier.getParams().size
                 if (noOfArgs != funcCall.args.size) {
-                    errorHandler.argNumberError(funcCall.ctx, funcCall.funcName, noOfArgs, funcCall.args.size)
+                    errorHandler.argNumberError(
+                        funcCall.ctx,
+                        funcCall.funcName,
+                        noOfArgs,
+                        funcCall.args.size
+                    )
                 }
 
                 // Check that arg type match up with corresponding parameter type
