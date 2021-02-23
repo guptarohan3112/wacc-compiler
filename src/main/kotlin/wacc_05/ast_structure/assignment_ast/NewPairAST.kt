@@ -24,6 +24,6 @@ class NewPairAST(private val fst: ExprAST, private val snd: ExprAST) : AssignRHS
     }
 
     override fun <T> accept(visitor: ASTVisitor<T>): T {
-        TODO("Not yet implemented")
+        return visitor.visitNewPairAST(this)
     }
 }
