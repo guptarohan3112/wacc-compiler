@@ -52,11 +52,30 @@ class SemanticVisitor(private val st: SymbolTable, private val errorHandler: Sem
     }
 
     override fun visitSkipAST(skip: StatementAST.SkipAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
-        TODO("Not yet implemented")
+        // Check validity of type of identifier that is being declared
+        decl.type.check(this.st, errorHandler)
+
+        val variable: IdentifierObject? = this.st.lookup(decl.varName)
+        if (variable != null && variable is VariableIdentifier) {
+            errorHandler.repeatVariableDeclaration(decl.ctx, decl.varName)
+        } else {
+            // Check that right hand side and type of identifier match
+            val typeIdent: TypeIdentifier = decl.type.getType(this.st)
+            decl.assignment.check(this.st, errorHandler)
+            val assignmentType: TypeIdentifier = decl.assignment.getType(this.st)
+
+            if (typeIdent != assignmentType && assignmentType != TypeIdentifier.GENERIC) {
+                errorHandler.typeMismatch(decl.ctx, typeIdent, decl.assignment.getType(this.st))
+            }
+
+            // Create variable identifier and add to symbol table
+            val varIdent = VariableIdentifier(typeIdent)
+            this.st.add(decl.varName, varIdent)
+        }
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
