@@ -65,7 +65,7 @@ interface ASTVisitor<T> {
 
     fun visitPairTypeAST(type: TypeAST.PairTypeAST): T
 
-    fun visitPairElemTypeAST(type: TypeAST.PairElemTypeAST): T
+    fun visitPairElemTypeAST(elemType: TypeAST.PairElemTypeAST): T
 
     fun visitArrayLiterAST(arrayLiter: ArrayLiterAST): T
 

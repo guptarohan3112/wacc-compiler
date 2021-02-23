@@ -9,8 +9,7 @@ import wacc_05.symbol_table.identifier_objects.*
 class SemanticVisitor(
     private val symbolTable: SymbolTable,
     private val errorHandler: SemanticErrors
-) :
-    ASTVisitor<Unit> {
+) : ASTVisitor<Unit> {
 
     override fun visitProgramAST(prog: ProgramAST) {
         prog.st = symbolTable
@@ -28,8 +27,7 @@ class SemanticVisitor(
         // Check validity of statement
         // we have checked this chain and there is not a better way to do this
         // without compromising our visitor design
-        prog.stat.st = prog.st()
-        visit(prog.stat)
+        visitChild(prog.st(), prog.stat)
     }
 
     override fun visitFunctionAST(func: FunctionAST) {
@@ -38,22 +36,19 @@ class SemanticVisitor(
         // we don't give another semantic error if this is not null as it will be a semantic error
         // caused by the inner specifics of the compiler
         if (funcIdentifier != null) {
-            func.body.st = func.st()
-            visit(func.body)
+            visitChild(func.st(), func.body)
         }
     }
 
     override fun visitParamListAST(list: ParamListAST) {
         for (param in list.paramList) {
-            param.st = list.st()
-            visitParamAST(param)
+            visitChild(list.st(), param)
         }
     }
 
     override fun visitParamAST(param: ParamAST) {
         // Check validity of parameter type
-        param.type.st = param.st()
-        visit(param.type)
+        visitChild(param.st(), param.type)
 
         // Create parameter identifier and add to symbol table
         val typeIdent: TypeIdentifier = param.type.getType(param.st())
@@ -67,8 +62,7 @@ class SemanticVisitor(
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
         // Check validity of type of identifier that is being declared
-        decl.type.st = decl.st()
-        visit(decl.type)
+        visitChild(decl.st(), decl.type)
 
         val variable: IdentifierObject? = decl.st().lookup(decl.varName)
         if (variable != null && variable is VariableIdentifier) {
@@ -94,11 +88,9 @@ class SemanticVisitor(
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
-        assign.lhs.st = assign.st()
-        visitAssignLHSAST(assign.lhs)
-
-        assign.rhs.st = assign.st()
-        visit(assign.rhs)
+        val symTab: SymbolTable = assign.st()
+        visitChild(symTab, assign.lhs)
+        visitChild(symTab, assign.rhs)
 
         val lhsType = assign.lhs.getType(assign.st())
         val rhsType = assign.rhs.getType(assign.st())
@@ -109,13 +101,12 @@ class SemanticVisitor(
     }
 
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
-        begin.stat.st = SymbolTable(begin.st())
-        visit(begin.stat)
+        val symTab = SymbolTable(begin.st())
+        visitChild(symTab, begin.stat)
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
-        read.lhs.st = read.st()
-        visitAssignLHSAST(read.lhs)
+        visitChild(read.st(), read.lhs)
 
         val type = read.lhs.getType(read.lhs.st())
 
@@ -125,8 +116,7 @@ class SemanticVisitor(
     }
 
     override fun visitExitAST(exit: StatementAST.ExitAST) {
-        exit.expr.st = exit.st()
-        visit(exit.expr)
+        visitChild(exit.st(), exit.expr)
 
         // Ensure exit is only on an integer
         if (exit.expr.getType(exit.st()) !is TypeIdentifier.IntIdentifier) {
@@ -135,8 +125,7 @@ class SemanticVisitor(
     }
 
     override fun visitFreeAST(free: StatementAST.FreeAST) {
-        free.expr.st = free.st()
-        visit(free.expr)
+        visitChild(free.st(), free.expr)
 
         val type = free.expr.getType(free.st())
 
@@ -147,8 +136,7 @@ class SemanticVisitor(
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
         // Check validity of conditional expression
-        ifStat.condExpr.st = ifStat.st()
-        visit(ifStat.condExpr)
+        visitChild(ifStat.st(), ifStat.condExpr)
 
         // Ensure that the condition expression evaluates to a boolean
         if (ifStat.condExpr.getType(ifStat.condExpr.st()) != TypeIdentifier.BOOL_TYPE) {
@@ -169,15 +157,12 @@ class SemanticVisitor(
             elseSt.add("returnType", returnTypeIdent)
         }
 
-        ifStat.thenStat.st = thenSt
-        visit(ifStat.thenStat)
-        ifStat.elseStat.st = elseSt
-        visit(ifStat.elseStat)
+        visitChild(thenSt, ifStat.thenStat)
+        visitChild(elseSt, ifStat.elseStat)
     }
 
     override fun visitPrintAST(print: StatementAST.PrintAST) {
-        print.expr.st = print.st()
-        visit(print.expr)
+        visitChild(print.st(), print.expr)
     }
 
     override fun visitReturnAST(ret: StatementAST.ReturnAST) {
@@ -186,8 +171,7 @@ class SemanticVisitor(
         }
 
         // Check validity of expression
-        ret.expr.st = ret.st()
-        visit(ret.expr)
+        visitChild(ret.st(), ret.expr)
 
         // Check that type of expression being returned is the same as the return type of the function that defines the current scope
         val returnType: TypeIdentifier = ret.expr.getType(ret.st())
@@ -198,16 +182,13 @@ class SemanticVisitor(
     }
 
     override fun visitSequentialAST(seq: StatementAST.SequentialAST) {
-        seq.stat1.st = seq.st()
-        visit(seq.stat1)
-        seq.stat2.st = seq.st()
-        visit(seq.stat2)
+        visitChild(seq.st(), seq.stat1)
+        visitChild(seq.st(), seq.stat2)
     }
 
     override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
         // Check validity of looping expression
-        whileStat.loopExpr.st = whileStat.st()
-        visit(whileStat.loopExpr)
+        visitChild(whileStat.st(), whileStat.loopExpr)
 
         // Check that looping expression evaluates to a boolean
         if (whileStat.loopExpr.getType(whileStat.st()) != TypeIdentifier.BOOL_TYPE) {
@@ -218,13 +199,13 @@ class SemanticVisitor(
             )
         } else {
             val bodySt = SymbolTable(whileStat.st)
-            val returnTypeIdent: TypeIdentifier? = whileStat.st().lookup("returnType") as TypeIdentifier?
+            val returnTypeIdent: TypeIdentifier? =
+                whileStat.st().lookup("returnType") as TypeIdentifier?
             if (returnTypeIdent != null) {
                 bodySt.add("returnType", returnTypeIdent)
             }
 
-            whileStat.body.st = bodySt
-            visit(whileStat.body)
+            visitChild(bodySt, whileStat.body)
         }
     }
 
@@ -256,8 +237,7 @@ class SemanticVisitor(
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         for (expr in arrayElem.exprs) {
-            expr.st = arrayElem.st()
-            visit(expr)
+            visitChild(arrayElem.st(), expr)
             val type: TypeIdentifier = expr.getType(arrayElem.st())
             if (type !is TypeIdentifier.IntIdentifier) {
                 errorHandler.typeMismatch(arrayElem.ctx, TypeIdentifier.INT_TYPE, type)
@@ -282,14 +262,17 @@ class SemanticVisitor(
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         val symTab: SymbolTable = unop.st()
-        unop.expr.st = symTab
-        visit(unop.expr)
+        visitChild(symTab, unop.expr)
         val exprType = unop.expr.getType(symTab)
 
         when (unop.operator) {
             "len" -> {
                 if (exprType !is TypeIdentifier.ArrayIdentifier) {
-                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0), exprType)
+                    errorHandler.typeMismatch(
+                        unop.ctx,
+                        TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0),
+                        exprType
+                    )
                 }
             }
             "ord" -> {
@@ -320,11 +303,8 @@ class SemanticVisitor(
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
         // Set the symbol tables for both expressions and perform semantic checks on them
-        binop.expr1.st = binop.st()
-        binop.expr2.st = binop.st()
-
-        visit(binop.expr1)
-        visit(binop.expr2)
+        visitChild(binop.st(), binop.expr1)
+        visitChild(binop.st(), binop.expr2)
 
         val expr1Type = binop.expr1.getType(binop.st())
         val expr2Type = binop.expr2.getType(binop.st())
@@ -387,21 +367,17 @@ class SemanticVisitor(
     }
 
     override fun visitArrayTypeAST(type: TypeAST.ArrayTypeAST) {
-        type.elemsType.st = type.st()
-        visit(type.elemsType)
+        visitChild(type.st(), type.elemsType)
     }
 
     override fun visitPairTypeAST(type: TypeAST.PairTypeAST) {
-        type.fstType.st = type.st()
-        visit(type.fstType)
-        type.sndType.st = type.st()
-        visit(type.sndType)
+        visitChild(type.st(), type.fstType)
+        visitChild(type.st(), type.sndType)
     }
 
     override fun visitPairElemTypeAST(elemType: TypeAST.PairElemTypeAST) {
         if (elemType.type != null) {
-            elemType.type.st = elemType.st()
-            visit(elemType.type)
+            visitChild(elemType.st(), elemType.type)
         }
     }
 
@@ -409,14 +385,12 @@ class SemanticVisitor(
         // If the array literal is empty, no semantic check need to be done
         if (arrayLiter.elems.size != 0) {
             val arraySymTab: SymbolTable = arrayLiter.st()
-            arrayLiter.elems[0].st = arraySymTab
-            visit(arrayLiter.elems[0])
+            visitChild(arraySymTab, arrayLiter.elems[0])
             val firstElemType = arrayLiter.elems[0].getType(arraySymTab)
 
             // Verify that individual elements are semantically correct and that they are all the same type
             for (i in 1 until arrayLiter.elems.size) {
-                arrayLiter.elems[i].st = arraySymTab
-                visit(arrayLiter.elems[i])
+                visitChild(arraySymTab, arrayLiter.elems[i])
                 if (arrayLiter.elems[i].getType(arraySymTab) != firstElemType) {
                     errorHandler.typeMismatch(
                         arrayLiter.ctx,
@@ -431,11 +405,9 @@ class SemanticVisitor(
     override fun visitAssignLHSAST(lhs: AssignLHSAST) {
         val symTab: SymbolTable = lhs.st()
         if (lhs.arrElem != null) {
-            lhs.arrElem!!.st = symTab
-            visit(lhs.arrElem!!)
+            visitChild(symTab, lhs.arrElem!!)
         } else if (lhs.pairElem != null) {
-            lhs.pairElem!!.st = symTab
-            visit(lhs.pairElem!!)
+            visitChild(symTab, lhs.pairElem!!)
         } else {
             val type = symTab.lookupAll(lhs.ident!!)
             if (type == null) {
@@ -471,8 +443,7 @@ class SemanticVisitor(
 
                 // Check that arg type match up with corresponding parameter type
                 for (i in 0 until funcCall.args.size.coerceAtMost(noOfArgs)) {
-                    funcCall.args[i].st = symTab
-                    visit(funcCall.args[i])
+                    visitChild(symTab, funcCall.args[i])
                     val expectedType: TypeIdentifier = funcIdentifier.getParams()[i].getType()
                     val actualType: TypeIdentifier = funcCall.args[i].getType(symTab)
                     if (expectedType != actualType) {
@@ -484,15 +455,12 @@ class SemanticVisitor(
     }
 
     override fun visitNewPairAST(newPair: NewPairAST) {
-        newPair.fst.st = newPair.st()
-        visit(newPair.fst)
-        newPair.snd.st = newPair.st()
-        visit(newPair.snd)
+        visitChild(newPair.st(), newPair.fst)
+        visitChild(newPair.st(), newPair.snd)
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
-        pairElem.elem.st = pairElem.st()
-        visit(pairElem.elem)
+        visitChild(pairElem.st(), pairElem.elem)
 
         val elemType = pairElem.elem.getType(pairElem.st())
 
@@ -503,5 +471,11 @@ class SemanticVisitor(
         ) {
             errorHandler.typeMismatch(pairElem.ctx, TypeIdentifier.PairLiterIdentifier, elemType)
         }
+    }
+
+    // A helper method that sets the symbol table field of the child node before carrying out semantic checks on it
+    private fun visitChild(symTab: SymbolTable, child: AST) {
+        child.st = symTab
+        visit(child)
     }
 }
