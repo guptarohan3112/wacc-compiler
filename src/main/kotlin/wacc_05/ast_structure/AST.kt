@@ -6,12 +6,20 @@ import wacc_05.code_generation.instructions.Instruction
 import wacc_05.front_end.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
 
-interface AST {
+abstract class AST {
+
+    private var set: Boolean = false
+    var st: SymbolTable? = null
+        set(table) {
+            if(field == null && table != null) {
+                field = table
+            }
+        }
 
     // Function that applies semantic checks
-    fun check(st: SymbolTable, errorHandler: SemanticErrors)
+    abstract fun check(st: SymbolTable, errorHandler: SemanticErrors)
 
-    fun translate(regs: Registers) : ArrayList<Instruction>
+    abstract fun translate(regs: Registers) : ArrayList<Instruction>
 
-    fun <T> accept(visitor: ASTVisitor<T>): T
+    abstract fun <T> accept(visitor: ASTVisitor<T>): T
 }

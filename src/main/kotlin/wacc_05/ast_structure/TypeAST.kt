@@ -9,7 +9,7 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-sealed class TypeAST : AST {
+sealed class TypeAST : AST() {
 
     abstract fun getType(st: SymbolTable): TypeIdentifier
 
@@ -70,7 +70,7 @@ sealed class TypeAST : AST {
         }
     }
 
-    data class PairElemTypeAST(val pair: String? = null, val type: TypeAST?) : AST {
+    data class PairElemTypeAST(val pair: String? = null, val type: TypeAST?) : AST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             type?.check(st, errorHandler)

@@ -14,7 +14,7 @@ class FunctionAST(
     val funcName: String,
     val paramList: ParamListAST?,
     val body: StatementAST
-) : AST {
+) : AST() {
 
     fun preliminaryCheck(st: SymbolTable, errorHandler: SemanticErrors) {
         returnType.check(st, errorHandler)
@@ -23,28 +23,21 @@ class FunctionAST(
         val func: IdentifierObject? = st.lookup(funcName)
         if (func != null && func is FunctionIdentifier) {
             errorHandler.repeatVariableDeclaration(ctx, funcName)
-        } else {
-            // Create function identifier and add to symbol table
-            val funcST = SymbolTable(st)
-            val returnTypeIdent: TypeIdentifier = returnType.getType(st)
-
-            // create the param identifier array list
-            val params: ArrayList<ParamIdentifier> = paramList?.getParams(st) ?: ArrayList()
-
-            val funcIdent =
-                FunctionIdentifier(returnTypeIdent, params, funcST)
-
-            // Check parameter list and function body
-            paramList?.check(funcST, errorHandler)
-
-            funcST.add("returnType", returnTypeIdent)
-
-            // Check parameter list and function body
-            paramList?.check(funcST, errorHandler)
-
-            // add self to higher level symbol table
-            st.add(funcName, funcIdent)
+            return
         }
+
+        // Create function identifier and add to symbol table
+        val funcST = SymbolTable(st)
+        this.st = funcST
+        val returnTypeIdent: TypeIdentifier = returnType.getType(st)
+
+        val funcIdent =
+            FunctionIdentifier(returnTypeIdent, paramList?.getParams(st) ?: ArrayList(), funcST)
+
+        funcST.add("returnType", returnTypeIdent)
+
+        // add self to higher level symbol table
+        st.add(funcName, funcIdent)
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -53,7 +46,9 @@ class FunctionAST(
         // we don't give another semantic error if this is not null as it will be a semantic error
         // caused by the inner specifics of the compiler
         if (funcIdentifier != null) {
-            body.check((funcIdentifier as FunctionIdentifier).getSymbolTable(), errorHandler)
+            // Check parameter list and function body
+            paramList?.check(this.st!!, errorHandler)
+            body.check(this.st!!, errorHandler)
         }
     }
 

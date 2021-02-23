@@ -17,7 +17,7 @@ import wacc_05.code_generation.instructions.Instruction
 import wacc_05.code_generation.instructions.LabelInstruction
 import wacc_05.front_end.ASTVisitor
 
-sealed class StatementAST : AST {
+sealed class StatementAST : AST() {
 
 //    abstract fun accept()
 

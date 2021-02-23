@@ -11,7 +11,7 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 class ParamAST(
     val type: TypeAST,
     val name: String
-) : AST {
+) : AST() {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
 
