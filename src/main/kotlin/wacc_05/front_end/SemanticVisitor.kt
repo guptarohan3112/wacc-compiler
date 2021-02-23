@@ -256,6 +256,7 @@ class SemanticVisitor(
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         for (expr in arrayElem.exprs) {
+            expr.st = arrayElem.st()
             visit(expr)
             val type: TypeIdentifier = expr.getType(arrayElem.st())
             if (type !is TypeIdentifier.IntIdentifier) {
@@ -280,8 +281,9 @@ class SemanticVisitor(
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
-        visit(unop.expr)
         val symTab: SymbolTable = unop.st()
+        unop.expr.st = symTab
+        visit(unop.expr)
         val exprType = unop.expr.getType(symTab)
 
         when (unop.operator) {
@@ -317,6 +319,10 @@ class SemanticVisitor(
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
+        // Set the symbol tables for both expressions and perform semantic checks on them
+        binop.expr1.st = binop.st()
+        binop.expr2.st = binop.st()
+
         visit(binop.expr1)
         visit(binop.expr2)
 
