@@ -13,5 +13,5 @@ interface AST {
 
     fun translate(regs: Registers) : ArrayList<Instruction>
 
-//    fun <T> accept(visitor: ASTVisitor<T>): T
+    fun <T> accept(visitor: ASTVisitor<T>): T
 }

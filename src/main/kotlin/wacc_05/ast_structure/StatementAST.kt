@@ -15,6 +15,7 @@ import wacc_05.code_generation.instructions.BranchInstruction
 import wacc_05.code_generation.instructions.CompareInstruction
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.code_generation.instructions.LabelInstruction
+import wacc_05.front_end.ASTVisitor
 
 sealed class StatementAST : AST {
 
@@ -28,6 +29,10 @@ sealed class StatementAST : AST {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitSkipAST(this)
         }
     }
 
@@ -64,6 +69,10 @@ sealed class StatementAST : AST {
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitDeclAST(this)
+        }
     }
 
     data class AssignAST(
@@ -87,6 +96,10 @@ sealed class StatementAST : AST {
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitAssignAST(this)
+        }
     }
 
     data class BeginAST(private val stat: StatementAST) : StatementAST() {
@@ -97,6 +110,10 @@ sealed class StatementAST : AST {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitBeginAST(this)
         }
 
     }
@@ -117,6 +134,10 @@ sealed class StatementAST : AST {
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitReadAST(this)
+        }
     }
 
     data class ExitAST(private val ctx: WaccParser.StatExitContext, private val expr: ExprAST) :
@@ -132,6 +153,10 @@ sealed class StatementAST : AST {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitExitAST(this)
         }
 
     }
@@ -151,6 +176,10 @@ sealed class StatementAST : AST {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitFreeAST(this)
         }
     }
 
@@ -194,6 +223,10 @@ sealed class StatementAST : AST {
             return ArrayList()
         }
 
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitIfAST(this)
+        }
+
     }
 
     data class PrintAST(
@@ -207,6 +240,10 @@ sealed class StatementAST : AST {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitPrintAST(this)
         }
     }
 
@@ -234,6 +271,9 @@ sealed class StatementAST : AST {
             return ArrayList()
         }
 
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitReturnAST(this)
+        }
     }
 
     data class SequentialAST(private val stat1: StatementAST, private val stat2: StatementAST) :
@@ -244,7 +284,7 @@ sealed class StatementAST : AST {
             stat2.check(st, errorHandler)
         }
 
-        override fun translate(regs: Registers) : ArrayList<Instruction> {
+        override fun translate(regs: Registers): ArrayList<Instruction> {
             val stat1Instrs: ArrayList<Instruction> = stat1.translate(regs)
             val stat2Instrs: ArrayList<Instruction> = stat2.translate(regs)
             val instrs: ArrayList<Instruction> = ArrayList()
@@ -254,6 +294,9 @@ sealed class StatementAST : AST {
             return instrs
         }
 
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitSequentialAST(this)
+        }
     }
 
     // TODO: Complete translation method here
@@ -280,7 +323,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        override fun translate(regs: Registers) : ArrayList<Instruction> {
+        override fun translate(regs: Registers): ArrayList<Instruction> {
             val instrs: ArrayList<Instruction> = ArrayList()
 
             // TODO: Change name of label below
@@ -293,9 +336,11 @@ sealed class StatementAST : AST {
             // If equal, branch to label of next statement (again, need to know name of this
             // label and make sure it has not been used anywhere else).
 //            instrs.addAll(body.translate(regs))
-            instrs.add(BranchInstruction("bodyCondition"))
-
             return instrs
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitWhileAST(this)
         }
     }
 }

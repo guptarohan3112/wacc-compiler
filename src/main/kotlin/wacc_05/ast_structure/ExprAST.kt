@@ -9,6 +9,7 @@ import wacc_05.code_generation.instructions.AddInstruction
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.code_generation.instructions.LoadInstruction
 import wacc_05.code_generation.instructions.ReverseSubtractInstruction
+import wacc_05.front_end.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
@@ -34,6 +35,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitIntLiterAST(this)
+        }
     }
 
     data class BoolLiterAST(private val value: String) : ExprAST() {
@@ -48,6 +53,10 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitBoolLiterAST(this)
         }
     }
 
@@ -64,6 +73,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitCharLiterAST(this)
+        }
     }
 
     data class StrLiterAST(private val value: String) : ExprAST() {
@@ -79,6 +92,10 @@ sealed class ExprAST : AssignRHSAST() {
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitStrLiterAST(this)
+        }
     }
 
     object PairLiterAST : ExprAST() {
@@ -93,6 +110,10 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitPairLiterAST(this)
         }
     }
 
@@ -118,6 +139,10 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitIdentAST(this)
         }
     }
 
@@ -164,6 +189,9 @@ sealed class ExprAST : AssignRHSAST() {
             return ArrayList()
         }
 
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitArrayElemAST(this)
+        }
     }
 
     data class UnOpAST(
@@ -238,7 +266,9 @@ sealed class ExprAST : AssignRHSAST() {
             return results
         }
 
-
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitUnOpAST(this)
+        }
     }
 
     data class BinOpAST(
@@ -355,6 +385,10 @@ sealed class ExprAST : AssignRHSAST() {
                     // do nothing
                 }
             }
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitBinOpAST(this)
         }
     }
 }

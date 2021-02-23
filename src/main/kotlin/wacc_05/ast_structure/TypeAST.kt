@@ -4,6 +4,7 @@ import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.code_generation.Registers
 import wacc_05.code_generation.instructions.Instruction
+import wacc_05.front_end.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
@@ -37,6 +38,10 @@ sealed class TypeAST : AST {
             return ArrayList()
         }
 
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitBaseTypeAST(this)
+        }
+
         override fun toString(): String {
             return typeName
         }
@@ -50,6 +55,10 @@ sealed class TypeAST : AST {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitArrayTypeAST(this)
         }
 
         override fun getType(st: SymbolTable): TypeIdentifier {
@@ -69,6 +78,10 @@ sealed class TypeAST : AST {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitPairElemTypeAST(this)
         }
 
         override fun toString(): String {
@@ -96,6 +109,10 @@ sealed class TypeAST : AST {
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitPairTypeAST(this)
         }
 
         override fun toString(): String {

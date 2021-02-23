@@ -5,9 +5,9 @@ import wacc_05.ast_structure.assignment_ast.*
 
 interface ASTVisitor<T> {
 
-//    fun visit(node: AST) : T {
-//        return node.accept(this)
-//    }
+    fun visit(node: AST): T {
+        return node.accept(this)
+    }
 
     fun visitProgramAST(prog: ProgramAST): T
 
@@ -22,6 +22,8 @@ interface ASTVisitor<T> {
     fun visitDeclAST(decl: StatementAST.DeclAST): T
 
     fun visitAssignAST(assign: StatementAST.AssignAST): T
+
+    fun visitBeginAST(begin: StatementAST.BeginAST): T
 
     fun visitReadAST(read: StatementAST.ReadAST): T
 
@@ -62,6 +64,8 @@ interface ASTVisitor<T> {
     fun visitArrayTypeAST(type: TypeAST.ArrayTypeAST): T
 
     fun visitPairTypeAST(type: TypeAST.PairTypeAST): T
+
+    fun visitPairElemTypeAST(type: TypeAST.PairElemTypeAST): T
 
     fun visitArrayLiterAST(arrayLiter: ArrayLiterAST): T
 
