@@ -18,6 +18,8 @@ import wacc_05.code_generation.instructions.LabelInstruction
 
 sealed class StatementAST : AST {
 
+    abstract fun accept()
+
     object SkipAST : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
