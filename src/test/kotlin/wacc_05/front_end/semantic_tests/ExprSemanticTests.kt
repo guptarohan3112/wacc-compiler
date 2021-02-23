@@ -5,6 +5,8 @@ import io.mockk.*
 import org.junit.Test
 import wacc_05.SemanticErrorHandler
 import wacc_05.ast_structure.ExprAST
+import wacc_05.front_end.ASTVisitor
+import wacc_05.front_end.SemanticVisitor
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
@@ -18,12 +20,17 @@ open class ExprSemanticTests {
     val st: SymbolTable = SymbolTable(null)
     val seh: SemanticErrorHandler = mockk()
 
+    val visitor: ASTVisitor<Unit> = SemanticVisitor(st, seh)
+
     @Test
     fun varIdentPresentCheck() {
         st.add("int", intType)
         st.add("x", VariableIdentifier(intType))
 
-        ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0),"x").check(st, seh)
+        val ident = ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "x")
+
+        ident.st = st
+        visitor.visitIdentAST(ident)
     }
 
     @Test
@@ -32,7 +39,10 @@ open class ExprSemanticTests {
 
         every { seh.invalidIdentifier(any(), any()) } just runs
 
-        ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(),0),"x").check(st, seh)
+        val ident = ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "x")
+
+        ident.st = st
+        visitor.visitIdentAST(ident)
 
         verify(exactly = 1) { seh.invalidIdentifier(any(), "x") }
     }
