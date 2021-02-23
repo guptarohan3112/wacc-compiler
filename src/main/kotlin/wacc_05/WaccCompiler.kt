@@ -5,6 +5,7 @@ import antlr.WaccParser
 
 import org.antlr.v4.runtime.*
 import wacc_05.ast_structure.AST
+import wacc_05.front_end.SemanticVisitor
 import wacc_05.symbol_table.SymbolTable
 import java.io.File
 import kotlin.system.exitProcess
@@ -65,8 +66,14 @@ object WaccCompiler {
         val visitor = Visitor()
         val ast: AST = visitor.visit(tree)
 
+        val symTab = SymbolTable(null)
+        SymbolTable.makeTopLevel(symTab)
         val seh = SemanticErrorHandler()
-        semanticErrorCheck(ast, SymbolTable(null), seh)
+
+        val semanticChecker = SemanticVisitor(symTab, seh)
+
+        semanticChecker.visit(ast)
+//        semanticErrorCheck(ast, SymbolTable(null), seh)
 
         if (debug)
             println("FINISHED")
