@@ -16,14 +16,17 @@ class DeclASTTests : StatSemanticTests() {
     @Test
     fun declASTValidCheck() {
         st.add("int", TypeIdentifier.IntIdentifier())
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(
                 WaccParser.BaseTypeContext(WaccParser.StatContext(), 0),
                 "int"
             ), "x",
             ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
     }
 
     @Test
@@ -33,12 +36,15 @@ class DeclASTTests : StatSemanticTests() {
 
         every { seh.repeatVariableDeclaration(any(), "x") } just Runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "x",
             ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.repeatVariableDeclaration(any(), "x") }
     }
@@ -50,7 +56,7 @@ class DeclASTTests : StatSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just Runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(
                 WaccParser.BaseTypeContext(WaccParser.StatContext(), 0),
@@ -58,7 +64,10 @@ class DeclASTTests : StatSemanticTests() {
             ),
             "x",
             ExprAST.CharLiterAST("c")
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), intType, charType) }
     }

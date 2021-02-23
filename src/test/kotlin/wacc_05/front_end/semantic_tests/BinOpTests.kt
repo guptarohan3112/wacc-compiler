@@ -27,7 +27,7 @@ class BinOpTests : ExprSemanticTests() {
 
         st.add("int", intType)
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             statDeclarationContext,
             TypeAST.BaseTypeAST(baseTypeContext, "int"),
             "x",
@@ -37,7 +37,10 @@ class BinOpTests : ExprSemanticTests() {
                 ExprAST.IntLiterAST("+", "5"),
                 "*"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
     }
 
     @Test
@@ -46,7 +49,7 @@ class BinOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             statDeclarationContext,
             TypeAST.BaseTypeAST(baseTypeContext, "int"),
             "x",
@@ -56,7 +59,10 @@ class BinOpTests : ExprSemanticTests() {
                 ExprAST.CharLiterAST("c"),
                 "*"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), intType, charType) }
     }
@@ -68,7 +74,7 @@ class BinOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             statDeclarationContext,
             TypeAST.BaseTypeAST(baseTypeContext, "char"),
             "x",
@@ -78,7 +84,10 @@ class BinOpTests : ExprSemanticTests() {
                 ExprAST.IntLiterAST("+", "5"),
                 "*"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify { seh.typeMismatch(any(), charType, intType) }
     }
@@ -87,7 +96,7 @@ class BinOpTests : ExprSemanticTests() {
     fun binOpLogicalValidCheck() {
         st.add("bool", boolType)
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             statDeclarationContext,
             TypeAST.BaseTypeAST(baseTypeContext, "bool"),
             "x",
@@ -97,7 +106,10 @@ class BinOpTests : ExprSemanticTests() {
                 ExprAST.BoolLiterAST("false"),
                 "&&"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
     }
 
     @Test
@@ -106,7 +118,7 @@ class BinOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             statDeclarationContext,
             TypeAST.BaseTypeAST(baseTypeContext, "bool"),
             "x",
@@ -116,7 +128,10 @@ class BinOpTests : ExprSemanticTests() {
                 ExprAST.BoolLiterAST("true"),
                 "&&"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), boolType, charType) }
     }
@@ -127,7 +142,7 @@ class BinOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             statDeclarationContext,
             TypeAST.BaseTypeAST(baseTypeContext, "char"),
             "x",
@@ -137,7 +152,10 @@ class BinOpTests : ExprSemanticTests() {
                 ExprAST.BoolLiterAST("false"),
                 "||"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), charType, boolType) }
     }
