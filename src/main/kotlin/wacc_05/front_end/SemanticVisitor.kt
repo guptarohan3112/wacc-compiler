@@ -377,19 +377,32 @@ class SemanticVisitor(
     }
 
     override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST) {
-        TODO("Not yet implemented")
+        val typeIdent: IdentifierObject? = type.st!!.lookupAll(type.typeName)
+
+        if (typeIdent == null) {
+            errorHandler.invalidIdentifier(type.ctx, type.typeName)
+        } else if (typeIdent !is TypeIdentifier) {
+            errorHandler.invalidType(type.ctx, type.typeName)
+        }
     }
 
     override fun visitArrayTypeAST(type: TypeAST.ArrayTypeAST) {
-        TODO("Not yet implemented")
+        type.elemsType.st = type.st()
+        visit(type.elemsType)
     }
 
     override fun visitPairTypeAST(type: TypeAST.PairTypeAST) {
-        TODO("Not yet implemented")
+        type.fstType.st = type.st()
+        visit(type.fstType)
+        type.sndType.st = type.st()
+        visit(type.sndType)
     }
 
-    override fun visitPairElemTypeAST(type: TypeAST.PairElemTypeAST) {
-        TODO("Not yet implemented")
+    override fun visitPairElemTypeAST(elemType: TypeAST.PairElemTypeAST) {
+        if (elemType.type != null) {
+            elemType.type.st = elemType.st()
+            visit(elemType.type)
+        }
     }
 
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
