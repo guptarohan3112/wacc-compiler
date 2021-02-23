@@ -18,7 +18,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     var dest: Register? = null
 
-    data class IntLiterAST(private val sign: String, private val value: String) : ExprAST() {
+    data class IntLiterAST(val sign: String, val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
@@ -41,7 +41,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class BoolLiterAST(private val value: String) : ExprAST() {
+    data class BoolLiterAST(val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.BOOL_TYPE
@@ -60,7 +60,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class CharLiterAST(private val value: String) : ExprAST() {
+    data class CharLiterAST(val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.CHAR_TYPE
@@ -79,7 +79,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class StrLiterAST(private val value: String) : ExprAST() {
+    data class StrLiterAST(val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.STRING_TYPE
@@ -117,7 +117,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class IdentAST(private val ctx: WaccParser.ExprContext, private val value: String) : ExprAST() {
+    data class IdentAST(val ctx: WaccParser.ExprContext, val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             val type = st.lookupAll(value)
@@ -147,9 +147,9 @@ sealed class ExprAST : AssignRHSAST() {
     }
 
     data class ArrayElemAST(
-        private val ctx: WaccParser.ArrayElemContext,
-        private val ident: String,
-        private val exprs: ArrayList<ExprAST>
+        val ctx: WaccParser.ArrayElemContext,
+        val ident: String,
+        val exprs: ArrayList<ExprAST>
     ) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
@@ -195,9 +195,9 @@ sealed class ExprAST : AssignRHSAST() {
     }
 
     data class UnOpAST(
-        private val ctx: WaccParser.UnaryOperContext,
-        private val expr: ExprAST,
-        private val operator: String
+        val ctx: WaccParser.UnaryOperContext,
+        val expr: ExprAST,
+        val operator: String
     ) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
@@ -256,7 +256,7 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        private fun translateNeg(regs: Registers): ArrayList<Instruction> {
+        fun translateNeg(regs: Registers): ArrayList<Instruction> {
             val results: ArrayList<Instruction> = ArrayList()
 
             results.addAll(expr.translate(regs))
@@ -272,10 +272,10 @@ sealed class ExprAST : AssignRHSAST() {
     }
 
     data class BinOpAST(
-        private val ctx: WaccParser.ExprContext,
-        private val expr1: ExprAST,
-        private val expr2: ExprAST,
-        private val operator: String
+        val ctx: WaccParser.ExprContext,
+        val expr1: ExprAST,
+        val expr2: ExprAST,
+        val operator: String
     ) : ExprAST() {
 
         companion object {
@@ -301,7 +301,7 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        private fun translateAdd(regs: Registers) {
+        fun translateAdd(regs: Registers) {
             when {
                 expr1 is IntLiterAST -> {
                     expr2.translate(regs)

@@ -9,8 +9,8 @@ import java.util.*
 import kotlin.collections.ArrayList
 
 class ProgramAST(
-    private val functionList: ArrayList<FunctionAST>,
-    private val stat: StatementAST
+    val functionList: ArrayList<FunctionAST>,
+    val stat: StatementAST
 ) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {

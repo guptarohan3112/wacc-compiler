@@ -8,7 +8,7 @@ import wacc_05.front_end.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class NewPairAST(private val fst: ExprAST, private val snd: ExprAST) : AssignRHSAST() {
+class NewPairAST(val fst: ExprAST, val snd: ExprAST) : AssignRHSAST() {
 
     override fun getType(st: SymbolTable): TypeIdentifier {
         return TypeIdentifier.PairIdentifier(fst.getType(st), snd.getType(st))

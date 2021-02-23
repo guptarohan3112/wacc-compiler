@@ -9,11 +9,11 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
 class FunctionAST(
-    private val ctx: WaccParser.FuncContext,
-    private val returnType: TypeAST,
-    private val funcName: String,
-    private val paramList: ParamListAST?,
-    private val body: StatementAST
+    val ctx: WaccParser.FuncContext,
+    val returnType: TypeAST,
+    val funcName: String,
+    val paramList: ParamListAST?,
+    val body: StatementAST
 ) : AST {
 
     fun preliminaryCheck(st: SymbolTable, errorHandler: SemanticErrors) {

@@ -11,7 +11,7 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
 // This class accounts for whether the left hand side of assignment is a identifier, array element or pair element
-class AssignLHSAST(private val ctx: WaccParser.AssignLHSContext, private val ident: String?) : AST {
+class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: String?) : AST {
 
     private var arrElem: ExprAST.ArrayElemAST? = null
     private var pairElem: PairElemAST? = null

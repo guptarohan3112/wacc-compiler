@@ -9,7 +9,7 @@ import wacc_05.front_end.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class ArrayLiterAST(private val ctx: WaccParser.ArrayLitContext, private val elems: ArrayList<ExprAST>) : AssignRHSAST() {
+class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<ExprAST>) : AssignRHSAST() {
 
     override fun getType(st: SymbolTable): TypeIdentifier {
         return if (elems.size == 0) {

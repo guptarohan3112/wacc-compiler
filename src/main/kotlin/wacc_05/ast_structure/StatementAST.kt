@@ -37,10 +37,10 @@ sealed class StatementAST : AST {
     }
 
     data class DeclAST(
-        private val ctx: WaccParser.StatDeclarationContext,
-        private val type: TypeAST,
-        private val varName: String,
-        private val assignment: AssignRHSAST
+        val ctx: WaccParser.StatDeclarationContext,
+        val type: TypeAST,
+        val varName: String,
+        val assignment: AssignRHSAST
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -76,9 +76,9 @@ sealed class StatementAST : AST {
     }
 
     data class AssignAST(
-        private val ctx: WaccParser.StatAssignContext,
-        private val lhs: AssignLHSAST,
-        private val rhs: AssignRHSAST
+        val ctx: WaccParser.StatAssignContext,
+        val lhs: AssignLHSAST,
+        val rhs: AssignRHSAST
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -102,7 +102,7 @@ sealed class StatementAST : AST {
         }
     }
 
-    data class BeginAST(private val stat: StatementAST) : StatementAST() {
+    data class BeginAST(val stat: StatementAST) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             stat.check(SymbolTable(st), errorHandler)
@@ -118,7 +118,7 @@ sealed class StatementAST : AST {
 
     }
 
-    data class ReadAST(private val ctx: WaccParser.StatReadContext, private val lhs: AssignLHSAST) :
+    data class ReadAST(val ctx: WaccParser.StatReadContext, val lhs: AssignLHSAST) :
         StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -140,7 +140,7 @@ sealed class StatementAST : AST {
         }
     }
 
-    data class ExitAST(private val ctx: WaccParser.StatExitContext, private val expr: ExprAST) :
+    data class ExitAST(val ctx: WaccParser.StatExitContext, val expr: ExprAST) :
         StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -161,7 +161,7 @@ sealed class StatementAST : AST {
 
     }
 
-    data class FreeAST(private val ctx: WaccParser.StatFreeContext, private val expr: ExprAST) :
+    data class FreeAST(val ctx: WaccParser.StatFreeContext, val expr: ExprAST) :
         StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -184,10 +184,10 @@ sealed class StatementAST : AST {
     }
 
     data class IfAST(
-        private val ctx: WaccParser.StatIfContext,
-        private val condExpr: ExprAST,
-        private val thenStat: StatementAST,
-        private val elseStat: StatementAST
+        val ctx: WaccParser.StatIfContext,
+        val condExpr: ExprAST,
+        val thenStat: StatementAST,
+        val elseStat: StatementAST
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -230,8 +230,8 @@ sealed class StatementAST : AST {
     }
 
     data class PrintAST(
-        private val expr: ExprAST,
-        private val newLine: Boolean
+        val expr: ExprAST,
+        val newLine: Boolean
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -247,7 +247,7 @@ sealed class StatementAST : AST {
         }
     }
 
-    data class ReturnAST(private val ctx: WaccParser.StatReturnContext, private val expr: ExprAST) :
+    data class ReturnAST(val ctx: WaccParser.StatReturnContext, val expr: ExprAST) :
         StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -276,7 +276,7 @@ sealed class StatementAST : AST {
         }
     }
 
-    data class SequentialAST(private val stat1: StatementAST, private val stat2: StatementAST) :
+    data class SequentialAST(val stat1: StatementAST, val stat2: StatementAST) :
         StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
@@ -301,9 +301,9 @@ sealed class StatementAST : AST {
 
     // TODO: Complete translation method here
     data class WhileAST(
-        private val ctx: WaccParser.StatWhileContext,
-        private val loopExpr: ExprAST,
-        private val body: StatementAST
+        val ctx: WaccParser.StatWhileContext,
+        val loopExpr: ExprAST,
+        val body: StatementAST
     ) : StatementAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {

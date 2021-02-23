@@ -7,7 +7,7 @@ import wacc_05.front_end.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 
-class ParamListAST(private val paramList: ArrayList<ParamAST>) : AST {
+class ParamListAST(val paramList: ArrayList<ParamAST>) : AST {
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
         for (param in paramList) {

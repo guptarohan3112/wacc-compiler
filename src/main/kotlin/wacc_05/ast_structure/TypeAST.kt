@@ -13,7 +13,7 @@ sealed class TypeAST : AST {
 
     abstract fun getType(st: SymbolTable): TypeIdentifier
 
-    data class BaseTypeAST(private val ctx: WaccParser.BaseTypeContext, private val typeName: String) : TypeAST() {
+    data class BaseTypeAST(val ctx: WaccParser.BaseTypeContext, val typeName: String) : TypeAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             val typeIdent: IdentifierObject? = st.lookupAll(typeName)
@@ -47,7 +47,7 @@ sealed class TypeAST : AST {
         }
     }
 
-    data class ArrayTypeAST(private val elemsType: TypeAST) : TypeAST() {
+    data class ArrayTypeAST(val elemsType: TypeAST) : TypeAST() {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             elemsType.check(st, errorHandler)
@@ -70,7 +70,7 @@ sealed class TypeAST : AST {
         }
     }
 
-    data class PairElemTypeAST(private val pair: String? = null, private val type: TypeAST?) : AST {
+    data class PairElemTypeAST(val pair: String? = null, val type: TypeAST?) : AST {
 
         override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
             type?.check(st, errorHandler)
@@ -94,8 +94,8 @@ sealed class TypeAST : AST {
     }
 
     data class PairTypeAST(
-        private val fstType: PairElemTypeAST,
-        private val sndType: PairElemTypeAST
+        val fstType: PairElemTypeAST,
+        val sndType: PairElemTypeAST
     ) : TypeAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
