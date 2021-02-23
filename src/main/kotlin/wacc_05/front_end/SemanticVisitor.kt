@@ -6,7 +6,10 @@ import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
-class SemanticVisitor(private val symbolTable: SymbolTable, private val errorHandler: SemanticErrors) :
+class SemanticVisitor(
+    private val symbolTable: SymbolTable,
+    private val errorHandler: SemanticErrors
+) :
     ASTVisitor<Unit> {
 
     override fun visitProgramAST(prog: ProgramAST) {
@@ -77,7 +80,11 @@ class SemanticVisitor(private val symbolTable: SymbolTable, private val errorHan
             val assignmentType: TypeIdentifier = decl.assignment.getType(decl.st())
 
             if (typeIdent != assignmentType && assignmentType != TypeIdentifier.GENERIC) {
-                errorHandler.typeMismatch(decl.ctx, typeIdent, decl.assignment.getType(decl.assignment.st()))
+                errorHandler.typeMismatch(
+                    decl.ctx,
+                    typeIdent,
+                    decl.assignment.getType(decl.assignment.st())
+                )
             }
 
             // Create variable identifier and add to symbol table
@@ -145,7 +152,11 @@ class SemanticVisitor(private val symbolTable: SymbolTable, private val errorHan
 
         // Ensure that the condition expression evaluates to a boolean
         if (ifStat.condExpr.getType(ifStat.condExpr.st()) != TypeIdentifier.BOOL_TYPE) {
-            errorHandler.typeMismatch(ifStat.ctx, TypeIdentifier.BOOL_TYPE, ifStat.condExpr.getType(ifStat.st()))
+            errorHandler.typeMismatch(
+                ifStat.ctx,
+                TypeIdentifier.BOOL_TYPE,
+                ifStat.condExpr.getType(ifStat.st())
+            )
             return
         }
 
@@ -181,39 +192,145 @@ class SemanticVisitor(private val symbolTable: SymbolTable, private val errorHan
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitCharLiterAST(liter: ExprAST.CharLiterAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
-        TODO("Not yet implemented")
+        if (ident.st().lookupAll(ident.value) == null) {
+            errorHandler.invalidIdentifier(ident.ctx, ident.value)
+        }
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
-        TODO("Not yet implemented")
+        for (expr in arrayElem.exprs) {
+            visit(expr)
+            val type: TypeIdentifier = expr.getType(arrayElem.st())
+            if (type !is TypeIdentifier.IntIdentifier) {
+                errorHandler.typeMismatch(arrayElem.ctx, TypeIdentifier.INT_TYPE, type)
+            }
+        }
+
+        val variable: IdentifierObject? = arrayElem.st().lookupAll(arrayElem.ident)
+
+        if (variable == null) {
+            errorHandler.invalidIdentifier(arrayElem.ctx, arrayElem.ident)
+        } else {
+            val variableType = variable.getType()
+            if (variableType !is TypeIdentifier.ArrayIdentifier) {
+                errorHandler.typeMismatch(
+                    arrayElem.ctx,
+                    variableType,
+                    TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0)
+                )
+            }
+        }
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
-        TODO("Not yet implemented")
+        visit(unop.expr)
+        val symTab: SymbolTable = unop.st()
+        val exprType = unop.expr.getType(symTab)
+
+        when (unop.operator) {
+            "len" -> {
+                if (exprType !is TypeIdentifier.ArrayIdentifier) {
+                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0), exprType)
+                }
+            }
+            "ord" -> {
+                if (exprType !is TypeIdentifier.CharIdentifier) {
+                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.CHAR_TYPE, exprType)
+                }
+            }
+            "chr" -> {
+                if (exprType !is TypeIdentifier.IntIdentifier) {
+                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.INT_TYPE, exprType)
+                }
+            }
+            "!" -> {
+                if (exprType !is TypeIdentifier.BoolIdentifier) {
+                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.BOOL_TYPE, exprType)
+                }
+            }
+            "-" -> {
+                if (exprType !is TypeIdentifier.IntIdentifier) {
+                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.INT_TYPE, exprType)
+                }
+            }
+            else -> {
+                //do nothing
+            }
+        }
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
-        TODO("Not yet implemented")
+        visit(binop.expr1)
+        visit(binop.expr2)
+
+        val expr1Type = binop.expr1.getType(binop.st())
+        val expr2Type = binop.expr2.getType(binop.st())
+
+        when {
+            ExprAST.BinOpAST.intIntFunctions.contains(binop.operator) -> {
+                if (expr1Type !is TypeIdentifier.IntIdentifier) {
+                    errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr1Type)
+                }
+
+                if (expr2Type !is TypeIdentifier.IntIdentifier) {
+                    errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr2Type)
+                }
+            }
+            ExprAST.BinOpAST.intCharFunctions.contains(binop.operator) -> {
+                // if type1 is valid, check against type 2 and type1 dominates if not equal
+                // if type2 is valid and type1 is not, type mismatch on type2
+                // else type mismatch on both
+
+                if (expr1Type is TypeIdentifier.IntIdentifier || expr1Type is TypeIdentifier.CharIdentifier) {
+                    if (expr1Type != expr2Type) {
+                        errorHandler.typeMismatch(binop.ctx, expr1Type, expr2Type)
+                    }
+                    return
+                }
+
+                if (expr2Type is TypeIdentifier.IntIdentifier || expr2Type is TypeIdentifier.CharIdentifier) {
+                    // we already know type 1 isn't valid
+                    errorHandler.typeMismatch(binop.ctx, expr2Type, expr1Type)
+                    return
+                }
+
+                // both aren't valid
+                errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr1Type)
+                errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr2Type)
+            }
+            ExprAST.BinOpAST.boolBoolFunctions.contains(binop.operator) -> {
+                if (expr1Type !is TypeIdentifier.BoolIdentifier) {
+                    errorHandler.typeMismatch(binop.ctx, TypeIdentifier.BOOL_TYPE, expr1Type)
+                }
+
+                if (expr2Type !is TypeIdentifier.BoolIdentifier) {
+                    errorHandler.typeMismatch(binop.ctx, TypeIdentifier.BOOL_TYPE, expr2Type)
+                }
+            }
+            else -> {
+                // do nothing
+            }
+        }
     }
 
     override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST) {
