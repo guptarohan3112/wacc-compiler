@@ -5,7 +5,6 @@ import wacc_05.code_generation.Registers
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.front_end.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
-import java.util.*
 import kotlin.collections.ArrayList
 
 class ProgramAST(

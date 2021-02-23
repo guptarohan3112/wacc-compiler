@@ -11,7 +11,7 @@ import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class FuncCallAST(val ctx: WaccParser.FuncCallContext, val funcName: String, private val args: ArrayList<ExprAST>) :
+class FuncCallAST(val ctx: WaccParser.FuncCallContext, val funcName: String, val args: ArrayList<ExprAST>) :
     AssignRHSAST() {
 
     override fun getType(st: SymbolTable): TypeIdentifier {
