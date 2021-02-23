@@ -21,23 +21,22 @@ class FunctionAST(
 
         // Check to make sure function has not already been defined
         val func: IdentifierObject? = st.lookup(funcName)
-        if (func != null && func is FunctionIdentifier) {
-            errorHandler.repeatVariableDeclaration(ctx, funcName)
-            return
-        }
-
         // Create function identifier and add to symbol table
         val funcST = SymbolTable(st)
         this.st = funcST
-        val returnTypeIdent: TypeIdentifier = returnType.getType(st)
+        if (func != null && func is FunctionIdentifier) {
+            errorHandler.repeatVariableDeclaration(ctx, funcName)
+        } else {
+            val returnTypeIdent: TypeIdentifier = returnType.getType(st)
 
-        val funcIdent =
-            FunctionIdentifier(returnTypeIdent, paramList?.getParams(st) ?: ArrayList(), funcST)
+            val funcIdent =
+                FunctionIdentifier(returnTypeIdent, paramList?.getParams(st) ?: ArrayList(), funcST)
 
-        funcST.add("returnType", returnTypeIdent)
+            funcST.add("returnType", returnTypeIdent)
 
-        // add self to higher level symbol table
-        st.add(funcName, funcIdent)
+            // add self to higher level symbol table
+            st.add(funcName, funcIdent)
+        }
     }
 
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {

@@ -36,6 +36,9 @@ class SemanticVisitor(
         // we don't give another semantic error if this is not null as it will be a semantic error
         // caused by the inner specifics of the compiler
         if (funcIdentifier != null) {
+            if (func.paramList != null) {
+                visitChild(func.st(), func.paramList)
+            }
             visitChild(func.st(), func.body)
         }
     }
