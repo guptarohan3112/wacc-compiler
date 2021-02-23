@@ -395,17 +395,20 @@ class SemanticVisitor(
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
         // If the array literal is empty, no semantic check need to be done
         if (arrayLiter.elems.size != 0) {
-            arrayLiter.elems[0].check(symbolTable, errorHandler)
-            val firstElemType = arrayLiter.elems[0].getType(symbolTable)
+            val arraySymTab: SymbolTable = arrayLiter.st()
+            arrayLiter.elems[0].st = arraySymTab
+            visit(arrayLiter.elems[0])
+            val firstElemType = arrayLiter.elems[0].getType(arraySymTab)
 
             // Verify that individual elements are semantically correct and that they are all the same type
             for (i in 1 until arrayLiter.elems.size) {
-                arrayLiter.elems[i].check(symbolTable, errorHandler)
-                if (arrayLiter.elems[i].getType(symbolTable) != firstElemType) {
+                arrayLiter.elems[i].st = arraySymTab
+                visit(arrayLiter.elems[i])
+                if (arrayLiter.elems[i].getType(arraySymTab) != firstElemType) {
                     errorHandler.typeMismatch(
                         arrayLiter.ctx,
                         firstElemType,
-                        arrayLiter.elems[i].getType(symbolTable)
+                        arrayLiter.elems[i].getType(arraySymTab)
                     )
                 }
             }
@@ -413,16 +416,19 @@ class SemanticVisitor(
     }
 
     override fun visitAssignLHSAST(lhs: AssignLHSAST) {
+        val symTab: SymbolTable = lhs.st()
         if (lhs.arrElem != null) {
-            lhs.arrElem!!.check(symbolTable, errorHandler)
+            lhs.arrElem!!.st = symTab
+            visit(lhs.arrElem!!)
         } else if (lhs.pairElem != null) {
-            lhs.pairElem!!.check(symbolTable, errorHandler)
+            lhs.pairElem!!.st = symTab
+            visit(lhs.pairElem!!)
         } else {
-            val type = symbolTable.lookupAll(lhs.ident!!)
+            val type = symTab.lookupAll(lhs.ident!!)
             if (type == null) {
                 errorHandler.invalidIdentifier(lhs.ctx, lhs.ident)
                 // Add the identifier into symbol table for error recovery
-                symbolTable.add(lhs.ident, VariableIdentifier(TypeIdentifier.GENERIC))
+                symTab.add(lhs.ident, VariableIdentifier(TypeIdentifier.GENERIC))
             } else if (type is FunctionIdentifier) {
                 errorHandler.invalidAssignment(lhs.ctx, lhs.ident)
             }
@@ -430,7 +436,8 @@ class SemanticVisitor(
     }
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
-        when (val funcIdentifier: IdentifierObject? = symbolTable.lookupAll(funcCall.funcName)) {
+        val symTab: SymbolTable = funcCall.st()
+        when (val funcIdentifier: IdentifierObject? = symTab.lookupAll(funcCall.funcName)) {
             null -> {
                 errorHandler.invalidIdentifier(funcCall.ctx, funcCall.funcName)
             }
@@ -451,9 +458,10 @@ class SemanticVisitor(
 
                 // Check that arg type match up with corresponding parameter type
                 for (i in 0 until funcCall.args.size.coerceAtMost(noOfArgs)) {
-                    funcCall.args[i].check(symbolTable, errorHandler)
+                    funcCall.args[i].st = symTab
+                    visit(funcCall.args[i])
                     val expectedType: TypeIdentifier = funcIdentifier.getParams()[i].getType()
-                    val actualType: TypeIdentifier = funcCall.args[i].getType(symbolTable)
+                    val actualType: TypeIdentifier = funcCall.args[i].getType(symTab)
                     if (expectedType != actualType) {
                         errorHandler.typeMismatch(funcCall.ctx, expectedType, actualType)
                     }
@@ -463,14 +471,17 @@ class SemanticVisitor(
     }
 
     override fun visitNewPairAST(newPair: NewPairAST) {
-        newPair.fst.check(symbolTable, errorHandler)
-        newPair.snd.check(symbolTable, errorHandler)
+        newPair.fst.st = newPair.st()
+        visit(newPair.fst)
+        newPair.snd.st = newPair.st()
+        visit(newPair.snd)
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
-        pairElem.elem.check(symbolTable, errorHandler)
+        pairElem.elem.st = pairElem.st()
+        visit(pairElem.elem)
 
-        val elemType = pairElem.elem.getType(symbolTable)
+        val elemType = pairElem.elem.getType(pairElem.st())
 
         // The type of the element has to be a generic type (when added for error recovery), a pair or a pair literal
         if (elemType != TypeIdentifier.GENERIC
