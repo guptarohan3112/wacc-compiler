@@ -165,19 +165,56 @@ class SemanticVisitor(private val symbolTable: SymbolTable, private val errorHan
     }
 
     override fun visitPrintAST(print: StatementAST.PrintAST) {
-        TODO("Not yet implemented")
+        print.expr.st = print.st()
+        visit(print.expr)
     }
 
     override fun visitReturnAST(ret: StatementAST.ReturnAST) {
-        TODO("Not yet implemented")
+        if (ret.st().isMain()) {
+            errorHandler.invalidReturn(ret.ctx)
+        }
+
+        // Check validity of expression
+        ret.expr.st = ret.st()
+        visit(ret.expr)
+
+        // Check that type of expression being returned is the same as the return type of the function that defines the current scope
+        val returnType: TypeIdentifier = ret.expr.getType(ret.st())
+        val funcReturnType: TypeIdentifier? = ret.st().lookup("returnType") as TypeIdentifier?
+        if (funcReturnType != returnType) {
+            errorHandler.invalidReturnType(ret.ctx)
+        }
     }
 
     override fun visitSequentialAST(seq: StatementAST.SequentialAST) {
-        TODO("Not yet implemented")
+        seq.stat1.st = seq.st()
+        visit(seq.stat1)
+        seq.stat2.st = seq.st()
+        visit(seq.stat2)
     }
 
     override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
-        TODO("Not yet implemented")
+        // Check validity of looping expression
+        whileStat.loopExpr.st = whileStat.st()
+        visit(whileStat.loopExpr)
+
+        // Check that looping expression evaluates to a boolean
+        if (whileStat.loopExpr.getType(whileStat.st()) != TypeIdentifier.BOOL_TYPE) {
+            errorHandler.typeMismatch(
+                whileStat.ctx,
+                TypeIdentifier.BOOL_TYPE,
+                whileStat.loopExpr.getType(whileStat.st())
+            )
+        } else {
+            val bodySt = SymbolTable(whileStat.st)
+            val returnTypeIdent: TypeIdentifier? = whileStat.st().lookup("returnType") as TypeIdentifier?
+            if (returnTypeIdent != null) {
+                bodySt.add("returnType", returnTypeIdent)
+            }
+
+            whileStat.body.st = bodySt
+            visit(whileStat.body)
+        }
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
