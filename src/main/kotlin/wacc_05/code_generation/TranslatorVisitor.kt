@@ -3,8 +3,12 @@ package wacc_05.code_generation
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.ast_structure.ASTVisitor
+import wacc_05.code_generation.instructions.AddInstruction
+import wacc_05.code_generation.instructions.Instruction
+import wacc_05.code_generation.instructions.LoadInstruction
+import wacc_05.code_generation.instructions.ReverseSubtractInstruction
 
-class TranslatorVisitor: ASTVisitor<Unit> {
+class TranslatorVisitor : ASTVisitor<Unit> {
     override fun visitProgramAST(prog: ProgramAST) {
         TODO("Not yet implemented")
     }
@@ -22,7 +26,7 @@ class TranslatorVisitor: ASTVisitor<Unit> {
     }
 
     override fun visitSkipAST(skip: StatementAST.SkipAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
@@ -62,7 +66,8 @@ class TranslatorVisitor: ASTVisitor<Unit> {
     }
 
     override fun visitSequentialAST(seq: StatementAST.SequentialAST) {
-        TODO("Not yet implemented")
+        visit(seq.stat1)
+        visit(seq.stat2)
     }
 
     override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
@@ -98,11 +103,61 @@ class TranslatorVisitor: ASTVisitor<Unit> {
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
-        TODO("Not yet implemented")
+        when (unop.operator) {
+            "-" -> translateNeg(unop)
+            // TODO
+            else -> {
+            }
+        }
+    }
+
+    private fun translateNeg(unop: ExprAST.UnOpAST) {
+        visit(unop.expr)
+        val dest: Register = unop.expr.dest!!
+        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, null)))
+        AssemblyRepresentation.addMainInstr(ReverseSubtractInstruction(dest, dest, Immediate(0)))
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
-        TODO("Not yet implemented")
+        when (binop.operator) {
+            "+" -> translateAdd(binop)
+            else -> {
+            }
+        }
+    }
+
+    private fun translateAdd(binop: ExprAST.BinOpAST) {
+        val expr1 = binop.expr1
+        val expr2 = binop.expr2
+
+        when {
+            expr1 is ExprAST.IntLiterAST -> {
+                visit(expr2)
+                val dest: Register = expr2.dest!!
+                AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr1.getValue())))
+
+                binop.dest = dest
+            }
+            expr2 is ExprAST.IntLiterAST -> {
+                visit(expr1)
+                val dest: Register = expr2.dest!!
+                AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr2.getValue())))
+
+                binop.dest = dest
+            }
+            else -> {
+                visit(expr1)
+                visit(expr2)
+
+                val dest1: Register = expr1.dest!!
+                val dest2: Register = expr2.dest!!
+
+                AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
+
+//                regs.free(dest2)
+                binop.dest = dest1
+            }
+        }
     }
 
     override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST) {
