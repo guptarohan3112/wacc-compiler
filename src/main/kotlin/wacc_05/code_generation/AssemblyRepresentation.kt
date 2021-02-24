@@ -9,19 +9,13 @@ import java.io.File
 object AssemblyRepresentation {
 
     // Global variables
-    private val dataInstrs: ArrayList<Instruction>
+    private val dataInstrs: ArrayList<Instruction> = ArrayList()
 
     // Instructions in the program, including those in user defined functions and the main function
-    private val mainInstrs: ArrayList<Instruction>
+    private val mainInstrs: ArrayList<Instruction> = ArrayList()
 
     // IO functions that are called in the user defined program
-    private val ioInstrs: HashSet<IOInstruction>
-
-    init {
-        dataInstrs = ArrayList()
-        mainInstrs = ArrayList()
-        ioInstrs = HashSet()
-    }
+    private val ioInstrs: HashSet<IOInstruction> = HashSet()
 
     fun addDataInstr(instr: Instruction) {
         dataInstrs.add(instr)
@@ -45,9 +39,7 @@ object AssemblyRepresentation {
                 out.println(printInstr(instr))
             }
 
-            out.println()
-            out.println("\t.text")
-            out.println()
+            out.println("\n\t.text\n")
 
             out.println("\t.global main")
             out.println("\tmain:")
