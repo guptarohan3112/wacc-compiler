@@ -15,41 +15,6 @@ class FunctionAST(
     val body: StatementAST
 ) : AST() {
 
-    fun preliminaryCheck(st: SymbolTable, errorHandler: SemanticErrors) {
-        returnType.check(st, errorHandler)
-
-        // Check to make sure function has not already been defined
-        val func: IdentifierObject? = st.lookup(funcName)
-        // Create function identifier and add to symbol table
-        val funcST = SymbolTable(st)
-        this.st = funcST
-        if (func != null && func is FunctionIdentifier) {
-            errorHandler.repeatVariableDeclaration(ctx, funcName)
-        } else {
-            val returnTypeIdent: TypeIdentifier = returnType.getType(st)
-
-            val funcIdent =
-                FunctionIdentifier(returnTypeIdent, paramList?.getParams(st) ?: ArrayList(), funcST)
-
-            funcST.add("returnType", returnTypeIdent)
-
-            // add self to higher level symbol table
-            st.add(funcName, funcIdent)
-        }
-    }
-
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        val funcIdentifier = st.lookupAll(funcName)
-
-        // we don't give another semantic error if this is not null as it will be a semantic error
-        // caused by the inner specifics of the compiler
-        if (funcIdentifier != null) {
-            // Check parameter list and function body
-            paramList?.check(this.st!!, errorHandler)
-            body.check(this.st!!, errorHandler)
-        }
-    }
-
     override fun translate(regs: Registers): ArrayList<Instruction> {
         return ArrayList()
     }

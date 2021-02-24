@@ -8,12 +8,6 @@ import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 
 class ParamListAST(val paramList: ArrayList<ParamAST>) : AST() {
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        for (param in paramList) {
-            param.check(st, errorHandler)
-        }
-    }
-
     override fun translate(regs: Registers): ArrayList<Instruction> {
         return ArrayList()
     }

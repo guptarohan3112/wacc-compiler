@@ -19,9 +19,6 @@ abstract class AST {
         return st!!
     }
 
-    // Function that applies semantic checks
-    abstract fun check(st: SymbolTable, errorHandler: SemanticErrors)
-
     abstract fun translate(regs: Registers): ArrayList<Instruction>
 
     abstract fun <T> accept(visitor: ASTVisitor<T>): T

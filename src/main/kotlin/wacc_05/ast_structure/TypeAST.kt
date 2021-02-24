@@ -23,16 +23,6 @@ sealed class TypeAST : AST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            val typeIdent: IdentifierObject? = st.lookupAll(typeName)
-
-            if (typeIdent == null) {
-                errorHandler.invalidIdentifier(ctx, typeName)
-            } else if (typeIdent !is TypeIdentifier) {
-                errorHandler.invalidType(ctx, typeName)
-            }
-        }
-
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
@@ -48,8 +38,8 @@ sealed class TypeAST : AST() {
 
     data class ArrayTypeAST(val elemsType: TypeAST) : TypeAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            elemsType.check(st, errorHandler)
+        override fun getType(st: SymbolTable): TypeIdentifier {
+            return TypeIdentifier.ArrayIdentifier(elemsType.getType(st), 0)
         }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
@@ -60,20 +50,12 @@ sealed class TypeAST : AST() {
             return visitor.visitArrayTypeAST(this)
         }
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
-            return TypeIdentifier.ArrayIdentifier(elemsType.getType(st), 0)
-        }
-
         override fun toString(): String {
             return elemsType.toString()
         }
     }
 
     data class PairElemTypeAST(val pair: String? = null, val type: TypeAST?) : AST() {
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            type?.check(st, errorHandler)
-        }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
@@ -99,11 +81,6 @@ sealed class TypeAST : AST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.PairIdentifier(fstType.getType(st), sndType.getType(st))
-        }
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            fstType.check(st, errorHandler)
-            sndType.check(st, errorHandler)
         }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {

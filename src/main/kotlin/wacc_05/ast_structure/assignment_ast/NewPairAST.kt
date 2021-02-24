@@ -14,11 +14,6 @@ class NewPairAST(val fst: ExprAST, val snd: ExprAST) : AssignRHSAST() {
         return TypeIdentifier.PairIdentifier(fst.getType(st), snd.getType(st))
     }
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        fst.check(st, errorHandler)
-        snd.check(st, errorHandler)
-    }
-
     override fun translate(regs: Registers): ArrayList<Instruction> {
         return ArrayList()
     }

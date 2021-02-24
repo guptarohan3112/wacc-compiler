@@ -17,7 +17,7 @@ class SemanticVisitor(
         // preliminary pass through the function list to add all function
         // identifiers to the symbol table
         for (func in prog.functionList) {
-            func.preliminaryCheck(prog.st(), errorHandler)
+            preliminaryCheck(prog.st(), func)
         }
 
         for (func in prog.functionList) {
@@ -28,6 +28,29 @@ class SemanticVisitor(
         // we have checked this chain and there is not a better way to do this
         // without compromising our visitor design
         visitChild(prog.st(), prog.stat)
+    }
+
+    private fun preliminaryCheck(symTab: SymbolTable, func: FunctionAST) {
+        visitChild(symTab, func.returnType)
+
+        // Check to make sure function has not already been defined
+        val funcIdent: IdentifierObject? = symTab.lookup(func.funcName)
+        // Create function identifier and add to symbol table
+        val funcST = SymbolTable(symTab)
+        func.st = funcST
+        if (funcIdent != null && funcIdent is FunctionIdentifier) {
+            errorHandler.repeatVariableDeclaration(func.ctx, func.funcName)
+        } else {
+            val returnTypeIdent: TypeIdentifier = func.returnType.getType(symTab)
+
+            val newFuncIdent =
+                FunctionIdentifier(returnTypeIdent, func.paramList?.getParams(symTab) ?: ArrayList(), funcST)
+
+            funcST.add("returnType", returnTypeIdent)
+
+            // add self to higher level symbol table
+            symTab.add(func.funcName, newFuncIdent)
+        }
     }
 
     override fun visitFunctionAST(func: FunctionAST) {

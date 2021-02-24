@@ -12,17 +12,6 @@ class ParamAST(
     val name: String
 ) : AST() {
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
-        // Check validity of parameter type
-        type.check(st, errorHandler)
-
-        // Create parameter identifier and add to symbol table
-        val typeIdent: TypeIdentifier = type.getType(st)
-        val paramIdent = ParamIdentifier(typeIdent)
-        st.add(name, paramIdent)
-    }
-
     override fun translate(regs: Registers): ArrayList<Instruction> {
         return ArrayList()
     }

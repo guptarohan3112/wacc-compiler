@@ -73,18 +73,11 @@ object WaccCompiler {
         val semanticChecker = SemanticVisitor(symTab, seh)
 
         semanticChecker.visit(ast)
-//        semanticErrorCheck(ast, SymbolTable(null), seh)
 
         if (debug)
             println("FINISHED")
 
         return seh.err
-    }
-
-    private fun semanticErrorCheck(ast: AST, st: SymbolTable, errorHandler: SemanticErrors) {
-        SymbolTable.makeTopLevel(st)
-        // semantic checks
-        ast.check(st, errorHandler)
     }
 
 }
