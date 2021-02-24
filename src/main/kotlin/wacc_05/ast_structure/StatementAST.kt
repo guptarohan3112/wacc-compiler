@@ -11,11 +11,9 @@ import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.code_generation.Immediate
 import wacc_05.code_generation.Register
 import wacc_05.code_generation.Registers
-import wacc_05.code_generation.instructions.BranchInstruction
 import wacc_05.code_generation.instructions.CompareInstruction
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.code_generation.instructions.LabelInstruction
-import wacc_05.front_end.ASTVisitor
 
 sealed class StatementAST : AST() {
 

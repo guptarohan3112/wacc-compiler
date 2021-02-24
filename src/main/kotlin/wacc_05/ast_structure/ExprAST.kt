@@ -9,7 +9,6 @@ import wacc_05.code_generation.instructions.AddInstruction
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.code_generation.instructions.LoadInstruction
 import wacc_05.code_generation.instructions.ReverseSubtractInstruction
-import wacc_05.front_end.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier

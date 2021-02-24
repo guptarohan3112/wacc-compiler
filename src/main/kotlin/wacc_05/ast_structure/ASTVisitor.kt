@@ -1,6 +1,5 @@
-package wacc_05.front_end
+package wacc_05.ast_structure
 
-import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 
 interface ASTVisitor<T> {
