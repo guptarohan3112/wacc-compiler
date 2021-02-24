@@ -77,12 +77,13 @@ object WaccCompiler {
 
         semanticChecker.visit(ast)
 
-        if (!validOnly)
+        if (!validOnly) {
             println("Generating assembly file : $filePath.s")
             val translatorVisitor = TranslatorVisitor()
             translatorVisitor.visit(ast)
             AssemblyRepresentation.buildAssembly(filePath)
             println("Generation of assembly file complete")
+        }
 
         if (debug)
             println("FINISHED")
