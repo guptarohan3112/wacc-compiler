@@ -8,23 +8,16 @@ import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class ParamAST(
-    private val type: TypeAST,
-    private val name: String
-) : AST {
-
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
-        // Check validity of parameter type
-        type.check(st, errorHandler)
-
-        // Create parameter identifier and add to symbol table
-        val typeIdent: TypeIdentifier = type.getType(st)
-        val paramIdent = ParamIdentifier(typeIdent)
-        st.add(name, paramIdent)
-    }
+    val type: TypeAST,
+    val name: String
+) : AST() {
 
     override fun translate(): ArrayList<Instruction> {
         return ArrayList()
+    }
+
+    override fun <T> accept(visitor: ASTVisitor<T>): T {
+        return visitor.visitParamAST(this)
     }
 
     override fun toString(): String {

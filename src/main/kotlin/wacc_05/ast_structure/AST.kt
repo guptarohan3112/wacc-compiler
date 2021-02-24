@@ -5,9 +5,21 @@ import wacc_05.code_generation.Registers
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.symbol_table.SymbolTable
 
-interface AST {
-    // Function that applies semantic checks
-    fun check(st: SymbolTable, errorHandler: SemanticErrors)
+abstract class AST {
 
-    fun translate() : ArrayList<Instruction>
+    private var set: Boolean = false
+    var st: SymbolTable? = null
+        set(table) {
+            if (field == null && table != null) {
+                field = table
+            }
+        }
+
+    fun st(): SymbolTable {
+        return st!!
+    }
+
+    abstract fun translate(): ArrayList<Instruction>
+
+    abstract fun <T> accept(visitor: ASTVisitor<T>): T
 }

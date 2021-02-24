@@ -5,6 +5,9 @@ import antlr.WaccParser
 
 import org.antlr.v4.runtime.*
 import wacc_05.ast_structure.AST
+import wacc_05.code_generation.AssemblyRepresentation
+import wacc_05.code_generation.TranslatorVisitor
+import wacc_05.front_end.SemanticVisitor
 import wacc_05.symbol_table.SymbolTable
 import java.io.File
 import kotlin.system.exitProcess
@@ -18,10 +21,11 @@ fun main(args: Array<String>) {
 
     val filePath: String = args[0]
     val debug: Boolean = args[1] == "true"
+    val validOnly: Boolean = args[2] == "true"
 
     val ret: Int
     val time = measureTimeMillis {
-        ret = WaccCompiler.runCompiler(filePath, debug)
+        ret = WaccCompiler.runCompiler(filePath, debug, validOnly)
     }
 
     if (ret == Error.SUCCESS) {
@@ -38,7 +42,7 @@ fun main(args: Array<String>) {
 object WaccCompiler {
 
     @JvmStatic
-    fun runCompiler(filePath: String, debug: Boolean): Int {
+    fun runCompiler(filePath: String, debug: Boolean, validOnly: Boolean): Int {
         val inputStream = File(filePath).inputStream()
         val input = CharStreams.fromStream(inputStream)
         val lexer = WaccLexer(input)
@@ -65,19 +69,25 @@ object WaccCompiler {
         val visitor = Visitor()
         val ast: AST = visitor.visit(tree)
 
+        val symTab = SymbolTable(null)
+        SymbolTable.makeTopLevel(symTab)
         val seh = SemanticErrorHandler()
-        semanticErrorCheck(ast, SymbolTable(null), seh)
+
+        val semanticChecker = SemanticVisitor(symTab, seh)
+
+        semanticChecker.visit(ast)
+
+        if (!validOnly)
+            println("Generating assembly file : $filePath.s")
+            val translatorVisitor = TranslatorVisitor()
+            translatorVisitor.visit(ast)
+            AssemblyRepresentation.buildAssembly(filePath)
+            println("Generation of assembly file complete")
 
         if (debug)
             println("FINISHED")
 
         return seh.err
-    }
-
-    private fun semanticErrorCheck(ast: AST, st: SymbolTable, errorHandler: SemanticErrors) {
-        SymbolTable.makeTopLevel(st)
-        // semantic checks
-        ast.check(st, errorHandler)
     }
 
 }

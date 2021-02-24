@@ -18,22 +18,22 @@ open class ExprCodeGenTests {
     val st: SymbolTable = SymbolTable(null)
     val seh: SemanticErrorHandler = mockk()
 
-    @Test
-    fun varIdentPresentCheck() {
-        st.add("int", intType)
-        st.add("x", VariableIdentifier(intType))
-
-        ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0),"x").check(st, seh)
-    }
-
-    @Test
-    fun varIdentNotPresentCheck() {
-        st.add("int", intType)
-
-        every { seh.invalidIdentifier(any(), any()) } just runs
-
-        ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(),0),"x").check(st, seh)
-
-        verify(exactly = 1) { seh.invalidIdentifier(any(), "x") }
-    }
+//    @Test
+//    fun varIdentPresentCheck() {
+//        st.add("int", intType)
+//        st.add("x", VariableIdentifier(intType))
+//
+//        ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0),"x").check(st, seh)
+//    }
+//
+//    @Test
+//    fun varIdentNotPresentCheck() {
+//        st.add("int", intType)
+//
+//        every { seh.invalidIdentifier(any(), any()) } just runs
+//
+//        ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(),0),"x").check(st, seh)
+//
+//        verify(exactly = 1) { seh.invalidIdentifier(any(), "x") }
+//    }
 }
