@@ -29,7 +29,7 @@ open class StatSemanticTests {
     @Test
     fun skipASTCheck() {
         // a skip AST check should not find any errors
-        StatementAST.SkipAST.check(st, seh)
+        visitor.visit(StatementAST.SkipAST)
     }
 
     @Test

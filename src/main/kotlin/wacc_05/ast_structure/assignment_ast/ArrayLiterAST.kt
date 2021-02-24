@@ -21,22 +21,6 @@ class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<Ex
         }
     }
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        // If the array literal is empty, no semantic check need to be done
-        if (elems.size != 0) {
-            elems[0].check(st, errorHandler)
-            val firstElemType = elems[0].getType(st)
-
-            // Verify that individual elements are semantically correct and that they are all the same type
-            for (i in 1 until elems.size) {
-                elems[i].check(st, errorHandler)
-                if (elems[i].getType(st) != firstElemType) {
-                    errorHandler.typeMismatch(ctx, firstElemType, elems[i].getType(st))
-                }
-            }
-        }
-    }
-
     override fun translate(regs: Registers): ArrayList<Instruction> {
         return ArrayList()
     }

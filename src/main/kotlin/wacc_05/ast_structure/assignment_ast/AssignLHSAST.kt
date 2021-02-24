@@ -43,23 +43,6 @@ class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: String?) : A
         }
     }
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        if (arrElem != null) {
-            arrElem!!.check(st, errorHandler)
-        } else if (pairElem != null) {
-            pairElem!!.check(st, errorHandler)
-        } else {
-            val type = st.lookupAll(ident!!)
-            if (type == null) {
-                errorHandler.invalidIdentifier(ctx, ident)
-                // Add the identifier into symbol table for error recovery
-                st.add(ident, VariableIdentifier(TypeIdentifier.GENERIC))
-            } else if (type is FunctionIdentifier) {
-                errorHandler.invalidAssignment(ctx, ident)
-            }
-        }
-    }
-
     override fun translate(regs: Registers): ArrayList<Instruction> {
         return ArrayList()
     }

@@ -25,20 +25,6 @@ class PairElemAST(val ctx: WaccParser.PairElemContext, val elem: ExprAST, val is
         }
     }
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        elem.check(st, errorHandler)
-
-        val elemType = elem.getType(st)
-
-        // The type of the element has to be a generic type (when added for error recovery), a pair or a pair literal
-        if (elemType != TypeIdentifier.GENERIC
-            && elemType !is TypeIdentifier.PairIdentifier
-            && elemType !is TypeIdentifier.PairLiterIdentifier
-        ) {
-            errorHandler.typeMismatch(ctx, TypeIdentifier.PairLiterIdentifier, elemType)
-        }
-    }
-
     override fun translate(regs: Registers): ArrayList<Instruction> {
         return ArrayList()
     }

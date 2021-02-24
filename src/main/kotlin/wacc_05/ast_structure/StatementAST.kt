@@ -23,10 +23,6 @@ sealed class StatementAST : AST() {
 
     object SkipAST : StatementAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            return
-        }
-
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
@@ -43,29 +39,6 @@ sealed class StatementAST : AST() {
         val assignment: AssignRHSAST
     ) : StatementAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            // Check validity of type of identifier that is being declared
-            type.check(st, errorHandler)
-
-            val variable: IdentifierObject? = st.lookup(varName)
-            if (variable != null && variable is VariableIdentifier) {
-                errorHandler.repeatVariableDeclaration(ctx, varName)
-            } else {
-                // Check that right hand side and type of identifier match
-                val typeIdent: TypeIdentifier = type.getType(st)
-                assignment.check(st, errorHandler)
-                val assignmentType: TypeIdentifier = assignment.getType(st)
-
-                if (typeIdent != assignmentType && assignmentType != TypeIdentifier.GENERIC) {
-                    errorHandler.typeMismatch(ctx, typeIdent, assignment.getType(st))
-                }
-
-                // Create variable identifier and add to symbol table
-                val varIdent = VariableIdentifier(typeIdent)
-                st.add(varName, varIdent)
-            }
-        }
-
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
@@ -81,18 +54,6 @@ sealed class StatementAST : AST() {
         val rhs: AssignRHSAST
     ) : StatementAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            lhs.check(st, errorHandler)
-            rhs.check(st, errorHandler)
-
-            val lhsType = lhs.getType(st)
-            val rhsType = rhs.getType(st)
-
-            if (lhsType != rhsType && lhsType != TypeIdentifier.GENERIC && rhsType != TypeIdentifier.GENERIC) {
-                errorHandler.typeMismatch(ctx, lhsType, rhsType)
-            }
-        }
-
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
@@ -103,10 +64,6 @@ sealed class StatementAST : AST() {
     }
 
     data class BeginAST(val stat: StatementAST) : StatementAST() {
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            stat.check(SymbolTable(st), errorHandler)
-        }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
@@ -121,16 +78,6 @@ sealed class StatementAST : AST() {
     data class ReadAST(val ctx: WaccParser.StatReadContext, val lhs: AssignLHSAST) :
         StatementAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            lhs.check(st, errorHandler)
-
-            val type = lhs.getType(st)
-
-            if (!(type is TypeIdentifier.IntIdentifier || type is TypeIdentifier.CharIdentifier)) {
-                errorHandler.invalidReadType(ctx, type)
-            }
-        }
-
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
@@ -142,14 +89,6 @@ sealed class StatementAST : AST() {
 
     data class ExitAST(val ctx: WaccParser.StatExitContext, val expr: ExprAST) :
         StatementAST() {
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            expr.check(st, errorHandler)
-            // Ensure exit is only on an integer
-            if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
-                errorHandler.invalidExitType(ctx, expr.getType(st))
-            }
-        }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
@@ -163,16 +102,6 @@ sealed class StatementAST : AST() {
 
     data class FreeAST(val ctx: WaccParser.StatFreeContext, val expr: ExprAST) :
         StatementAST() {
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            expr.check(st, errorHandler)
-
-            val type = expr.getType(st)
-
-            if (!(type is TypeIdentifier.PairIdentifier || type is TypeIdentifier.ArrayIdentifier)) {
-                errorHandler.invalidFreeType(ctx, type)
-            }
-        }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
@@ -189,27 +118,6 @@ sealed class StatementAST : AST() {
         val thenStat: StatementAST,
         val elseStat: StatementAST
     ) : StatementAST() {
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            // Check validity of conditional expression
-            condExpr.check(st, errorHandler)
-
-            // Ensure that the condition expression evaluates to a boolean
-            if (condExpr.getType(st) != TypeIdentifier.BOOL_TYPE) {
-                errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, condExpr.getType(st))
-            } else {
-                val returnTypeIdent: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?
-                val thenSt = SymbolTable(st)
-                val elseSt = SymbolTable(st)
-                // Propogate return type down in case there is a function that is nested
-                if (returnTypeIdent != null) {
-                    thenSt.add("returnType", returnTypeIdent)
-                    elseSt.add("returnType", returnTypeIdent)
-                }
-                thenStat.check(thenSt, errorHandler)
-                elseStat.check(elseSt, errorHandler)
-            }
-        }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             // Instructions for evaluating the boolean instruction
@@ -234,10 +142,6 @@ sealed class StatementAST : AST() {
         val newLine: Boolean
     ) : StatementAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            expr.check(st, errorHandler)
-        }
-
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
@@ -250,23 +154,6 @@ sealed class StatementAST : AST() {
     data class ReturnAST(val ctx: WaccParser.StatReturnContext, val expr: ExprAST) :
         StatementAST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
-            if (st.isMain()) {
-                errorHandler.invalidReturn(ctx)
-            }
-
-            // Check validity of expression
-            expr.check(st, errorHandler)
-
-            // Check that type of expression being returned is the same as the return type of the function that defines the current scope
-            val returnType: TypeIdentifier = expr.getType(st)
-            val funcReturnType: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?
-            if (funcReturnType != returnType) {
-                errorHandler.invalidReturnType(ctx)
-            }
-        }
-
         override fun translate(regs: Registers): ArrayList<Instruction> {
             return ArrayList()
         }
@@ -278,11 +165,6 @@ sealed class StatementAST : AST() {
 
     data class SequentialAST(val stat1: StatementAST, val stat2: StatementAST) :
         StatementAST() {
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            stat1.check(st, errorHandler)
-            stat2.check(st, errorHandler)
-        }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             val stat1Instrs: ArrayList<Instruction> = stat1.translate(regs)
@@ -305,23 +187,6 @@ sealed class StatementAST : AST() {
         val loopExpr: ExprAST,
         val body: StatementAST
     ) : StatementAST() {
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            // Check validity of looping expression
-            loopExpr.check(st, errorHandler)
-
-            // Check that looping expression evaluates to a boolean
-            if (loopExpr.getType(st) != TypeIdentifier.BOOL_TYPE) {
-                errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, loopExpr.getType(st))
-            } else {
-                val bodySt = SymbolTable(st)
-                val returnTypeIdent: TypeIdentifier? = st.lookup("returnType") as TypeIdentifier?
-                if (returnTypeIdent != null) {
-                    bodySt.add("returnType", returnTypeIdent)
-                }
-                body.check(bodySt, errorHandler)
-            }
-        }
 
         override fun translate(regs: Registers): ArrayList<Instruction> {
             val instrs: ArrayList<Instruction> = ArrayList()
