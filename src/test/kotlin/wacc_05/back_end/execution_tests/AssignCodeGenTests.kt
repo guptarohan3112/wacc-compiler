@@ -13,7 +13,7 @@ open class AssignCodeGenTests : StatCodeGenTests() {
 
         var instructions: ArrayList<Instruction> = ExprAST.UnOpAST(
         WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-        ExprAST.IntLiterAST("+", "32"), "-").translate(Registers())
+        ExprAST.IntLiterAST("+", "32"), "-").translate()
 
         // check expected output: [LDR r4, [sp], RSBS r4, r4, #0]
 

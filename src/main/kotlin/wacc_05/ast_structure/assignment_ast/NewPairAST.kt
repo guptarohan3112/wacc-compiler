@@ -18,7 +18,7 @@ class NewPairAST(private val fst: ExprAST, private val snd: ExprAST) : AssignRHS
         snd.check(st, errorHandler)
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
+    override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
 

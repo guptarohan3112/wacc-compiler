@@ -57,7 +57,7 @@ class AssignLHSAST(private val ctx: WaccParser.AssignLHSContext, private val ide
         }
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
+    override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
 

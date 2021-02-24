@@ -36,7 +36,7 @@ class ArrayLiterAST(private val ctx: WaccParser.ArrayLitContext, private val ele
         }
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
+    override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
 }

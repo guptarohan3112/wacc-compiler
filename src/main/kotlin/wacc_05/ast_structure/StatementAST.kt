@@ -24,7 +24,7 @@ sealed class StatementAST : AST {
             return
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -59,7 +59,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -82,7 +82,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -93,7 +93,7 @@ sealed class StatementAST : AST {
             stat.check(SymbolTable(st), errorHandler)
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
 
@@ -112,7 +112,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -128,7 +128,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
 
@@ -147,7 +147,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -180,7 +180,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             // Instructions for evaluating the boolean instruction
             // Compare value in dest register to 0
             // Branch if equals to a label signifying else branch
@@ -203,7 +203,7 @@ sealed class StatementAST : AST {
             expr.check(st, errorHandler)
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -228,7 +228,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
 
@@ -242,9 +242,9 @@ sealed class StatementAST : AST {
             stat2.check(st, errorHandler)
         }
 
-        override fun translate(regs: Registers) : ArrayList<Instruction> {
-            val stat1Instrs: ArrayList<Instruction> = stat1.translate(regs)
-            val stat2Instrs: ArrayList<Instruction> = stat2.translate(regs)
+        override fun translate() : ArrayList<Instruction> {
+            val stat1Instrs: ArrayList<Instruction> = stat1.translate()
+            val stat2Instrs: ArrayList<Instruction> = stat2.translate()
             val instrs: ArrayList<Instruction> = ArrayList()
             instrs.addAll(stat1Instrs)
             instrs.addAll(stat2Instrs)
@@ -278,7 +278,7 @@ sealed class StatementAST : AST {
             }
         }
 
-        override fun translate(regs: Registers) : ArrayList<Instruction> {
+        override fun translate() : ArrayList<Instruction> {
             val instrs: ArrayList<Instruction> = ArrayList()
 
             // TODO: Change name of label below

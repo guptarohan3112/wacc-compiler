@@ -9,5 +9,5 @@ interface AST {
     // Function that applies semantic checks
     fun check(st: SymbolTable, errorHandler: SemanticErrors)
 
-    fun translate(regs: Registers) : ArrayList<Instruction>
+    fun translate() : ArrayList<Instruction>
 }

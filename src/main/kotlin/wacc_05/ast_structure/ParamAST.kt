@@ -23,7 +23,7 @@ class ParamAST(
         st.add(name, paramIdent)
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
+    override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
 

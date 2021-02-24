@@ -4,11 +4,8 @@ import antlr.WaccParser
 import wacc_05.SemanticErrors
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.code_generation.*
-import wacc_05.code_generation.Registers.Companion.sp
-import wacc_05.code_generation.instructions.AddInstruction
-import wacc_05.code_generation.instructions.Instruction
-import wacc_05.code_generation.instructions.LoadInstruction
-import wacc_05.code_generation.instructions.ReverseSubtractInstruction
+import wacc_05.code_generation.Registers
+import wacc_05.code_generation.instructions.*
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
@@ -31,7 +28,7 @@ sealed class ExprAST : AssignRHSAST() {
             return
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -46,8 +43,8 @@ sealed class ExprAST : AssignRHSAST() {
             return
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun translate(): ArrayList<Instruction> {
+            return arrayListOf(MoveInstruction(Registers.allocate(), Registers.allocate()))
         }
     }
 
@@ -61,7 +58,7 @@ sealed class ExprAST : AssignRHSAST() {
             return
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -76,7 +73,7 @@ sealed class ExprAST : AssignRHSAST() {
             return
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -91,7 +88,7 @@ sealed class ExprAST : AssignRHSAST() {
             return
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -116,7 +113,7 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
     }
@@ -160,7 +157,7 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
 
@@ -221,19 +218,19 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return when (operator) {
-                "-" -> translateNeg(regs)
+                "-" -> translateNeg()
                 else -> ArrayList()
             }
         }
 
-        private fun translateNeg(regs: Registers): ArrayList<Instruction> {
+        private fun translateNeg(): ArrayList<Instruction> {
             val results: ArrayList<Instruction> = ArrayList()
 
-            results.addAll(expr.translate(regs))
+            results.addAll(expr.translate())
             val dest: Register = expr.dest!!
-            results.add(LoadInstruction(dest, AddressingMode.AddressingMode2(sp, null)))
+            results.add(LoadInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, null)))
             results.add(ReverseSubtractInstruction(dest, dest, Immediate(0)))
             return results
         }
@@ -264,39 +261,39 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return when (operator) {
 //                "+" -> translateAdd(regs)
                 else -> ArrayList()
             }
         }
 
-        private fun translateAdd(regs: Registers) {
+        private fun translateAdd() {
             when {
                 expr1 is IntLiterAST -> {
-                    expr2.translate(regs)
+                    expr2.translate()
                     val dest: Register = expr2.dest!!
                     AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr1.getValue())))
 
                     this.dest = dest
                 }
                 expr2 is IntLiterAST -> {
-                    expr1.translate(regs)
+                    expr1.translate()
                     val dest: Register = expr2.dest!!
                     AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr2.getValue())))
 
                     this.dest = dest
                 }
                 else -> {
-                    expr1.translate(regs)
-                    expr2.translate(regs)
+                    expr1.translate()
+                    expr2.translate()
 
                     val dest1: Register = expr1.dest!!
                     val dest2: Register = expr2.dest!!
 
                     AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
 
-                    regs.free(dest2)
+                    Registers.free(dest2)
                     this.dest = dest1
                 }
             }

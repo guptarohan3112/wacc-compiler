@@ -56,7 +56,7 @@ class FunctionAST(
         }
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
+    override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
 }

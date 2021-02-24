@@ -28,7 +28,7 @@ class ProgramAST(
         stat.check(st, errorHandler)
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
+    override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
 

@@ -33,7 +33,7 @@ sealed class TypeAST : AST {
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
 
@@ -48,7 +48,7 @@ sealed class TypeAST : AST {
             elemsType.check(st, errorHandler)
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
 
@@ -67,7 +67,7 @@ sealed class TypeAST : AST {
             type?.check(st, errorHandler)
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
 
@@ -94,7 +94,7 @@ sealed class TypeAST : AST {
             sndType.check(st, errorHandler)
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
 

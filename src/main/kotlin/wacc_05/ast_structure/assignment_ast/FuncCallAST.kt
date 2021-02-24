@@ -17,6 +17,7 @@ class FuncCallAST(private val ctx: WaccParser.FuncCallContext, private val funcN
         return (st.lookupAll(funcName) as FunctionIdentifier).getReturnType()
     }
 
+
     override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
         when (val funcIdentifier: IdentifierObject? = st.lookupAll(funcName)) {
             null -> {
@@ -45,8 +46,7 @@ class FuncCallAST(private val ctx: WaccParser.FuncCallContext, private val funcN
         }
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
+    override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
-
 }

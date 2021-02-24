@@ -38,7 +38,7 @@ class PairElemAST(private val ctx: WaccParser.PairElemContext, private val elem:
         }
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
+    override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
 

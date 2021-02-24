@@ -14,7 +14,7 @@ class ParamListAST(private val paramList: ArrayList<ParamAST>) : AST {
         }
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
+    override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
 
