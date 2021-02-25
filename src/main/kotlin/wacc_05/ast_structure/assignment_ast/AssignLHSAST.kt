@@ -27,10 +27,11 @@ class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: String?) : A
     fun getType(st: SymbolTable): TypeIdentifier {
         return when {
             arrElem != null -> {
-                arrElem!!.getType(st)
+                arrElem!!.getType()
             }
             pairElem != null -> {
-                pairElem!!.getType(st)
+
+                pairElem!!.getType()
             }
             st.lookupAll(ident!!) is FunctionIdentifier -> {
                 TypeIdentifier.GENERIC

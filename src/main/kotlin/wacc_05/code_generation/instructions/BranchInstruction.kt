@@ -1,7 +1,7 @@
 package wacc_05.code_generation.instructions
 
-class BranchInstruction(private val label: String) : Instruction {
+class BranchInstruction(private val options: String, private val label: String) : Instruction {
     override fun toString(): String {
-        return "B $label"
+        return "B$options $label"
     }
 }

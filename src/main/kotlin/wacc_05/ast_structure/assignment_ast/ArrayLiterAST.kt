@@ -9,13 +9,13 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<ExprAST>) : AssignRHSAST() {
 
-    override fun getType(st: SymbolTable): TypeIdentifier {
+    override fun getType(): TypeIdentifier {
         return if (elems.size == 0) {
             // If the array literal is empty, the element type could be any type
             TypeIdentifier.GENERIC
         } else {
             // Otherwise, determine the type of the first element and create an ArrayIdentifier
-            TypeIdentifier.ArrayIdentifier(elems[0].getType(st), elems.size)
+            TypeIdentifier.ArrayIdentifier(elems[0].getType(), elems.size)
         }
     }
 

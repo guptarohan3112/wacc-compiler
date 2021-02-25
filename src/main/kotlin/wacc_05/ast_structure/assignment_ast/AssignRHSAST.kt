@@ -6,6 +6,6 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 abstract class AssignRHSAST : AST() {
 
-    abstract fun getType(st: SymbolTable): TypeIdentifier
+    abstract fun getType(): TypeIdentifier
 
 }

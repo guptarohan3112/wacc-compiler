@@ -81,6 +81,11 @@ object WaccCompiler {
 
         semanticChecker.visit(ast)
 
+        if (seh.hasErrors()) {
+            seh.printErrors()
+            return Error.SEMANTIC_ERROR
+        }
+
         if (!validOnly) {
             println("Generating assembly file : $filePath.s")
             val translatorVisitor = TranslatorVisitor()
@@ -89,10 +94,13 @@ object WaccCompiler {
             println("Generation of assembly file complete")
         }
 
-        if (debug)
-            println("FINISHED")
 
-        return seh.err
+
+        if (debug) {
+            println("FINISHED")
+        }
+
+        return Error.SUCCESS
     }
 
 }

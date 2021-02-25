@@ -9,8 +9,8 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class PairElemAST(val ctx: WaccParser.PairElemContext, val elem: ExprAST, val isFst: Boolean) : AssignRHSAST() {
 
-    override fun getType(st: SymbolTable): TypeIdentifier {
-        val pairType = elem.getType(st)
+    override fun getType(): TypeIdentifier {
+        val pairType = elem.getType()
 
         return if (pairType is TypeIdentifier.PairIdentifier) {
             if (isFst) {

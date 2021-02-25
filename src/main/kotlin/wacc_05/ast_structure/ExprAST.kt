@@ -1,7 +1,11 @@
 package wacc_05.ast_structure
 
 import antlr.WaccParser
+import wacc_05.SemanticErrors
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.code_generation.Immediate
+import wacc_05.code_generation.Register
+import wacc_05.code_generation.Registers
 import wacc_05.code_generation.*
 import wacc_05.code_generation.instructions.*
 import wacc_05.symbol_table.SymbolTable
@@ -13,7 +17,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class IntLiterAST(val sign: String, val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
         }
 
@@ -37,13 +41,20 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class BoolLiterAST(val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.BOOL_TYPE
         }
 
         override fun translate(): ArrayList<Instruction> {
             val intValue = if (value == "true") 1 else 0
             return arrayListOf(MoveInstruction(Registers.allocate(), Immediate(intValue)))
+        }
+
+        fun getValue(): Int {
+            return when (value) {
+                "true" -> 1
+                else -> 0
+            }
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
@@ -53,7 +64,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class CharLiterAST(val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.CHAR_TYPE
         }
 
@@ -72,7 +83,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class StrLiterAST(val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.STRING_TYPE
         }
 
@@ -89,7 +100,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     object PairLiterAST : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.PAIR_LIT_TYPE
         }
 
@@ -104,9 +115,8 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class IdentAST(val ctx: WaccParser.ExprContext, val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
-            val type = st.lookupAll(value)
-            return when (type) {
+        override fun getType(): TypeIdentifier {
+            return when (val type = st().lookupAll(value)) {
                 null -> {
                     TypeIdentifier.GENERIC
                 }
@@ -131,8 +141,8 @@ sealed class ExprAST : AssignRHSAST() {
         val exprs: ArrayList<ExprAST>
     ) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
-            val type = st.lookupAll(ident)
+        override fun getType(): TypeIdentifier {
+            val type = st().lookupAll(ident)
             return if (type == null) {
                 TypeIdentifier.GENERIC
             } else {
@@ -159,7 +169,7 @@ sealed class ExprAST : AssignRHSAST() {
         val operator: String
     ) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             // Will need to get unaryOpIdentifier from st (can I if it an invalid operator) and get its return type
             return when (operator) {
                 "-" -> TypeIdentifier.INT_TYPE
@@ -208,7 +218,7 @@ sealed class ExprAST : AssignRHSAST() {
             val boolBoolFunctions = hashSetOf("&&", "||")
         }
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return when (operator) {
                 // Need valid min and max integers to put here
                 "+", "%", "/", "*", "-" -> TypeIdentifier.INT_TYPE
@@ -219,39 +229,137 @@ sealed class ExprAST : AssignRHSAST() {
         override fun translate(): ArrayList<Instruction> {
             return when (operator) {
 //                "+" -> translateAdd(regs)
+//                "-" -> translateSub(regs)
+//                "*" -> translateMultiply(regs)
+//                "/" -> translateDivide(regs)
+//                "%" -> translateModulo(regs)
+//                "&&" -> translateAnd(regs)
+//                "||" -> translateOr(regs)
                 else -> ArrayList()
             }
         }
 
-        fun translateAdd(regs: Registers) {
+        private fun translateMultiply(): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            /* here we can't do any optimisation on registers since ARM
+             * requires MULT rd, rm, rs -> rd = rm * rs
+             */
+
+            results.addAll(expr1.translate())
+            results.addAll(expr2.translate())
+
+            val dest1: Register = expr1.dest!!
+            val dest2: Register = expr2.dest!!
+
+            results.add(MultiplyInstruction(dest1, dest1, dest2))
+
+            Registers.free(dest2)
+            this.dest = dest1
+
+            return results
+        }
+
+        // NOTE: use caller save when calling translateDivide() ??
+        private fun translateDivide(): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            results.addAll(expr1.translate())
+            results.addAll(expr2.translate())
+
+            val dest1: Register = expr1.dest!!
+            val dest2: Register = expr2.dest!!
+
+            if (dest1 != Registers.r0) {
+                results.add(MoveInstruction(Registers.r0, dest1))
+                Registers.free(dest1)
+            }
+
+            if (dest2 != Registers.r1) {
+                results.add(MoveInstruction(Registers.r1, dest2))
+                Registers.free(dest2)
+            }
+
+            results.add(BranchInstruction("L", "__aeabi_idiv"))
+
+            // not sure about this - we need to move R3 into a destination register
+            // but I am concerned about overwriting it when restoring, or overwriting
+            // a register we are restoring
+
+            return results
+        }
+
+        private fun translateModulo(): ArrayList<Instruction> {
+            // to follow translateDivide()
+            return ArrayList()
+        }
+
+        private fun translateAnd(): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
             when {
-                expr1 is IntLiterAST -> {
-                    expr2.translate()
+                expr1 is BoolLiterAST -> {
+                    results.addAll(expr2.translate())
                     val dest: Register = expr2.dest!!
-                    AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr1.getValue())))
+                    results.add(AndInstruction(dest, dest, Immediate(expr1.getValue())))
 
                     this.dest = dest
                 }
-                expr2 is IntLiterAST -> {
-                    expr1.translate()
-                    val dest: Register = expr2.dest!!
-                    AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr2.getValue())))
+                expr2 is BoolLiterAST -> {
+                    results.addAll(expr1.translate())
+                    val dest: Register = expr1.dest!!
+                    results.add(AndInstruction(dest, dest, Immediate(expr2.getValue())))
 
                     this.dest = dest
                 }
                 else -> {
-                    expr1.translate()
-                    expr2.translate()
-
+                    results.addAll(expr1.translate())
+                    results.addAll(expr2.translate())
                     val dest1: Register = expr1.dest!!
                     val dest2: Register = expr2.dest!!
 
-                    AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
+                    results.add(AndInstruction(dest1, dest1, dest2))
+                    Registers.free(dest2)
 
-                    regs.free(dest2)
                     this.dest = dest1
                 }
             }
+
+            return results
+        }
+
+        private fun translateOr(): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            when {
+                expr1 is BoolLiterAST -> {
+                    results.addAll(expr2.translate())
+                    val dest: Register = expr2.dest!!
+                    results.add(OrInstruction(dest, dest, Immediate(expr1.getValue())))
+
+                    this.dest = dest
+                }
+                expr2 is BoolLiterAST -> {
+                    results.addAll(expr1.translate())
+                    val dest: Register = expr1.dest!!
+                    results.add(OrInstruction(dest, dest, Immediate(expr2.getValue())))
+
+                    this.dest = dest
+                }
+                else -> {
+                    results.addAll(expr1.translate())
+                    results.addAll(expr2.translate())
+                    val dest1: Register = expr1.dest!!
+                    val dest2: Register = expr2.dest!!
+
+                    results.add(OrInstruction(dest1, dest1, dest2))
+                    Registers.free(dest2)
+
+                    this.dest = dest1
+                }
+            }
+
+            return results
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
