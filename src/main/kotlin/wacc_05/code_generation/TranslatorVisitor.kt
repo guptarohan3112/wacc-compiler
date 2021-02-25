@@ -72,7 +72,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
-        val intValue = Integer.parseInt(liter.sign+liter.value)
+        val intValue = Integer.parseInt(liter.sign + liter.value)
         val register = Registers.allocate()
         val mode: AddressingMode = AddressingMode.AddressingMode2(register, Immediate(intValue))
         liter.dest = register
@@ -131,6 +131,10 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
         when (binop.operator) {
             "+" -> translateAdd(binop)
+            "-" -> translateSub(binop)
+            "*" -> translateMultiply(binop)
+            "/", "%" -> translateDivMod(binop)
+            "&&", "||" -> translateAndOr(binop)
             else -> {
             }
         }
@@ -165,6 +169,131 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                 AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
 
                 Registers.free(dest2)
+                binop.dest = dest1
+            }
+        }
+    }
+
+    private fun translateSub(binop: ExprAST.BinOpAST) {
+        visit(binop.expr1)
+
+        val dest: Register = binop.expr1.dest!!
+
+        /* we can only optimise for expr2 being int liter since we have
+             * SUB rd, rn, op -> rd = rn - op, so expr1 must always be placed
+             * in a register */
+        when (binop.expr2) {
+            is ExprAST.IntLiterAST -> {
+                AssemblyRepresentation.addMainInstr(SubtractInstruction(dest, dest, Immediate(binop.expr2.getValue())))
+            }
+            else -> {
+                visit(binop.expr2)
+                val dest2: Register = binop.expr2.dest!!
+
+                AssemblyRepresentation.addMainInstr(SubtractInstruction(dest, dest, dest2))
+                Registers.free(dest2)
+            }
+        }
+
+        binop.dest = dest
+    }
+
+    private fun translateMultiply(binop: ExprAST.BinOpAST) {
+        visit(binop.expr1)
+        visit(binop.expr2)
+
+        val dest1: Register = binop.expr1.dest!!
+        val dest2: Register = binop.expr2.dest!!
+
+        AssemblyRepresentation.addMainInstr(MultiplyInstruction(dest1, dest1, dest2))
+        Registers.free(dest2)
+
+        binop.dest = dest1
+    }
+
+    private fun translateDivMod(binop: ExprAST.BinOpAST) {
+        visit(binop.expr1)
+        visit(binop.expr2)
+
+        // get result from expr1 and move into param register 1
+        val dest1: Register = binop.expr1.dest!!
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest1))
+        Registers.free(dest1)
+
+        // get result from expr2 and mvoe into param register 2
+        val dest2: Register = binop.expr2.dest!!
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest2))
+        Registers.free(dest2)
+
+        AssemblyRepresentation.addMainInstr(
+            BranchInstruction(
+                "L",
+                if (binop.operator == "/") {
+                    "__aeabi_idiv"
+                } else {
+                    "__aeabi_idivmod"
+                }
+            )
+        )
+
+        // allocate a register to move the result into
+        val dest: Register = Registers.allocate()
+        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r3))
+
+        binop.dest = dest
+    }
+
+    private fun translateAndOr(binop: ExprAST.BinOpAST) {
+        val expr1 = binop.expr1
+        val expr2 = binop.expr2
+
+        when {
+            expr1 is ExprAST.BoolLiterAST -> {
+                visit(expr2)
+                val dest: Register = expr2.dest!!
+
+                AssemblyRepresentation.addMainInstr(
+                    if (binop.operator == "&&") {
+                        AndInstruction(dest, dest, Immediate(expr1.getValue()))
+                    } else {
+                        OrInstruction(dest, dest, Immediate(expr1.getValue()))
+                    }
+                )
+
+                binop.dest = dest
+            }
+
+            expr2 is ExprAST.BoolLiterAST -> {
+                visit(expr1)
+                val dest: Register = expr1.dest!!
+                AssemblyRepresentation.addMainInstr(
+                    if (binop.operator == "&&") {
+                        AndInstruction(dest, dest, Immediate(expr2.getValue()))
+                    } else {
+                        OrInstruction(dest, dest, Immediate(expr2.getValue()))
+                    }
+                )
+
+                binop.dest = dest
+            }
+
+            else -> {
+                visit(expr1)
+                visit(expr2)
+
+                val dest1: Register = expr1.dest!!
+                val dest2: Register = expr2.dest!!
+
+                AssemblyRepresentation.addMainInstr(
+                    if (binop.operator == "&&") {
+                        AndInstruction(dest1, dest1, dest2)
+                    } else {
+                        OrInstruction(dest1, dest1, dest2)
+                    }
+                )
+
+                Registers.free(dest2)
+
                 binop.dest = dest1
             }
         }

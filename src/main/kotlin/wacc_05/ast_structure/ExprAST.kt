@@ -240,37 +240,6 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        fun translateAdd() {
-            when {
-                expr1 is IntLiterAST -> {
-                    expr2.translate()
-                    val dest: Register = expr2.dest!!
-                    AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr1.getValue())))
-
-                    this.dest = dest
-                }
-                expr2 is IntLiterAST -> {
-                    expr1.translate()
-                    val dest: Register = expr2.dest!!
-                    AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr2.getValue())))
-
-                    this.dest = dest
-                }
-                else -> {
-                    expr1.translate()
-                    expr2.translate()
-
-                    val dest1: Register = expr1.dest!!
-                    val dest2: Register = expr2.dest!!
-
-                    AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
-
-                    Registers.free(dest2)
-                    this.dest = dest1
-                }
-            }
-        }
-
         private fun translateMultiply(): ArrayList<Instruction> {
             val results: ArrayList<Instruction> = ArrayList()
 
