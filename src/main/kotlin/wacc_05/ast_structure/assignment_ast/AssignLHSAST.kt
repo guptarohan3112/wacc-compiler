@@ -6,14 +6,17 @@ import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
 import wacc_05.code_generation.Registers
 import wacc_05.code_generation.instructions.Instruction
+import wacc_05.ast_structure.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
 // This class accounts for whether the left hand side of assignment is a identifier, array element or pair element
-class AssignLHSAST(private val ctx: WaccParser.AssignLHSContext, private val ident: String?) : AST {
+class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: String?) : AST() {
 
-    private var arrElem: ExprAST.ArrayElemAST? = null
-    private var pairElem: PairElemAST? = null
+    var arrElem: ExprAST.ArrayElemAST? = null
+        private set
+    var pairElem: PairElemAST? = null
+        private set
 
     constructor(ctx: WaccParser.AssignLHSContext,arrElem: ExprAST.ArrayElemAST) : this(ctx, null) {
         this.arrElem = arrElem
@@ -40,25 +43,12 @@ class AssignLHSAST(private val ctx: WaccParser.AssignLHSContext, private val ide
         }
     }
 
-    override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-        if (arrElem != null) {
-            arrElem!!.check(st, errorHandler)
-        } else if (pairElem != null) {
-            pairElem!!.check(st, errorHandler)
-        } else {
-            val type = st.lookupAll(ident!!)
-            if (type == null) {
-                errorHandler.invalidIdentifier(ctx, ident)
-                // Add the identifier into symbol table for error recovery
-                st.add(ident, VariableIdentifier(TypeIdentifier.GENERIC))
-            } else if (type is FunctionIdentifier) {
-                errorHandler.invalidAssignment(ctx, ident)
-            }
-        }
+    override fun translate(): ArrayList<Instruction> {
+        return ArrayList()
     }
 
-    override fun translate(regs: Registers): ArrayList<Instruction> {
-        return ArrayList()
+    override fun <T> accept(visitor: ASTVisitor<T>): T {
+        return visitor.visitAssignLHSAST(this)
     }
 
 }
