@@ -20,11 +20,14 @@ class AssignASTTests : StatSemanticTests() {
         st.add("int", intType)
         st.add("x", VariableIdentifier(intType))
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
     }
 
     @Test
@@ -32,7 +35,7 @@ class AssignASTTests : StatSemanticTests() {
         st.add("int", intType)
         st.add("x", VariableIdentifier(TypeIdentifier.PairIdentifier(intType, intType)))
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(
                 WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
@@ -43,7 +46,10 @@ class AssignASTTests : StatSemanticTests() {
                     ), false
                 )
             ), ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
     }
 
     @Test
@@ -52,7 +58,7 @@ class AssignASTTests : StatSemanticTests() {
         st.add("int", intType)
         st.add("x", VariableIdentifier(TypeIdentifier.ArrayIdentifier(intType, 4)))
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(
                 WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
@@ -65,7 +71,10 @@ class AssignASTTests : StatSemanticTests() {
                     arrayListOf(ExprAST.IntLiterAST("+", "3"))
                 )
             ), ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
     }
 
     @Test
@@ -74,11 +83,14 @@ class AssignASTTests : StatSemanticTests() {
 
         every { seh.invalidIdentifier(any(), any()) } just runs
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
 
         verify(exactly = 1) { seh.invalidIdentifier(any(), "x") }
     }
@@ -91,11 +103,14 @@ class AssignASTTests : StatSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
 
         verify(exactly = 1) { seh.typeMismatch(any(), any(), any()) }
     }
@@ -106,7 +121,7 @@ class AssignASTTests : StatSemanticTests() {
 
         every { seh.invalidIdentifier(any(), any()) } just runs
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(
                 WaccParser.AssignLHSContext(
@@ -120,7 +135,10 @@ class AssignASTTests : StatSemanticTests() {
                 )
             ),
             ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
 
         verify(exactly = 1) { seh.invalidIdentifier(any(), "x") }
     }
@@ -131,7 +149,7 @@ class AssignASTTests : StatSemanticTests() {
 
         every { seh.invalidIdentifier(any(), any()) } just runs
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(
                 WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
@@ -142,7 +160,10 @@ class AssignASTTests : StatSemanticTests() {
                 )
             ),
             ExprAST.IntLiterAST("+", "3")
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
 
         verify(exactly = 1) { seh.invalidIdentifier(any(), "x") }
     }
@@ -155,14 +176,17 @@ class AssignASTTests : StatSemanticTests() {
 
         // x = [3]
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             ArrayLiterAST(
                 WaccParser.ArrayLitContext(WaccParser.StatContext(), 0),
                 arrayListOf(ExprAST.IntLiterAST("+", "3"))
             )
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
     }
 
     @Test
@@ -173,11 +197,14 @@ class AssignASTTests : StatSemanticTests() {
         st.add("char", charType)
         st.add("x", VariableIdentifier(identifier))
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             NewPairAST(ExprAST.IntLiterAST("+", "3"), ExprAST.CharLiterAST("c"))
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
     }
 
     @Test
@@ -190,11 +217,14 @@ class AssignASTTests : StatSemanticTests() {
         st.add("foo", identifier)
         st.add("x", VariableIdentifier(intType))
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             FuncCallAST(WaccParser.FuncCallContext(WaccParser.StatContext(), 0), "foo", ArrayList())
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
     }
 
     @Test
@@ -205,11 +235,14 @@ class AssignASTTests : StatSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             ExprAST.CharLiterAST("c")
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
 
         verify(exactly = 1) { seh.typeMismatch(any(), intType, charType) }
     }
@@ -221,11 +254,14 @@ class AssignASTTests : StatSemanticTests() {
 
         every { seh.invalidIdentifier(any(), any()) } just runs
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "y")
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
 
         verify(exactly = 1) { seh.invalidIdentifier(any(), "y") }
     }
@@ -239,14 +275,17 @@ class AssignASTTests : StatSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             ArrayLiterAST(
                 WaccParser.ArrayLitContext(WaccParser.StatContext(), 0),
                 arrayListOf(ExprAST.CharLiterAST("c"), ExprAST.CharLiterAST("f"))
             )
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
 
         verify(exactly = 1) {
             seh.typeMismatch(
@@ -267,11 +306,14 @@ class AssignASTTests : StatSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
-            AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),"x"),
+            AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             FuncCallAST(WaccParser.FuncCallContext(WaccParser.StatContext(), 0), "foo", ArrayList())
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
 
         verify(exactly = 1) { seh.typeMismatch(any(), intType, charType) }
     }
@@ -286,11 +328,14 @@ class AssignASTTests : StatSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.AssignAST(
+        val assign = StatementAST.AssignAST(
             WaccParser.StatAssignContext(WaccParser.StatContext()),
-            AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),"x"),
+            AssignLHSAST(WaccParser.AssignLHSContext(WaccParser.StatContext(), 0), "x"),
             NewPairAST(ExprAST.CharLiterAST("c"), ExprAST.IntLiterAST("+", "3"))
-        ).check(st, seh)
+        )
+
+        assign.st = st
+        visitor.visitAssignAST(assign)
 
         verify { seh.typeMismatch(any(), intCharIdentifier, charIntIdentifier) }
     }

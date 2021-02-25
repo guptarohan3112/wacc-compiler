@@ -25,7 +25,7 @@ class ExecutionTests {
             if (it.extension == "wacc") {
                 try {
                     // Run the compiler- this should generate the assembly file (to be executed)
-                    val progExit: Int = WaccCompiler.runCompiler(it.absolutePath, false)
+                    val progExit: Int = WaccCompiler.runCompiler(it.absolutePath, debug=false, validOnly=false)
                     val assemblyName = it.nameWithoutExtension + ".s"
                     val assembly = File(assemblyName)
                     if (!assembly.exists()) {

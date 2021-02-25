@@ -8,11 +8,11 @@ import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-sealed class TypeAST : AST {
+sealed class TypeAST : AST() {
 
     abstract fun getType(st: SymbolTable): TypeIdentifier
 
-    data class BaseTypeAST(private val ctx: WaccParser.BaseTypeContext, private val typeName: String) : TypeAST() {
+    data class BaseTypeAST(val ctx: WaccParser.BaseTypeContext, val typeName: String) : TypeAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             val typeIdent: IdentifierObject? = st.lookupAll(typeName)
@@ -23,18 +23,12 @@ sealed class TypeAST : AST {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            val typeIdent: IdentifierObject? = st.lookupAll(typeName)
-
-            if (typeIdent == null) {
-                errorHandler.invalidIdentifier(ctx, typeName)
-            } else if (typeIdent !is TypeIdentifier) {
-                errorHandler.invalidType(ctx, typeName)
-            }
+        override fun translate(): ArrayList<Instruction> {
+            return ArrayList()
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitBaseTypeAST(this)
         }
 
         override fun toString(): String {
@@ -42,18 +36,18 @@ sealed class TypeAST : AST {
         }
     }
 
-    data class ArrayTypeAST(private val elemsType: TypeAST) : TypeAST() {
-
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            elemsType.check(st, errorHandler)
-        }
-
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
-        }
+    data class ArrayTypeAST(val elemsType: TypeAST) : TypeAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.ArrayIdentifier(elemsType.getType(st), 0)
+        }
+
+        override fun translate(): ArrayList<Instruction> {
+            return ArrayList()
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitArrayTypeAST(this)
         }
 
         override fun toString(): String {
@@ -61,14 +55,14 @@ sealed class TypeAST : AST {
         }
     }
 
-    data class PairElemTypeAST(private val pair: String? = null, private val type: TypeAST?) : AST {
+    data class PairElemTypeAST(val pair: String? = null, val type: TypeAST?) : AST() {
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            type?.check(st, errorHandler)
+        override fun translate(): ArrayList<Instruction> {
+            return ArrayList()
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitPairElemTypeAST(this)
         }
 
         override fun toString(): String {
@@ -81,21 +75,20 @@ sealed class TypeAST : AST {
     }
 
     data class PairTypeAST(
-        private val fstType: PairElemTypeAST,
-        private val sndType: PairElemTypeAST
+        val fstType: PairElemTypeAST,
+        val sndType: PairElemTypeAST
     ) : TypeAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.PairIdentifier(fstType.getType(st), sndType.getType(st))
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            fstType.check(st, errorHandler)
-            sndType.check(st, errorHandler)
+        override fun translate(): ArrayList<Instruction> {
+            return ArrayList()
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitPairTypeAST(this)
         }
 
         override fun toString(): String {

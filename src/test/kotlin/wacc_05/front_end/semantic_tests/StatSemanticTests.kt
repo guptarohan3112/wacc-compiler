@@ -8,6 +8,8 @@ import wacc_05.SemanticErrors
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
+import wacc_05.ast_structure.ASTVisitor
+import wacc_05.front_end.SemanticVisitor
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
@@ -22,10 +24,12 @@ open class StatSemanticTests {
     var childSt: SymbolTable = SymbolTable(st)
     var seh: SemanticErrors = mockk()
 
+    var visitor: ASTVisitor<Unit> = SemanticVisitor(st, seh)
+
     @Test
     fun skipASTCheck() {
         // a skip AST check should not find any errors
-        StatementAST.SkipAST.check(st, seh)
+        visitor.visit(StatementAST.SkipAST)
     }
 
     @Test
@@ -33,13 +37,16 @@ open class StatSemanticTests {
         st.add("int", intType)
         st.add("x", VariableIdentifier(intType))
 
-        StatementAST.ReadAST(
+        val read = StatementAST.ReadAST(
             WaccParser.StatReadContext(WaccParser.StatContext()),
             AssignLHSAST(
                 WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
                 "x"
             )
-        ).check(st, seh)
+        )
+
+        read.st = st
+        visitor.visitReadAST(read)
     }
 
     @Test
@@ -47,13 +54,16 @@ open class StatSemanticTests {
         st.add("char", charType)
         st.add("x", VariableIdentifier(charType))
 
-        StatementAST.ReadAST(
+        val read = StatementAST.ReadAST(
             WaccParser.StatReadContext(WaccParser.StatContext()),
             AssignLHSAST(
                 WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
                 "x"
             )
-        ).check(st, seh)
+        )
+
+        read.st = st
+        visitor.visitReadAST(read)
     }
 
     @Test
@@ -63,13 +73,16 @@ open class StatSemanticTests {
 
         every { seh.invalidReadType(any(), any()) } just runs
 
-        StatementAST.ReadAST(
+        val read = StatementAST.ReadAST(
             WaccParser.StatReadContext(WaccParser.StatContext()),
             AssignLHSAST(
                 WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
                 "x"
             )
-        ).check(st, seh)
+        )
+
+        read.st = st
+        visitor.visitReadAST(read)
 
         verify(exactly = 1) { seh.invalidReadType(any(), boolType) }
     }
@@ -80,13 +93,16 @@ open class StatSemanticTests {
         st.add("int", intType)
         st.add("x", VariableIdentifier(identifier))
 
-        StatementAST.FreeAST(
+        val free = StatementAST.FreeAST(
             WaccParser.StatFreeContext(WaccParser.StatContext()),
             ExprAST.IdentAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
                 "x"
             )
-        ).check(st, seh)
+        )
+
+        free.st = st
+        visitor.visitFreeAST(free)
     }
 
     @Test
@@ -95,13 +111,16 @@ open class StatSemanticTests {
         st.add("int", intType)
         st.add("x", VariableIdentifier(identifier))
 
-        StatementAST.FreeAST(
+        val free = StatementAST.FreeAST(
             WaccParser.StatFreeContext(WaccParser.StatContext()),
             ExprAST.IdentAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
                 "x"
             )
-        ).check(st, seh)
+        )
+
+        free.st = st
+        visitor.visitFreeAST(free)
     }
 
     @Test
@@ -112,13 +131,16 @@ open class StatSemanticTests {
 
         every { seh.invalidFreeType(any(), any()) } just runs
 
-        StatementAST.FreeAST(
+        val free = StatementAST.FreeAST(
             WaccParser.StatFreeContext(WaccParser.StatContext()),
             ExprAST.IdentAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
                 "x"
             )
-        ).check(st, seh)
+        )
+
+        free.st = st
+        visitor.visitFreeAST(free)
 
         verify(exactly = 1) { seh.invalidFreeType(any(), intType) }
     }
@@ -131,10 +153,13 @@ open class StatSemanticTests {
         st.add("bool", boolType)
         childSt.add("returnType", boolType)
 
-        StatementAST.ReturnAST(
+        val ret = StatementAST.ReturnAST(
             WaccParser.StatReturnContext(WaccParser.StatContext()),
             ExprAST.BoolLiterAST("true")
-        ).check(childSt, seh)
+        )
+
+        ret.st = childSt
+        visitor.visitReturnAST(ret)
     }
 
     @Test
@@ -143,10 +168,13 @@ open class StatSemanticTests {
 
         every { seh.invalidReturnType(any()) } just runs
 
-        StatementAST.ReturnAST(
+        val ret = StatementAST.ReturnAST(
             WaccParser.StatReturnContext(WaccParser.StatContext()),
             ExprAST.IntLiterAST("+", "3")
-        ).check(childSt, seh)
+        )
+
+        ret.st = childSt
+        visitor.visitReturnAST(ret)
 
         verify(exactly = 1) { seh.invalidReturnType(any()) }
     }
@@ -156,16 +184,20 @@ open class StatSemanticTests {
         // an exit statement is valid if its expression is of integer type
         st.add("int", intType)
 
-        StatementAST.ExitAST(
+        val exit = StatementAST.ExitAST(
             WaccParser.StatExitContext(WaccParser.StatContext()),
             ExprAST.IntLiterAST("+", "0")
-        ).check(st, seh)
+        )
+
+        exit.st = st
+        visitor.visitExitAST(exit)
     }
 
     @Test
     fun exitASTValidExprCheck() {
         st.add("int", intType)
-        StatementAST.ExitAST(
+
+        val exit = StatementAST.ExitAST(
             WaccParser.StatExitContext(WaccParser.StatContext()),
             ExprAST.BinOpAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
@@ -173,7 +205,10 @@ open class StatSemanticTests {
                 ExprAST.IntLiterAST("+", "4"),
                 "+"
             )
-        ).check(st, seh)
+        )
+
+        exit.st = st
+        visitor.visitExitAST(exit)
     }
 
     @Test
@@ -182,10 +217,13 @@ open class StatSemanticTests {
 
         every { seh.invalidExitType(any(), any()) } just runs
 
-        StatementAST.ExitAST(
+        val exit = StatementAST.ExitAST(
             WaccParser.StatExitContext(WaccParser.StatContext()),
             ExprAST.CharLiterAST("c")
-        ).check(st, seh)
+        )
+
+        exit.st = st
+        visitor.visitExitAST(exit)
 
         verify(exactly = 1) { seh.invalidExitType(any(), charType) }
     }

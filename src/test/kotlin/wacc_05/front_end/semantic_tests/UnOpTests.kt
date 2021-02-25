@@ -18,7 +18,7 @@ class UnOpTests : ExprSemanticTests() {
     fun unOpNotValidCheck() {
         st.add("bool", boolType)
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "bool"),
             "x",
@@ -27,7 +27,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.BoolLiterAST("true"),
                 "!"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
     }
 
     @Test
@@ -36,7 +39,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "bool"),
             "x",
@@ -45,7 +48,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.IntLiterAST("+", "4"),
                 "!"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), boolType, intType) }
     }
@@ -56,7 +62,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "x",
@@ -65,7 +71,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.BoolLiterAST("true"),
                 "!"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), intType, boolType) }
     }
@@ -74,7 +83,7 @@ class UnOpTests : ExprSemanticTests() {
     fun unOpNegValidCheck() {
         st.add("int", intType)
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "x",
@@ -83,7 +92,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.IntLiterAST("+", "3"),
                 "-"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
     }
 
     @Test
@@ -92,7 +104,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "x",
@@ -101,7 +113,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.CharLiterAST("c"),
                 "-"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), intType, charType) }
     }
@@ -112,7 +127,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "char"),
             "x",
@@ -121,7 +136,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.IntLiterAST("-", "4"),
                 "-"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), charType, intType) }
     }
@@ -132,7 +150,7 @@ class UnOpTests : ExprSemanticTests() {
         st.add("int", intType)
         st.add("x", VariableIdentifier(arrIdent))
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "y",
@@ -141,7 +159,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "x"),
                 "len"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
     }
 
     @Test
@@ -150,7 +171,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "x",
@@ -159,7 +180,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.IntLiterAST("+", "3"),
                 "len"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), any(), intType) }
     }
@@ -173,7 +197,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "char"),
             "x",
@@ -182,7 +206,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "arr"),
                 "len"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), charType, intType) }
     }
@@ -191,7 +218,7 @@ class UnOpTests : ExprSemanticTests() {
     fun unOpOrdValidCheck() {
         st.add("int", intType)
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "x",
@@ -200,7 +227,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.CharLiterAST("c"),
                 "ord"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
     }
 
     @Test
@@ -209,7 +239,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "x",
@@ -218,7 +248,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.IntLiterAST("+", "4"),
                 "ord"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), charType, intType) }
     }
@@ -229,7 +262,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "char"),
             "x",
@@ -238,7 +271,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.CharLiterAST("c"),
                 "ord"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), charType, intType) }
     }
@@ -247,7 +283,7 @@ class UnOpTests : ExprSemanticTests() {
     fun unOpChrValidCheck() {
         st.add("char", charType)
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "char"),
             "x",
@@ -256,7 +292,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.IntLiterAST("+", "42"),
                 "chr"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
     }
 
     @Test
@@ -265,7 +304,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "char"),
             "x",
@@ -274,7 +313,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.BoolLiterAST("false"),
                 "chr"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), intType, boolType) }
     }
@@ -285,7 +327,7 @@ class UnOpTests : ExprSemanticTests() {
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
-        StatementAST.DeclAST(
+        val decl = StatementAST.DeclAST(
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "x",
@@ -294,7 +336,10 @@ class UnOpTests : ExprSemanticTests() {
                 ExprAST.IntLiterAST("+", "42"),
                 "chr"
             )
-        ).check(st, seh)
+        )
+
+        decl.st = st
+        visitor.visitDeclAST(decl)
 
         verify(exactly = 1) { seh.typeMismatch(any(), intType, charType) }
     }
