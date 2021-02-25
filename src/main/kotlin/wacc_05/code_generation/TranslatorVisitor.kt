@@ -229,12 +229,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
         AssemblyRepresentation.addMainInstr(
             BranchInstruction(
-                "L",
                 if (binop.operator == "/") {
                     "__aeabi_idiv"
                 } else {
                     "__aeabi_idivmod"
-                }
+                },
+                Condition.L
             )
         )
 
