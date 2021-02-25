@@ -164,7 +164,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                 AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
 
-//                regs.free(dest2)
+                Registers.free(dest2)
                 binop.dest = dest1
             }
         }
