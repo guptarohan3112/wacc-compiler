@@ -143,7 +143,9 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
-        TODO("Not yet implemented")
+        val register = Registers.allocate()
+        liter.dest = register
+        AssemblyRepresentation.addMainInstr(MoveInstruction(register, AddressingMode.AddressingMode2(register, Immediate(0))))
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
