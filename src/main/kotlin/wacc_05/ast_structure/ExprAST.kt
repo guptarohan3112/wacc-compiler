@@ -11,7 +11,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     var dest: Register? = null
 
-    data class IntLiterAST(private val sign: String, private val value: String) : ExprAST() {
+    data class IntLiterAST(val sign: String, val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
@@ -35,7 +35,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class BoolLiterAST(private val value: String) : ExprAST() {
+    data class BoolLiterAST(val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.BOOL_TYPE
@@ -51,7 +51,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class CharLiterAST(private val value: String) : ExprAST() {
+    data class CharLiterAST(val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.CHAR_TYPE

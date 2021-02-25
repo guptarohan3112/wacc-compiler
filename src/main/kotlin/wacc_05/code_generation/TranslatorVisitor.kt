@@ -3,10 +3,7 @@ package wacc_05.code_generation
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.ast_structure.ASTVisitor
-import wacc_05.code_generation.instructions.AddInstruction
-import wacc_05.code_generation.instructions.Instruction
-import wacc_05.code_generation.instructions.LoadInstruction
-import wacc_05.code_generation.instructions.ReverseSubtractInstruction
+import wacc_05.code_generation.instructions.*
 
 class TranslatorVisitor : ASTVisitor<Unit> {
     override fun visitProgramAST(prog: ProgramAST) {
@@ -75,15 +72,24 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
-        TODO("Not yet implemented")
+        val intValue = Integer.parseInt(liter.sign+liter.value)
+        val register = Registers.allocate()
+        val mode: AddressingMode = AddressingMode.AddressingMode2(register, Immediate(intValue))
+//            this.dest = register
+        AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
     }
 
     override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST) {
-        TODO("Not yet implemented")
+        val intValue = if (liter.value == "true") 1 else 0
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.allocate(), Immediate(intValue)))
     }
 
     override fun visitCharLiterAST(liter: ExprAST.CharLiterAST) {
-        TODO("Not yet implemented")
+        if (liter.value == "'\\0'") {
+            AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.allocate(), Immediate(0)))
+        } else {
+            AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.allocate(), ImmediateChar(liter.value)))
+        }
     }
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
