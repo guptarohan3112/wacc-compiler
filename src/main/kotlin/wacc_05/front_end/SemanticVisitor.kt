@@ -1,6 +1,5 @@
 package wacc_05.front_end
 
-import wacc_05.SemanticErrors
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.symbol_table.SymbolTable

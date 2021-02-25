@@ -4,7 +4,7 @@ import antlr.WaccParser
 import io.mockk.*
 import org.junit.Test
 
-import wacc_05.SemanticErrors
+import wacc_05.front_end.SemanticErrors
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST

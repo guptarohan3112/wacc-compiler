@@ -4,6 +4,7 @@ import antlr.WaccParser
 import antlr.WaccParserBaseVisitor
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
+import wacc_05.front_end.Error
 import kotlin.math.pow
 import kotlin.system.exitProcess
 

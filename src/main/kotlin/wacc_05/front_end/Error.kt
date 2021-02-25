@@ -1,4 +1,4 @@
-package wacc_05
+package wacc_05.front_end
 
 class Error {
     // define constants in companion objects

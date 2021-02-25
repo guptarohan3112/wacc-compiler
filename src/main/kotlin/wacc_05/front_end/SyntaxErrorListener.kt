@@ -1,10 +1,12 @@
-package wacc_05
+package wacc_05.front_end
 
 import org.antlr.v4.runtime.BaseErrorListener
 import org.antlr.v4.runtime.RecognitionException
 import org.antlr.v4.runtime.Recognizer
 
-class ErrorListener : BaseErrorListener() {
+class SyntaxErrorListener : BaseErrorListener() {
+    private val syntaxErrors = arrayListOf<String>()
+
     override fun syntaxError(
         recognizer: Recognizer<*, *>?,
         offendingSymbol: Any?,
@@ -15,9 +17,11 @@ class ErrorListener : BaseErrorListener() {
     ) {
         println("Syntax Error (Error 100)\n - Error at Line $line : $charPositionInLine")
         if (msg != null && msg.isNotEmpty()) {
-            println(msg)
+            syntaxErrors.add(msg)
         }
     }
 
-
+    fun getSyntaxErrors(): ArrayList<String> {
+        return syntaxErrors
+    }
 }

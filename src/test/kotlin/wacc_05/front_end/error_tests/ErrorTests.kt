@@ -3,6 +3,7 @@ package wacc_05.front_end.error_tests
 import org.junit.Test
 
 import wacc_05.WaccCompiler
+import wacc_05.front_end.Error
 import java.io.File
 import kotlin.test.assertTrue
 
@@ -10,7 +11,7 @@ class ErrorTests {
 
     @Test
     fun runValidTests() {
-        val testPassed: Boolean = runTestsInDir("src/test/test_cases/valid", wacc_05.Error.SUCCESS)
+        val testPassed: Boolean = runTestsInDir("src/test/test_cases/valid", Error.SUCCESS)
         assertTrue(testPassed, "Failed Valid Program Checker Tests")
     }
 
@@ -18,7 +19,7 @@ class ErrorTests {
     fun runInvalidSemanticsTests() {
         val testPassed: Boolean = runTestsInDir(
             "src/test/test_cases/invalid/semanticErr",
-            wacc_05.Error.SEMANTIC_ERROR
+            Error.SEMANTIC_ERROR
         )
         assertTrue(testPassed, "Failed Invalid Semantic Checker Tests")
     }

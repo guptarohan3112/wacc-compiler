@@ -1,4 +1,4 @@
-package wacc_05
+package wacc_05.front_end
 
 import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.symbol_table.identifier_objects.IdentifierObject

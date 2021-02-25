@@ -1,7 +1,7 @@
 package wacc_05.back_end.execution_tests
 
 import io.mockk.mockk
-import wacc_05.SemanticErrors
+import wacc_05.front_end.SemanticErrors
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 

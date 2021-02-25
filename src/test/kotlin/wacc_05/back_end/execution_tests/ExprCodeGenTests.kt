@@ -1,13 +1,9 @@
 package wacc_05.back_end.execution_tests
 
-import antlr.WaccParser
 import io.mockk.*
-import org.junit.Test
-import wacc_05.SemanticErrorHandler
-import wacc_05.ast_structure.ExprAST
+import wacc_05.front_end.SemanticErrorHandler
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 open class ExprCodeGenTests {
 

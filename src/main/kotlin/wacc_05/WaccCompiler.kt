@@ -7,7 +7,10 @@ import org.antlr.v4.runtime.*
 import wacc_05.ast_structure.AST
 import wacc_05.code_generation.AssemblyRepresentation
 import wacc_05.code_generation.TranslatorVisitor
+import wacc_05.front_end.Error
+import wacc_05.front_end.SemanticErrorHandler
 import wacc_05.front_end.SemanticVisitor
+import wacc_05.front_end.SyntaxErrorListener
 import wacc_05.symbol_table.SymbolTable
 import java.io.File
 import kotlin.system.exitProcess
@@ -46,7 +49,7 @@ object WaccCompiler {
         val inputStream = File(filePath).inputStream()
         val input = CharStreams.fromStream(inputStream)
         val lexer = WaccLexer(input)
-        val errorListener = ErrorListener()
+        val errorListener = SyntaxErrorListener()
 
         lexer.removeErrorListeners()
         lexer.addErrorListener(errorListener)
@@ -60,6 +63,7 @@ object WaccCompiler {
         val tree = parser.prog()
 
         if (parser.numberOfSyntaxErrors > 0) {
+            errorListener.getSyntaxErrors().forEach(::println)
             return Error.SYNTAX_ERROR
         }
 

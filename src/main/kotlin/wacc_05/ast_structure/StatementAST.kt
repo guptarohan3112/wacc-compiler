@@ -1,16 +1,10 @@
 package wacc_05.ast_structure
 
 import antlr.WaccParser
-import wacc_05.SemanticErrors
-import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.IdentifierObject
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.code_generation.Immediate
 import wacc_05.code_generation.Register
-import wacc_05.code_generation.Registers
 import wacc_05.code_generation.instructions.CompareInstruction
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.code_generation.instructions.LabelInstruction

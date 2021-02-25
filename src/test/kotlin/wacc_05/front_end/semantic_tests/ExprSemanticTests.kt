@@ -3,7 +3,7 @@ package wacc_05.front_end.semantic_tests
 import antlr.WaccParser
 import io.mockk.*
 import org.junit.Test
-import wacc_05.SemanticErrorHandler
+import wacc_05.front_end.SemanticErrorHandler
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.ASTVisitor
 import wacc_05.front_end.SemanticVisitor

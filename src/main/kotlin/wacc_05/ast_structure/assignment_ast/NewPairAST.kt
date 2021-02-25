@@ -1,8 +1,6 @@
 package wacc_05.ast_structure.assignment_ast
 
-import wacc_05.SemanticErrors
 import wacc_05.ast_structure.ExprAST
-import wacc_05.code_generation.Registers
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.ast_structure.ASTVisitor
 import wacc_05.symbol_table.SymbolTable
