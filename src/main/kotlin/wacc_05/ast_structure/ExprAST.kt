@@ -1,7 +1,7 @@
 package wacc_05.ast_structure
 
 import antlr.WaccParser
-import wacc_05.SemanticErrors
+import wacc_05.front_end.SemanticErrors
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.code_generation.Immediate
 import wacc_05.code_generation.Register
