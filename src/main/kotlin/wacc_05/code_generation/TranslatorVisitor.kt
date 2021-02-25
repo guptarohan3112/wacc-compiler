@@ -52,17 +52,30 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
+        // Evaluation of the condition expression
         visit(ifStat.condExpr)
+
+        // Condition checking
         val destination: Register = ifStat.condExpr.dest!!
         AssemblyRepresentation.addMainInstr(CompareInstruction(destination, Immediate(0)))
+
+        // Branch off to the 'else' body if the condition evaluated to false
         val elseLabel: LabelInstruction = getUniqueLabel()
         // The below branch instruction should be changed to account for BEQ
         AssemblyRepresentation.addMainInstr(BranchInstruction(elseLabel.getLabel()))
+
+        // Otherwise enter the 'then' body
         visit(ifStat.thenStat)
+
+        // Unconditionally jump to the label of whatever follows the if statement in the program
         val nextLabel: LabelInstruction = getUniqueLabel()
         AssemblyRepresentation.addMainInstr(BranchInstruction(nextLabel.getLabel()))
+
+        // Label and assembly for the 'else' body
         AssemblyRepresentation.addMainInstr(elseLabel)
         visit(ifStat.elseStat)
+
+        // Make label for whatever follows the if statement
         AssemblyRepresentation.addMainInstr(nextLabel)
     }
 
@@ -80,7 +93,21 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
-        TODO("Not yet implemented")
+        // Label for loop body
+        val bodyLabel: LabelInstruction = getUniqueLabel()
+        AssemblyRepresentation.addMainInstr(bodyLabel)
+
+        // Loop body
+        visit(whileStat.body)
+
+        // Label for condition checking
+        val condLabel: LabelInstruction = getUniqueLabel()
+
+        // Comparison and jump if equal
+        visit(whileStat.loopExpr)
+        AssemblyRepresentation.addMainInstr(CompareInstruction(whileStat.loopExpr.dest!!, Immediate(1)))
+        // This branch needs to be a BEQ
+        AssemblyRepresentation.addMainInstr(BranchInstruction(bodyLabel.getLabel()))
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
