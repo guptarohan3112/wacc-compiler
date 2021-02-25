@@ -1,72 +1,89 @@
 package wacc_05.ast_structure
 
 import antlr.WaccParser
-import wacc_05.SemanticErrors
-import wacc_05.symbol_table.SymbolTable
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
-import wacc_05.code_generation.Registers
-import wacc_05.code_generation.instructions.Instruction
+import wacc_05.code_generation.*
+import wacc_05.code_generation.instructions.*
+import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
 sealed class ExprAST : AssignRHSAST() {
 
-    data class IntLiterAST(private val sign: String, private val value: String) : ExprAST() {
+    var dest: Register? = null
+
+    data class IntLiterAST(val sign: String, val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            return
+        fun getValue(): Int {
+            return (sign + value).toInt()
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+
+        override fun translate(): ArrayList<Instruction> {
+            val intValue = Integer.parseInt(sign+value)
+            val register = Registers.allocate()
+            val mode: AddressingMode = AddressingMode.AddressingMode2(register, Immediate(intValue))
+//            this.dest = register
+            return arrayListOf(LoadInstruction(register, mode))
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitIntLiterAST(this)
         }
     }
 
-    data class BoolLiterAST(private val value: String) : ExprAST() {
+    data class BoolLiterAST(val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.BOOL_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            return
+        override fun translate(): ArrayList<Instruction> {
+            val intValue = if (value == "true") 1 else 0
+            return arrayListOf(MoveInstruction(Registers.allocate(), Immediate(intValue)))
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitBoolLiterAST(this)
         }
     }
 
-    data class CharLiterAST(private val value: String) : ExprAST() {
+    data class CharLiterAST(val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.CHAR_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            return
+        override fun translate(): ArrayList<Instruction> {
+            return if (value == "'\\0'") {
+                arrayListOf(MoveInstruction(Registers.allocate(), Immediate(0)))
+            } else {
+                arrayListOf(MoveInstruction(Registers.allocate(), ImmediateChar(value)))
+            }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitCharLiterAST(this)
         }
     }
 
-    data class StrLiterAST(private val value: String) : ExprAST() {
+    data class StrLiterAST(val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             return TypeIdentifier.STRING_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            return
+        override fun translate(): ArrayList<Instruction> {
+            // TODO: ADD LABEL FOR MSG
+//            return arrayListOf(LoadInstruction(regs.allocate(), //load instruction)
+            return ArrayList()
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitStrLiterAST(this)
         }
     }
 
@@ -76,16 +93,16 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.PAIR_LIT_TYPE
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            return
+        override fun translate(): ArrayList<Instruction> {
+            return ArrayList()
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitPairLiterAST(this)
         }
     }
 
-    data class IdentAST(private val ctx: WaccParser.ExprContext, private val value: String) : ExprAST() {
+    data class IdentAST(val ctx: WaccParser.ExprContext, val value: String) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
             val type = st.lookupAll(value)
@@ -99,21 +116,19 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            if (st.lookupAll(value) == null) {
-                errorHandler.invalidIdentifier(ctx, value)
-            }
+        override fun translate(): ArrayList<Instruction> {
+            return ArrayList()
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitIdentAST(this)
         }
     }
 
     data class ArrayElemAST(
-        private val ctx: WaccParser.ArrayElemContext,
-        private val ident: String,
-        private val exprs: ArrayList<ExprAST>
+        val ctx: WaccParser.ArrayElemContext,
+        val ident: String,
+        val exprs: ArrayList<ExprAST>
     ) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
@@ -129,36 +144,19 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-            for (expr in exprs) {
-                expr.check(st, errorHandler)
-                if (expr.getType(st) !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr.getType(st))
-                }
-            }
-
-            val variable: IdentifierObject? = st.lookupAll(ident)
-
-            if (variable == null) {
-                errorHandler.invalidIdentifier(ctx, ident)
-            } else {
-                val variableType = variable.getType()
-                if (variableType !is TypeIdentifier.ArrayIdentifier) {
-                    errorHandler.typeMismatch(ctx, variableType, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0))
-                }
-            }
-        }
-
-        override fun translate(regs: Registers): ArrayList<Instruction> {
+        override fun translate(): ArrayList<Instruction> {
             return ArrayList()
         }
 
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitArrayElemAST(this)
+        }
     }
 
     data class UnOpAST(
-        private val ctx: WaccParser.UnaryOperContext,
-        private val expr: ExprAST,
-        private val operator: String
+        val ctx: WaccParser.UnaryOperContext,
+        val expr: ExprAST,
+        val operator: String
     ) : ExprAST() {
 
         override fun getType(st: SymbolTable): TypeIdentifier {
@@ -173,53 +171,33 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
-
-            expr.check(st, errorHandler)
-            val exprType = expr.getType(st)
-
-            when (operator) {
-                "len" -> {
-                    if (exprType !is TypeIdentifier.ArrayIdentifier) {
-                        errorHandler.typeMismatch(ctx, TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0), exprType)
-                    }
-                }
-                "ord" -> {
-                    if (exprType !is TypeIdentifier.CharIdentifier) {
-                        errorHandler.typeMismatch(ctx, TypeIdentifier.CHAR_TYPE, exprType)
-                    }
-                }
-                "chr" -> {
-                    if (exprType !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, exprType)
-                    }
-                }
-                "!" -> {
-                    if (exprType !is TypeIdentifier.BoolIdentifier) {
-                        errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, exprType)
-                    }
-                }
-                "-" -> {
-                    if (exprType !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, exprType)
-                    }
-                }
-                else -> {
-                    //do nothing
-                }
+        override fun translate(): ArrayList<Instruction> {
+            return when (operator) {
+                "-" -> translateNeg()
+                else -> ArrayList()
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        fun translateNeg(): ArrayList<Instruction> {
+            val results: ArrayList<Instruction> = ArrayList()
+
+            results.addAll(expr.translate())
+            val dest: Register = expr.dest!!
+            results.add(LoadInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, null)))
+            results.add(ReverseSubtractInstruction(dest, dest, Immediate(0)))
+            return results
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitUnOpAST(this)
         }
     }
 
     data class BinOpAST(
-        private val ctx: WaccParser.ExprContext,
-        private val expr1: ExprAST,
-        private val expr2: ExprAST,
-        private val operator: String
+        val ctx: WaccParser.ExprContext,
+        val expr1: ExprAST,
+        val expr2: ExprAST,
+        val operator: String
     ) : ExprAST() {
 
         companion object {
@@ -238,63 +216,46 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun check(st: SymbolTable, errorHandler: SemanticErrors) {
+        override fun translate(): ArrayList<Instruction> {
+            return when (operator) {
+//                "+" -> translateAdd(regs)
+                else -> ArrayList()
+            }
+        }
 
-            expr1.check(st, errorHandler)
-            expr2.check(st, errorHandler)
-
-            val expr1Type = expr1.getType(st)
-            val expr2Type = expr2.getType(st)
-
+        fun translateAdd(regs: Registers) {
             when {
-                intIntFunctions.contains(operator) -> {
-                    if (expr1Type !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr1Type)
-                    }
+                expr1 is IntLiterAST -> {
+                    expr2.translate()
+                    val dest: Register = expr2.dest!!
+                    AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr1.getValue())))
 
-                    if (expr2Type !is TypeIdentifier.IntIdentifier) {
-                        errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr2Type)
-                    }
+                    this.dest = dest
                 }
-                intCharFunctions.contains(operator) -> {
-                    // if type1 is valid, check against type 2 and type1 dominates if not equal
-                    // if type2 is valid and type1 is not, type mismatch on type2
-                    // else type mismatch on both
+                expr2 is IntLiterAST -> {
+                    expr1.translate()
+                    val dest: Register = expr2.dest!!
+                    AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr2.getValue())))
 
-                    if (expr1Type is TypeIdentifier.IntIdentifier || expr1Type is TypeIdentifier.CharIdentifier) {
-                        if (expr1Type != expr2Type) {
-                            errorHandler.typeMismatch(ctx, expr1Type, expr2Type)
-                        }
-                        return
-                    }
-
-                    if (expr2Type is TypeIdentifier.IntIdentifier || expr2Type is TypeIdentifier.CharIdentifier) {
-                        // we already know type 1 isn't valid
-                        errorHandler.typeMismatch(ctx, expr2Type, expr1Type)
-                        return
-                    }
-
-                    // both aren't valid
-                    errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr1Type)
-                    errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, expr2Type)
-                }
-                boolBoolFunctions.contains(operator) -> {
-                    if (expr1Type !is TypeIdentifier.BoolIdentifier) {
-                        errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, expr1Type)
-                    }
-
-                    if (expr2Type !is TypeIdentifier.BoolIdentifier) {
-                        errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, expr2Type)
-                    }
+                    this.dest = dest
                 }
                 else -> {
-                    // do nothing
+                    expr1.translate()
+                    expr2.translate()
+
+                    val dest1: Register = expr1.dest!!
+                    val dest2: Register = expr2.dest!!
+
+                    AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
+
+                    regs.free(dest2)
+                    this.dest = dest1
                 }
             }
         }
 
-        override fun translate(regs: Registers): ArrayList<Instruction> {
-            return ArrayList()
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitBinOpAST(this)
         }
     }
 }
