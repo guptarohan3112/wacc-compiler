@@ -5,6 +5,7 @@ import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.ast_structure.ASTVisitor
 import wacc_05.code_generation.instructions.*
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 
 class TranslatorVisitor : ASTVisitor<Unit> {
     override fun visitProgramAST(prog: ProgramAST) {
@@ -52,7 +53,30 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
-        TODO("Not yet implemented")
+        // Evaluation of the condition expression
+        visit(ifStat.condExpr)
+
+        // Condition checking
+        val destination: Register = ifStat.condExpr.dest!!
+        AssemblyRepresentation.addMainInstr(CompareInstruction(destination, Immediate(0)))
+
+        // Branch off to the 'else' body if the condition evaluated to false
+        val elseLabel: LabelInstruction = getUniqueLabel()
+        AssemblyRepresentation.addMainInstr(BranchInstruction(elseLabel.getLabel(), Condition.EQ))
+
+        // Otherwise enter the 'then' body
+        visit(ifStat.thenStat)
+
+        // Unconditionally jump to the label of whatever follows the if statement in the program
+        val nextLabel: LabelInstruction = getUniqueLabel()
+        AssemblyRepresentation.addMainInstr(BranchInstruction(nextLabel.getLabel()))
+
+        // Label and assembly for the 'else' body
+        AssemblyRepresentation.addMainInstr(elseLabel)
+        visit(ifStat.elseStat)
+
+        // Make label for whatever follows the if statement
+        AssemblyRepresentation.addMainInstr(nextLabel)
     }
 
     override fun visitPrintAST(print: StatementAST.PrintAST) {
@@ -69,7 +93,20 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
-        TODO("Not yet implemented")
+        // Label for loop body
+        val bodyLabel: LabelInstruction = getUniqueLabel()
+        AssemblyRepresentation.addMainInstr(bodyLabel)
+
+        // Loop body
+        visit(whileStat.body)
+
+        // Label for condition checking
+        val condLabel: LabelInstruction = getUniqueLabel()
+
+        // Comparison and jump if equal
+        visit(whileStat.loopExpr)
+        AssemblyRepresentation.addMainInstr(CompareInstruction(whileStat.loopExpr.dest!!, Immediate(1)))
+        AssemblyRepresentation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {

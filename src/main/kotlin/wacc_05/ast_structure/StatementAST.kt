@@ -3,11 +3,8 @@ package wacc_05.ast_structure
 import antlr.WaccParser
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
-import wacc_05.code_generation.Immediate
-import wacc_05.code_generation.Register
-import wacc_05.code_generation.instructions.CompareInstruction
-import wacc_05.code_generation.instructions.Instruction
-import wacc_05.code_generation.instructions.LabelInstruction
+import wacc_05.code_generation.*
+import wacc_05.code_generation.instructions.*
 
 sealed class StatementAST : AST() {
 
@@ -185,14 +182,28 @@ sealed class StatementAST : AST() {
 
             // TODO: Change name of label below
             instrs.add(LabelInstruction("bodyCondition"))
-//            instrs.add(loopExpr.translate(regs))
+            instrs.addAll(loopExpr.translate())
             val dummyReg = Register(3)
             // TODO: Replace dummyReg with destination register for the evaluation of the loop expression
             instrs.add(CompareInstruction(dummyReg, Immediate(0)))
             // TODO: Need to include conditional branching as part of the instruction set
             // If equal, branch to label of next statement (again, need to know name of this
             // label and make sure it has not been used anywhere else).
-//            instrs.addAll(body.translate(regs))
+            instrs.addAll(body.translate())
+            instrs.add(BranchInstruction("bodyCondition"))
+
+            // OR
+
+            // Branch off to a label for the evaluation of the loop condition (need to make sure
+            // that the label generated has not been used before in the program
+            // Create label for body of loop
+            // Instructions for body of loop
+            // Create label for loop condition comparison (note that the label must be the same to
+            // one that was referred to above)
+            // Evaluation of loop expression
+            // Compare value in some register (that the above put the output in to 1
+            // If equal, branch to label above (again, need to know name of this label and make sure
+            // it has not been used anywhere else)
             return instrs
         }
 
@@ -200,4 +211,5 @@ sealed class StatementAST : AST() {
             return visitor.visitWhileAST(this)
         }
     }
+
 }
