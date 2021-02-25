@@ -14,4 +14,8 @@ class LabelInstruction(private val name: String) : Instruction {
         return "$name:"
     }
 
+    fun getLabel(): String {
+        return name
+    }
+
 }

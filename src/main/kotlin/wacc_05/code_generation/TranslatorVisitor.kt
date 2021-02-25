@@ -4,6 +4,7 @@ import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.ast_structure.ASTVisitor
 import wacc_05.code_generation.instructions.*
+import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 
 class TranslatorVisitor : ASTVisitor<Unit> {
     override fun visitProgramAST(prog: ProgramAST) {
@@ -51,7 +52,18 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
-        TODO("Not yet implemented")
+        visit(ifStat.condExpr)
+        val destination: Register = ifStat.condExpr.dest!!
+        AssemblyRepresentation.addMainInstr(CompareInstruction(destination, Immediate(0)))
+        val elseLabel: LabelInstruction = getUniqueLabel()
+        // The below branch instruction should be changed to account for BEQ
+        AssemblyRepresentation.addMainInstr(BranchInstruction(elseLabel.getLabel()))
+        visit(ifStat.thenStat)
+        val nextLabel: LabelInstruction = getUniqueLabel()
+        AssemblyRepresentation.addMainInstr(BranchInstruction(nextLabel.getLabel()))
+        AssemblyRepresentation.addMainInstr(elseLabel)
+        visit(ifStat.elseStat)
+        AssemblyRepresentation.addMainInstr(nextLabel)
     }
 
     override fun visitPrintAST(print: StatementAST.PrintAST) {
