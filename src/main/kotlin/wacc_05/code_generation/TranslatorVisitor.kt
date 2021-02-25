@@ -75,20 +75,24 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         val intValue = Integer.parseInt(liter.sign+liter.value)
         val register = Registers.allocate()
         val mode: AddressingMode = AddressingMode.AddressingMode2(register, Immediate(intValue))
-//            this.dest = register
+        liter.dest = register
         AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
     }
 
     override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST) {
         val intValue = if (liter.value == "true") 1 else 0
-        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.allocate(), Immediate(intValue)))
+        val register = Registers.allocate()
+        liter.dest = register
+        AssemblyRepresentation.addMainInstr(MoveInstruction(register, Immediate(intValue)))
     }
 
     override fun visitCharLiterAST(liter: ExprAST.CharLiterAST) {
+        val register = Registers.allocate()
+        liter.dest = register
         if (liter.value == "'\\0'") {
-            AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.allocate(), Immediate(0)))
+            AssemblyRepresentation.addMainInstr(MoveInstruction(register, Immediate(0)))
         } else {
-            AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.allocate(), ImmediateChar(liter.value)))
+            AssemblyRepresentation.addMainInstr(MoveInstruction(register, ImmediateChar(liter.value)))
         }
     }
 
