@@ -34,7 +34,7 @@ object AssemblyRepresentation {
     fun buildAssembly(file_name: String) {
 
         File("$file_name.s").printWriter().use { out ->
-            out.println("\t.data")
+            out.println("\t.data\n")
             dataInstrs.forEach { instr->
                 out.println(printInstr(instr))
             }

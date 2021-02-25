@@ -22,5 +22,4 @@ class LoadInstruction(private val reg: Register, private val addrMode: Addressin
             "LDRSB $reg, $addrMode"
         } else throw Exception()
     }
-
 }

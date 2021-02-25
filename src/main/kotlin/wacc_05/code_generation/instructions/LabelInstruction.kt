@@ -1,6 +1,8 @@
 package wacc_05.code_generation.instructions
 
-class LabelInstruction(private val name: String) : Instruction {
+import wacc_05.code_generation.Operand
+
+open class LabelInstruction(private val name: String) : Instruction {
 
     companion object {
         private var currentLabel: Int = 0
@@ -12,6 +14,10 @@ class LabelInstruction(private val name: String) : Instruction {
 
     override fun toString(): String {
         return "$name:"
+    }
+
+    fun getLabel(): String {
+        return name
     }
 
 }

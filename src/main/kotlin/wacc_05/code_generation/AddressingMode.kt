@@ -10,15 +10,20 @@ sealed class AddressingMode : Operand() {
     Zero offset [<Rn>]
     Register offset [<Rn>, +/-<Rm>]
     */
-    data class AddressingMode2(private val regN: Register, private val operand: Operand?) : AddressingMode() {
-
-        override fun toString(): String {
-            if (operand == null) {
-                return "[$regN]"
-            }
-            return "[$regN, $operand]"
+    data class AddressingMode2(private val regN: Register, private val operand: Operand? = null) : AddressingMode() {
+        private var labelName: String? = null
+        constructor(regN: Register, labelName: String) : this(regN) {
+            this.labelName = labelName
         }
 
+        override fun toString(): String {
+            if (labelName != null) {
+                return "[$regN, $labelName]"
+            } else if (operand != null) {
+                return "[$regN, $operand]"
+            }
+            return "[$regN]"
+        }
     }
 
     /*

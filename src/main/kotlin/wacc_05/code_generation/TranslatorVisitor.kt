@@ -98,7 +98,11 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
-        TODO("Not yet implemented")
+        val register = Registers.allocate()
+        liter.dest = register
+        val label = MessageLabelInstruction.getUniqueLabel(liter.value)
+        AssemblyRepresentation.addDataInstr(label)
+        AssemblyRepresentation.addMainInstr(LoadInstruction(register, AddressingMode.AddressingMode2(register, label.getLabel())))
     }
 
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {

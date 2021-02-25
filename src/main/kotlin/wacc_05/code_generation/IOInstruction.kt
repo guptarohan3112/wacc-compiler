@@ -142,7 +142,7 @@ sealed class IOInstruction {
         }
 
         override fun equals(other: Any?): Boolean {
-            return other is p_divide_by_zero && this.reg.compareTo(other.reg) == 0
+            return other is p_divide_by_zero && this.reg == other.reg
         }
 
         override fun hashCode(): Int {
