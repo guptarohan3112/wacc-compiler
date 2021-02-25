@@ -17,7 +17,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class IntLiterAST(val sign: String, val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
         }
 
@@ -41,7 +41,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class BoolLiterAST(val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.BOOL_TYPE
         }
 
@@ -64,7 +64,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class CharLiterAST(val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.CHAR_TYPE
         }
 
@@ -83,7 +83,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class StrLiterAST(val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.STRING_TYPE
         }
 
@@ -100,7 +100,7 @@ sealed class ExprAST : AssignRHSAST() {
 
     object PairLiterAST : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return TypeIdentifier.PAIR_LIT_TYPE
         }
 
@@ -115,9 +115,8 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class IdentAST(val ctx: WaccParser.ExprContext, val value: String) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
-            val type = st.lookupAll(value)
-            return when (type) {
+        override fun getType(): TypeIdentifier {
+            return when (val type = st().lookupAll(value)) {
                 null -> {
                     TypeIdentifier.GENERIC
                 }
@@ -142,8 +141,8 @@ sealed class ExprAST : AssignRHSAST() {
         val exprs: ArrayList<ExprAST>
     ) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
-            val type = st.lookupAll(ident)
+        override fun getType(): TypeIdentifier {
+            val type = st().lookupAll(ident)
             return if (type == null) {
                 TypeIdentifier.GENERIC
             } else {
@@ -170,7 +169,7 @@ sealed class ExprAST : AssignRHSAST() {
         val operator: String
     ) : ExprAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             // Will need to get unaryOpIdentifier from st (can I if it an invalid operator) and get its return type
             return when (operator) {
                 "-" -> TypeIdentifier.INT_TYPE
@@ -219,7 +218,7 @@ sealed class ExprAST : AssignRHSAST() {
             val boolBoolFunctions = hashSetOf("&&", "||")
         }
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
+        override fun getType(): TypeIdentifier {
             return when (operator) {
                 // Need valid min and max integers to put here
                 "+", "%", "/", "*", "-" -> TypeIdentifier.INT_TYPE

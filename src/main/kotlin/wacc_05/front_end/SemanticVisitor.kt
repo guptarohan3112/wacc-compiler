@@ -97,13 +97,13 @@ class SemanticVisitor(
             // Check that right hand side and type of identifier match
             val typeIdent: TypeIdentifier = decl.type.getType(decl.st())
             visitChild(decl.st(), decl.assignment)
-            val assignmentType: TypeIdentifier = decl.assignment.getType(decl.st())
+            val assignmentType: TypeIdentifier = decl.assignment.getType()
 
             if (typeIdent != assignmentType && assignmentType != TypeIdentifier.GENERIC) {
                 errorHandler.typeMismatch(
                     decl.ctx,
                     typeIdent,
-                    decl.assignment.getType(decl.assignment.st())
+                    decl.assignment.getType()
                 )
             }
 
@@ -119,7 +119,7 @@ class SemanticVisitor(
         visitChild(symTab, assign.rhs)
 
         val lhsType = assign.lhs.getType(assign.st())
-        val rhsType = assign.rhs.getType(assign.st())
+        val rhsType = assign.rhs.getType()
 
         if (lhsType != rhsType && lhsType != TypeIdentifier.GENERIC && rhsType != TypeIdentifier.GENERIC) {
             errorHandler.typeMismatch(assign.ctx, lhsType, rhsType)
@@ -145,15 +145,15 @@ class SemanticVisitor(
         visitChild(exit.st(), exit.expr)
 
         // Ensure exit is only on an integer
-        if (exit.expr.getType(exit.st()) !is TypeIdentifier.IntIdentifier) {
-            errorHandler.invalidExitType(exit.ctx, exit.expr.getType(exit.st()))
+        if (exit.expr.getType() !is TypeIdentifier.IntIdentifier) {
+            errorHandler.invalidExitType(exit.ctx, exit.expr.getType())
         }
     }
 
     override fun visitFreeAST(free: StatementAST.FreeAST) {
         visitChild(free.st(), free.expr)
 
-        val type = free.expr.getType(free.st())
+        val type = free.expr.getType()
 
         if (!(type is TypeIdentifier.PairIdentifier || type is TypeIdentifier.ArrayIdentifier)) {
             errorHandler.invalidFreeType(free.ctx, type)
@@ -165,11 +165,11 @@ class SemanticVisitor(
         visitChild(ifStat.st(), ifStat.condExpr)
 
         // Ensure that the condition expression evaluates to a boolean
-        if (ifStat.condExpr.getType(ifStat.condExpr.st()) != TypeIdentifier.BOOL_TYPE) {
+        if (ifStat.condExpr.getType() != TypeIdentifier.BOOL_TYPE) {
             errorHandler.typeMismatch(
                 ifStat.ctx,
                 TypeIdentifier.BOOL_TYPE,
-                ifStat.condExpr.getType(ifStat.st())
+                ifStat.condExpr.getType()
             )
             return
         }
@@ -200,7 +200,7 @@ class SemanticVisitor(
         visitChild(ret.st(), ret.expr)
 
         // Check that type of expression being returned is the same as the return type of the function that defines the current scope
-        val returnType: TypeIdentifier = ret.expr.getType(ret.st())
+        val returnType: TypeIdentifier = ret.expr.getType()
         val funcReturnType: TypeIdentifier? = ret.st().lookup("returnType") as TypeIdentifier?
         if (funcReturnType != returnType) {
             errorHandler.invalidReturnType(ret.ctx)
@@ -217,11 +217,11 @@ class SemanticVisitor(
         visitChild(whileStat.st(), whileStat.loopExpr)
 
         // Check that looping expression evaluates to a boolean
-        if (whileStat.loopExpr.getType(whileStat.st()) != TypeIdentifier.BOOL_TYPE) {
+        if (whileStat.loopExpr.getType() != TypeIdentifier.BOOL_TYPE) {
             errorHandler.typeMismatch(
                 whileStat.ctx,
                 TypeIdentifier.BOOL_TYPE,
-                whileStat.loopExpr.getType(whileStat.st())
+                whileStat.loopExpr.getType()
             )
         } else {
             val bodySt = SymbolTable(whileStat.st)
@@ -264,7 +264,7 @@ class SemanticVisitor(
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         for (expr in arrayElem.exprs) {
             visitChild(arrayElem.st(), expr)
-            val type: TypeIdentifier = expr.getType(arrayElem.st())
+            val type: TypeIdentifier = expr.getType()
             if (type !is TypeIdentifier.IntIdentifier) {
                 errorHandler.typeMismatch(arrayElem.ctx, TypeIdentifier.INT_TYPE, type)
             }
@@ -289,7 +289,7 @@ class SemanticVisitor(
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         val symTab: SymbolTable = unop.st()
         visitChild(symTab, unop.expr)
-        val exprType = unop.expr.getType(symTab)
+        val exprType = unop.expr.getType()
 
         when (unop.operator) {
             "len" -> {
@@ -332,8 +332,8 @@ class SemanticVisitor(
         visitChild(binop.st(), binop.expr1)
         visitChild(binop.st(), binop.expr2)
 
-        val expr1Type = binop.expr1.getType(binop.st())
-        val expr2Type = binop.expr2.getType(binop.st())
+        val expr1Type = binop.expr1.getType()
+        val expr2Type = binop.expr2.getType()
 
         when {
             ExprAST.BinOpAST.intIntFunctions.contains(binop.operator) -> {
@@ -412,16 +412,16 @@ class SemanticVisitor(
         if (arrayLiter.elems.size != 0) {
             val arraySymTab: SymbolTable = arrayLiter.st()
             visitChild(arraySymTab, arrayLiter.elems[0])
-            val firstElemType = arrayLiter.elems[0].getType(arraySymTab)
+            val firstElemType = arrayLiter.elems[0].getType()
 
             // Verify that individual elements are semantically correct and that they are all the same type
             for (i in 1 until arrayLiter.elems.size) {
                 visitChild(arraySymTab, arrayLiter.elems[i])
-                if (arrayLiter.elems[i].getType(arraySymTab) != firstElemType) {
+                if (arrayLiter.elems[i].getType() != firstElemType) {
                     errorHandler.typeMismatch(
                         arrayLiter.ctx,
                         firstElemType,
-                        arrayLiter.elems[i].getType(arraySymTab)
+                        arrayLiter.elems[i].getType()
                     )
                 }
             }
@@ -471,7 +471,7 @@ class SemanticVisitor(
                 for (i in 0 until funcCall.args.size.coerceAtMost(noOfArgs)) {
                     visitChild(symTab, funcCall.args[i])
                     val expectedType: TypeIdentifier = funcIdentifier.getParams()[i].getType()
-                    val actualType: TypeIdentifier = funcCall.args[i].getType(symTab)
+                    val actualType: TypeIdentifier = funcCall.args[i].getType()
                     if (expectedType != actualType) {
                         errorHandler.typeMismatch(funcCall.ctx, expectedType, actualType)
                     }
@@ -488,7 +488,7 @@ class SemanticVisitor(
     override fun visitPairElemAST(pairElem: PairElemAST) {
         visitChild(pairElem.st(), pairElem.elem)
 
-        val elemType = pairElem.elem.getType(pairElem.st())
+        val elemType = pairElem.elem.getType()
 
         // The type of the element has to be a generic type (when added for error recovery), a pair or a pair literal
         if (elemType != TypeIdentifier.GENERIC
