@@ -6,6 +6,10 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 interface SemanticErrors {
 
+    fun hasErrors(): Boolean
+
+    fun printErrors()
+
     fun invalidIdentifier(ctx: ParserRuleContext, name: String)
 
     fun invalidType(ctx: ParserRuleContext, typeName: String)

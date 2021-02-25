@@ -85,10 +85,18 @@ object WaccCompiler {
             println("Generation of assembly file complete")
         }
 
-        if (debug)
-            println("FINISHED")
+        var err: Int = Error.SUCCESS
 
-        return seh.err
+        if (seh.hasErrors()) {
+            seh.printErrors()
+            err = Error.SEMANTIC_ERROR
+        }
+
+        if (debug) {
+            println("FINISHED")
+        }
+
+        return err
     }
 
 }
