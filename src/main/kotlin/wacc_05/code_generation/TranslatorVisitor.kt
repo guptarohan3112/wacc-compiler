@@ -325,20 +325,20 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                 when (binop.operator) {
                     ">" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("GT", dest, Immediate(1)))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("LTE", dest, Immediate(0)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.GT))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.LE))
                     }
                     ">=" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("GTE", dest, Immediate(1)))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("LT", dest, Immediate(0)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.GE))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.LT))
                     }
                     "<" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("LT", dest, Immediate(1)))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("GTE", dest, Immediate(0)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.LT))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.GE))
                     }
                     "<=" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("LTE", dest, Immediate(1)))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("GT", dest, Immediate(0)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.LE))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.GT))
                     }
                 }
 
@@ -365,20 +365,20 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                 when (binop.operator) {
                     ">" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("HI", dest, Immediate(1)))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("LS", dest, Immediate(0)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.HI))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.LS))
                     }
                     ">=" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("HS", dest, Immediate(1)))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("LO", dest, Immediate(0)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.HS))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.LO))
                     }
                     "<" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("LO", dest, Immediate(1)))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("HS", dest, Immediate(0)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.LO))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.HS))
                     }
                     "<=" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("LS", dest, Immediate(1)))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction("HI", dest, Immediate(0)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.LS))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.HI))
                     }
                 }
             }

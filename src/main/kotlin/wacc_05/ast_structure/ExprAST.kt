@@ -188,7 +188,7 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        fun translateNeg(): ArrayList<Instruction> {
+        private fun translateNeg(): ArrayList<Instruction> {
             val results: ArrayList<Instruction> = ArrayList()
 
             results.addAll(expr.translate())
@@ -280,7 +280,7 @@ sealed class ExprAST : AssignRHSAST() {
                 Registers.free(dest2)
             }
 
-            results.add(BranchInstruction("L", "__aeabi_idiv"))
+            results.add(BranchInstruction("__aeabi_idiv", Condition.L))
 
             // not sure about this - we need to move R3 into a destination register
             // but I am concerned about overwriting it when restoring, or overwriting
