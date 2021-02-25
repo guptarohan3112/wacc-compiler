@@ -4,6 +4,7 @@ import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.ast_structure.ASTVisitor
 import wacc_05.code_generation.instructions.*
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class TranslatorVisitor : ASTVisitor<Unit> {
     override fun visitProgramAST(prog: ProgramAST) {
@@ -304,13 +305,23 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         val expr1 = binop.expr1
         val expr2 = binop.expr2
 
-        // TODO: Refactor for the general case using get type with a symbol table
-        when {
-            expr2 is ExprAST.IntLiterAST -> {
+        when (expr1.getType()) {
+            is TypeIdentifier.IntIdentifier -> {
                 visit(expr1)
                 val dest: Register = expr1.dest!!
 
-                AssemblyRepresentation.addMainInstr(CompareInstruction(dest, Immediate(expr2.getValue())))
+                when (expr2) {
+                    is ExprAST.IntLiterAST -> {
+                        AssemblyRepresentation.addMainInstr(CompareInstruction(dest, Immediate(expr2.getValue())))
+                    }
+
+                    else -> {
+                        visit(expr2)
+                        val dest2: Register = expr2.dest!!
+                        AssemblyRepresentation.addMainInstr(CompareInstruction(dest, dest2))
+                        Registers.free(dest2)
+                    }
+                }
 
                 when (binop.operator) {
                     ">" -> {
@@ -334,11 +345,23 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                 binop.dest = dest
             }
 
-            expr2 is ExprAST.CharLiterAST -> {
+            is TypeIdentifier.CharIdentifier -> {
                 visit(expr1)
                 val dest: Register = expr1.dest!!
 
-                AssemblyRepresentation.addMainInstr(CompareInstruction(dest, ImmediateChar(expr2.value)))
+                when (expr2) {
+                    is ExprAST.CharLiterAST -> {
+                        AssemblyRepresentation.addMainInstr(CompareInstruction(dest, ImmediateChar(expr2.value)))
+                    }
+
+                    else -> {
+                        visit(expr2)
+                        val dest2: Register = expr2.dest!!
+
+                        AssemblyRepresentation.addMainInstr(CompareInstruction(dest, dest2))
+                        Registers.free(dest2)
+                    }
+                }
 
                 when (binop.operator) {
                     ">" -> {
