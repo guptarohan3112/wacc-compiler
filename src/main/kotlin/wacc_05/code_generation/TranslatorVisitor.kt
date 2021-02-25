@@ -61,8 +61,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
         // Branch off to the 'else' body if the condition evaluated to false
         val elseLabel: LabelInstruction = getUniqueLabel()
-        // The below branch instruction should be changed to account for BEQ
-        AssemblyRepresentation.addMainInstr(BranchInstruction(elseLabel.getLabel()))
+        AssemblyRepresentation.addMainInstr(BranchInstruction(elseLabel.getLabel(), Condition.EQ))
 
         // Otherwise enter the 'then' body
         visit(ifStat.thenStat)
@@ -106,8 +105,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         // Comparison and jump if equal
         visit(whileStat.loopExpr)
         AssemblyRepresentation.addMainInstr(CompareInstruction(whileStat.loopExpr.dest!!, Immediate(1)))
-        // This branch needs to be a BEQ
-        AssemblyRepresentation.addMainInstr(BranchInstruction(bodyLabel.getLabel()))
+        AssemblyRepresentation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
