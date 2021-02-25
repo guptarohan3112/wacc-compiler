@@ -135,6 +135,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
             "*" -> translateMultiply(binop)
             "/", "%" -> translateDivMod(binop)
             "&&", "||" -> translateAndOr(binop)
+            ">", ">=", "<", "<=" -> translateCompare(binop)
             else -> {
             }
         }
@@ -295,6 +296,68 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                 Registers.free(dest2)
 
                 binop.dest = dest1
+            }
+        }
+    }
+
+    private fun translateCompare(binop: ExprAST.BinOpAST) {
+        val expr1 = binop.expr1
+        val expr2 = binop.expr2
+
+        // TODO: Refactor for the general case using get type with a symbol table
+        when {
+            expr2 is ExprAST.IntLiterAST -> {
+                visit(expr1)
+                val dest: Register = expr1.dest!!
+
+                AssemblyRepresentation.addMainInstr(CompareInstruction(dest, Immediate(expr2.getValue())))
+
+                when (binop.operator) {
+                    ">" -> {
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("GT", dest, Immediate(1)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("LTE", dest, Immediate(0)))
+                    }
+                    ">=" -> {
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("GTE", dest, Immediate(1)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("LT", dest, Immediate(0)))
+                    }
+                    "<" -> {
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("LT", dest, Immediate(1)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("GTE", dest, Immediate(0)))
+                    }
+                    "<=" -> {
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("LTE", dest, Immediate(1)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("GT", dest, Immediate(0)))
+                    }
+                }
+
+                binop.dest = dest
+            }
+
+            expr2 is ExprAST.CharLiterAST -> {
+                visit(expr1)
+                val dest: Register = expr1.dest!!
+
+                AssemblyRepresentation.addMainInstr(CompareInstruction(dest, ImmediateChar(expr2.value)))
+
+                when (binop.operator) {
+                    ">" -> {
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("HI", dest, Immediate(1)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("LS", dest, Immediate(0)))
+                    }
+                    ">=" -> {
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("HS", dest, Immediate(1)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("LO", dest, Immediate(0)))
+                    }
+                    "<" -> {
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("LO", dest, Immediate(1)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("HS", dest, Immediate(0)))
+                    }
+                    "<=" -> {
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("LS", dest, Immediate(1)))
+                        AssemblyRepresentation.addMainInstr(MoveInstruction("HI", dest, Immediate(0)))
+                    }
+                }
             }
         }
     }
