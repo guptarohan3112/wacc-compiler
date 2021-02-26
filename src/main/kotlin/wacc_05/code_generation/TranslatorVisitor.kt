@@ -40,6 +40,9 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     // return to this address when completing its functionality
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
         AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
+        // Below will change to account for number of bytes that need to be allocated for variables. How?
+        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(0)))
+        // Need to have one pass of the program before adding instructions?
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
@@ -47,7 +50,13 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitExitAST(exit: StatementAST.ExitAST) {
-        TODO("Not yet implemented")
+        val reg: Register = Registers.allocate()
+        // Load the allocated register with the exit code. Insert solution below
+
+        // Move the exit code into r0 and then call the C function exit (system call will be imported from a library)
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
+        AssemblyRepresentation.addMainInstr(BranchInstruction("exit", Condition.L))
+
     }
 
     override fun visitFreeAST(free: StatementAST.FreeAST) {
