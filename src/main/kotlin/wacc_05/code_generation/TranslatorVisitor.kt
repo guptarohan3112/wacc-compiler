@@ -36,8 +36,10 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         TODO("Not yet implemented")
     }
 
+    // Store the address of the program counter (?) into the link registers so that a function can
+    // return to this address when completing its functionality
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
-        TODO("Not yet implemented")
+        AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
@@ -93,6 +95,10 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
+        // Unconditional branch to check the loop condition
+        val condLabel: LabelInstruction = getUniqueLabel()
+        AssemblyRepresentation.addMainInstr(BranchInstruction(condLabel.getLabel()))
+
         // Label for loop body
         val bodyLabel: LabelInstruction = getUniqueLabel()
         AssemblyRepresentation.addMainInstr(bodyLabel)
@@ -101,8 +107,8 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         visit(whileStat.body)
 
         // Label for condition checking
-        val condLabel: LabelInstruction = getUniqueLabel()
-
+        AssemblyRepresentation.addMainInstr(condLabel)
+        
         // Comparison and jump if equal
         visit(whileStat.loopExpr)
         AssemblyRepresentation.addMainInstr(CompareInstruction(whileStat.loopExpr.dest!!, Immediate(1)))
