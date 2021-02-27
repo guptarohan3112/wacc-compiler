@@ -129,7 +129,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
         // Label for condition checking
         AssemblyRepresentation.addMainInstr(condLabel)
-        
+
         // Comparison and jump if equal
         visit(whileStat.loopExpr)
         AssemblyRepresentation.addMainInstr(CompareInstruction(whileStat.loopExpr.dest!!, Immediate(1)))
@@ -166,13 +166,23 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         liter.dest = register
         val label = MessageLabelInstruction.getUniqueLabel(liter.value)
         AssemblyRepresentation.addDataInstr(label)
-        AssemblyRepresentation.addMainInstr(LoadInstruction(register, AddressingMode.AddressingMode2(register, label.getLabel())))
+        AssemblyRepresentation.addMainInstr(
+            LoadInstruction(
+                register,
+                AddressingMode.AddressingMode2(register, label.getLabel())
+            )
+        )
     }
 
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
         val register = Registers.allocate()
         liter.dest = register
-        AssemblyRepresentation.addMainInstr(MoveInstruction(register, AddressingMode.AddressingMode2(register, Immediate(0))))
+        AssemblyRepresentation.addMainInstr(
+            MoveInstruction(
+                register,
+                AddressingMode.AddressingMode2(register, Immediate(0))
+            )
+        )
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
@@ -207,6 +217,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
             "/", "%" -> translateDivMod(binop)
             "&&", "||" -> translateAndOr(binop)
             ">", ">=", "<", "<=" -> translateCompare(binop)
+            "==", "!=" -> translateEquality(binop)
             else -> {
             }
         }
@@ -453,6 +464,32 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                 }
             }
         }
+    }
+
+    private fun translateEquality(binop: ExprAST.BinOpAST) {
+        visit(binop.expr1)
+        visit(binop.expr2)
+
+        val dest1: Register = binop.expr1.dest!!
+        val dest2: Register = binop.expr2.dest!!
+
+        AssemblyRepresentation.addMainInstr(CompareInstruction(dest1, dest2))
+
+        Registers.free(dest2)
+
+        when (binop.operator) {
+            "==" -> {
+                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(1), Condition.EQ))
+                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(0), Condition.NE))
+            }
+
+            "!=" -> {
+                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(1), Condition.NE))
+                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(0), Condition.EQ))
+            }
+        }
+
+        binop.dest = dest1
     }
 
     override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST) {
