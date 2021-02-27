@@ -38,8 +38,13 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         TODO("Not yet implemented")
     }
 
+    // Store the address of the program counter (?) into the link registers so that a function can
+    // return to this address when completing its functionality
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
-        TODO("Not yet implemented")
+        AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
+        // Below will change to account for number of bytes that need to be allocated for variables. How? Change 0 to calculated number
+        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(0)))
+        // Need to have one pass of the program before adding instructions?
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
@@ -47,7 +52,25 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitExitAST(exit: StatementAST.ExitAST) {
-        TODO("Not yet implemented")
+        val reg: Register = Registers.allocate() // or is it r4?
+        // Load the allocated register with the exit code. Insert solution below
+        when (exit.expr) {
+            is ExprAST.IdentAST -> {
+                // Need to get the address of the variable stored on the stack
+                // How do we know the offset?
+            }
+            is ExprAST.IntLiterAST -> {
+                val exitCode: Int = exit.expr.getValue()
+                // Add the load instruction with the correct parameters
+            }
+            else -> {
+                visit(exit.expr)
+            }
+        }
+        // Move the exit code into r0 and then call the C function exit (system call will be imported from a library)
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
+        AssemblyRepresentation.addMainInstr(BranchInstruction("exit", Condition.L))
+
     }
 
     override fun visitFreeAST(free: StatementAST.FreeAST) {
@@ -95,6 +118,10 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
+        // Unconditional branch to check the loop condition
+        val condLabel: LabelInstruction = getUniqueLabel()
+        AssemblyRepresentation.addMainInstr(BranchInstruction(condLabel.getLabel()))
+
         // Label for loop body
         val bodyLabel: LabelInstruction = getUniqueLabel()
         AssemblyRepresentation.addMainInstr(bodyLabel)
@@ -103,7 +130,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         visit(whileStat.body)
 
         // Label for condition checking
-        val condLabel: LabelInstruction = getUniqueLabel()
+        AssemblyRepresentation.addMainInstr(condLabel)
 
         // Comparison and jump if equal
         visit(whileStat.loopExpr)
@@ -141,13 +168,23 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         liter.dest = register
         val label = MessageLabelInstruction.getUniqueLabel(liter.value)
         AssemblyRepresentation.addDataInstr(label)
-        AssemblyRepresentation.addMainInstr(LoadInstruction(register, AddressingMode.AddressingMode2(register, label.getLabel())))
+        AssemblyRepresentation.addMainInstr(
+            LoadInstruction(
+                register,
+                AddressingMode.AddressingMode2(register, label.getLabel())
+            )
+        )
     }
 
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
         val register = Registers.allocate()
         liter.dest = register
-        AssemblyRepresentation.addMainInstr(MoveInstruction(register, AddressingMode.AddressingMode2(register, Immediate(0))))
+        AssemblyRepresentation.addMainInstr(
+            MoveInstruction(
+                register,
+                AddressingMode.AddressingMode2(register, Immediate(0))
+            )
+        )
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
@@ -188,6 +225,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
             "/", "%" -> translateDivMod(binop)
             "&&", "||" -> translateAndOr(binop)
             ">", ">=", "<", "<=" -> translateCompare(binop)
+            "==", "!=" -> translateEquality(binop)
             else -> {
             }
         }
@@ -434,6 +472,32 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                 }
             }
         }
+    }
+
+    private fun translateEquality(binop: ExprAST.BinOpAST) {
+        visit(binop.expr1)
+        visit(binop.expr2)
+
+        val dest1: Register = binop.expr1.dest!!
+        val dest2: Register = binop.expr2.dest!!
+
+        AssemblyRepresentation.addMainInstr(CompareInstruction(dest1, dest2))
+
+        Registers.free(dest2)
+
+        when (binop.operator) {
+            "==" -> {
+                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(1), Condition.EQ))
+                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(0), Condition.NE))
+            }
+
+            "!=" -> {
+                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(1), Condition.NE))
+                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(0), Condition.EQ))
+            }
+        }
+
+        binop.dest = dest1
     }
 
     override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST) {
