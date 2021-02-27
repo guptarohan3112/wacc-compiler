@@ -15,6 +15,8 @@ import java.util.HashMap
 class SymbolTable(private val parentST: SymbolTable?) {
     // hashmap storing mappings from a string identifier to a corresponding IdentifierObject
     private val map: HashMap<String, IdentifierObject?> = HashMap()
+    // stack pointer for this scope //TODO: Change 1024...
+    private var sp: Int = 1024
 
     /* Function: add()
      * ------------------------------
@@ -44,6 +46,14 @@ class SymbolTable(private val parentST: SymbolTable?) {
      */
     fun lookupAll(name: String): IdentifierObject? {
         return lookup(name) ?: parentST?.lookupAll(name)
+    }
+
+    fun getStackPtr(): Int {
+        return sp
+    }
+
+    fun setStackPtr(sp: Int) {
+        this.sp = sp
     }
 
     fun isMain(): Boolean {

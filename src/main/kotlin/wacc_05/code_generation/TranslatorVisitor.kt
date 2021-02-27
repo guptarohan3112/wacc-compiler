@@ -6,6 +6,8 @@ import wacc_05.ast_structure.ASTVisitor
 import wacc_05.code_generation.instructions.*
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
+import wacc_05.symbol_table.identifier_objects.IdentifierObject
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class TranslatorVisitor : ASTVisitor<Unit> {
     override fun visitProgramAST(prog: ProgramAST) {
@@ -149,7 +151,13 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
-        TODO("Not yet implemented")
+        val register = Registers.allocate()
+        // offset relative to the top of the stack
+        val identObj: VariableIdentifier = ident.st?.lookupAll(ident.value) as VariableIdentifier
+        val identOffset: Int = identObj.getAddr()
+        val sp: Int = ident.st!!.getStackPtr()
+        val spOffset: Int = identOffset - sp
+        AssemblyRepresentation.addMainInstr(LoadInstruction(register, AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))))
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
