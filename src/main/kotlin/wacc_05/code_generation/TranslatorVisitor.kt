@@ -50,7 +50,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitExitAST(exit: StatementAST.ExitAST) {
-        val reg: Register = Registers.allocate() // or is it r4?
+        var reg: Register = Registers.allocate() // or is it r4?
         // Load the allocated register with the exit code. Insert solution below
         when (exit.expr) {
             is ExprAST.IdentAST -> {
@@ -58,7 +58,8 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                 // How do we know the offset?
             }
             is ExprAST.IntLiterAST -> {
-                val exitCode: Int = exit.expr.getValue()
+                visit(exit.expr)
+                reg = exit.expr.dest!!
                 // Add the load instruction with the correct parameters
             }
             else -> {
