@@ -40,10 +40,15 @@ class SemanticVisitor(
         if (funcIdent != null && funcIdent is FunctionIdentifier) {
             errorHandler.repeatVariableDeclaration(func.ctx, func.funcName)
         } else {
-            val returnTypeIdent: TypeIdentifier = func.returnType.getType(symTab)
+            func.returnType.st = symTab
+            val returnTypeIdent: TypeIdentifier = func.returnType.getType()
 
             val newFuncIdent =
-                FunctionIdentifier(returnTypeIdent, func.paramList?.getParams(symTab) ?: ArrayList(), funcST)
+                FunctionIdentifier(
+                    returnTypeIdent,
+                    func.paramList?.getParams(symTab) ?: ArrayList(),
+                    funcST
+                )
 
             funcST.add("returnType", returnTypeIdent)
 
@@ -76,7 +81,8 @@ class SemanticVisitor(
         visitChild(param.st(), param.type)
 
         // Create parameter identifier and add to symbol table
-        val typeIdent: TypeIdentifier = param.type.getType(param.st())
+        param.type.st = param.st()
+        val typeIdent: TypeIdentifier = param.type.getType()
         val paramIdent = ParamIdentifier(typeIdent)
         param.st().add(param.name, paramIdent)
     }
@@ -94,7 +100,8 @@ class SemanticVisitor(
             errorHandler.repeatVariableDeclaration(decl.ctx, decl.varName)
         } else {
             // Check that right hand side and type of identifier match
-            val typeIdent: TypeIdentifier = decl.type.getType(decl.st())
+            decl.type.st = decl.st()
+            val typeIdent: TypeIdentifier = decl.type.getType()
             visitChild(decl.st(), decl.assignment)
             val assignmentType: TypeIdentifier = decl.assignment.getType()
 
