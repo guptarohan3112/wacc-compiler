@@ -8,12 +8,12 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 sealed class TypeAST : AST() {
 
-    abstract fun getType(st: SymbolTable): TypeIdentifier
+    abstract fun getType(): TypeIdentifier
 
     data class BaseTypeAST(val ctx: WaccParser.BaseTypeContext, val typeName: String) : TypeAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
-            val typeIdent: IdentifierObject? = st.lookupAll(typeName)
+        override fun getType(): TypeIdentifier {
+            val typeIdent: IdentifierObject? = st().lookupAll(typeName)
             return if (typeIdent == null) {
                 TypeIdentifier.GENERIC
             } else {
@@ -36,8 +36,8 @@ sealed class TypeAST : AST() {
 
     data class ArrayTypeAST(val elemsType: TypeAST) : TypeAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
-            return TypeIdentifier.ArrayIdentifier(elemsType.getType(st), 0)
+        override fun getType(): TypeIdentifier {
+            return TypeIdentifier.ArrayIdentifier(elemsType.getType(), 0)
         }
 
         override fun translate(): ArrayList<Instruction> {
@@ -67,8 +67,8 @@ sealed class TypeAST : AST() {
             return type.toString()
         }
 
-        fun getType(st: SymbolTable): TypeIdentifier {
-            return type?.getType(st) ?: TypeIdentifier.GENERIC_PAIR_TYPE
+        fun getType(): TypeIdentifier {
+            return type?.getType() ?: TypeIdentifier.GENERIC_PAIR_TYPE
         }
     }
 
@@ -77,8 +77,8 @@ sealed class TypeAST : AST() {
         val sndType: PairElemTypeAST
     ) : TypeAST() {
 
-        override fun getType(st: SymbolTable): TypeIdentifier {
-            return TypeIdentifier.PairIdentifier(fstType.getType(st), sndType.getType(st))
+        override fun getType(): TypeIdentifier {
+            return TypeIdentifier.PairIdentifier(fstType.getType(), sndType.getType())
         }
 
         override fun translate(): ArrayList<Instruction> {
