@@ -37,6 +37,7 @@ sealed class TypeAST : AST() {
     data class ArrayTypeAST(val elemsType: TypeAST) : TypeAST() {
 
         override fun getType(): TypeIdentifier {
+            elemsType.st = st()
             return TypeIdentifier.ArrayIdentifier(elemsType.getType(), 0)
         }
 
@@ -68,7 +69,12 @@ sealed class TypeAST : AST() {
         }
 
         fun getType(): TypeIdentifier {
-            return type?.getType() ?: TypeIdentifier.GENERIC_PAIR_TYPE
+            if (type != null) {
+                type.st = st()
+                return type.getType()
+            } else {
+                return TypeIdentifier.GENERIC_PAIR_TYPE
+            }
         }
     }
 
@@ -78,6 +84,8 @@ sealed class TypeAST : AST() {
     ) : TypeAST() {
 
         override fun getType(): TypeIdentifier {
+            fstType.st = st()
+            sndType.st = st()
             return TypeIdentifier.PairIdentifier(fstType.getType(), sndType.getType())
         }
 
