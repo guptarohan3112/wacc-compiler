@@ -2,73 +2,141 @@ package wacc_05.ast_structure
 
 import wacc_05.ast_structure.assignment_ast.*
 
-abstract class ASTBaseVisitor<T> {
+abstract class ASTBaseVisitor<T> : ASTVisitor<T> {
 
-    abstract fun visitProgramAST(prog: ProgramAST): T
+    override fun visitProgramAST(prog: ProgramAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitFunctionAST(func: FunctionAST): T
+    override fun visitFunctionAST(func: FunctionAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitParamListAST(list: ParamListAST): T
+    override fun visitParamListAST(list: ParamListAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitParamAST(param: ParamAST): T
+    override fun visitParamAST(param: ParamAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitSkipAST(skip: StatementAST.SkipAST): T
+    override fun visitSkipAST(skip: StatementAST.SkipAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitDeclAST(decl: StatementAST.DeclAST): T
+    override fun visitDeclAST(decl: StatementAST.DeclAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitAssignAST(assign: StatementAST.AssignAST): T
+    override fun visitAssignAST(assign: StatementAST.AssignAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitBeginAST(begin: StatementAST.BeginAST): T
+    override fun visitBeginAST(begin: StatementAST.BeginAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitReadAST(read: StatementAST.ReadAST): T
+    override fun visitReadAST(read: StatementAST.ReadAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitExitAST(exit: StatementAST.ExitAST): T
+    override fun visitExitAST(exit: StatementAST.ExitAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitFreeAST(free: StatementAST.FreeAST): T
+    override fun visitFreeAST(free: StatementAST.FreeAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitIfAST(ifStat: StatementAST.IfAST): T
+    override fun visitIfAST(ifStat: StatementAST.IfAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitPrintAST(print: StatementAST.PrintAST): T
+    override fun visitPrintAST(print: StatementAST.PrintAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitReturnAST(ret: StatementAST.ReturnAST): T
+    override fun visitReturnAST(ret: StatementAST.ReturnAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitSequentialAST(seq: StatementAST.SequentialAST): T
+    override fun visitSequentialAST(seq: StatementAST.SequentialAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitWhileAST(whileStat: StatementAST.WhileAST): T
+    override fun visitWhileAST(whileStat: StatementAST.WhileAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitIntLiterAST(liter: ExprAST.IntLiterAST): T
+    override fun visitIntLiterAST(liter: ExprAST.IntLiterAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST): T
+    override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitCharLiterAST(liter: ExprAST.CharLiterAST): T
+    override fun visitCharLiterAST(liter: ExprAST.CharLiterAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitStrLiterAST(liter: ExprAST.StrLiterAST): T
+    override fun visitStrLiterAST(liter: ExprAST.StrLiterAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitPairLiterAST(liter: ExprAST.PairLiterAST): T
+    override fun visitPairLiterAST(liter: ExprAST.PairLiterAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitIdentAST(ident: ExprAST.IdentAST): T
+    override fun visitIdentAST(ident: ExprAST.IdentAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST): T
+    override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitUnOpAST(unop: ExprAST.UnOpAST): T
+    override fun visitUnOpAST(unop: ExprAST.UnOpAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitBinOpAST(binop: ExprAST.BinOpAST): T
+    override fun visitBinOpAST(binop: ExprAST.BinOpAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitBaseTypeAST(type: TypeAST.BaseTypeAST): T
+    override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitArrayTypeAST(type: TypeAST.ArrayTypeAST): T
+    override fun visitArrayTypeAST(type: TypeAST.ArrayTypeAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitPairTypeAST(type: TypeAST.PairTypeAST): T
+    override fun visitPairTypeAST(type: TypeAST.PairTypeAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitPairElemTypeAST(elemType: TypeAST.PairElemTypeAST): T
+    override fun visitPairElemTypeAST(elemType: TypeAST.PairElemTypeAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitArrayLiterAST(arrayLiter: ArrayLiterAST): T
+    override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitAssignLHSAST(lhs: AssignLHSAST): T
+    override fun visitAssignLHSAST(lhs: AssignLHSAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitFuncCallAST(funcCall: FuncCallAST): T
+    override fun visitFuncCallAST(funcCall: FuncCallAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitNewPairAST(newPair: NewPairAST): T
+    override fun visitNewPairAST(newPair: NewPairAST): T {
+        TODO("Not yet implemented")
+    }
 
-    abstract fun visitPairElemAST(pairElem: PairElemAST): T
+    override fun visitPairElemAST(pairElem: PairElemAST): T {
+        TODO("Not yet implemented")
+    }
 }
