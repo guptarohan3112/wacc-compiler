@@ -80,7 +80,7 @@ sealed class ExprAST : AssignRHSAST() {
     data class StrLiterAST(val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
-            return TypeIdentifier.STRING_TYPE
+            return TypeIdentifier.StringIdentifier(value.length)
         }
 
         override fun translate(): ArrayList<Instruction> {

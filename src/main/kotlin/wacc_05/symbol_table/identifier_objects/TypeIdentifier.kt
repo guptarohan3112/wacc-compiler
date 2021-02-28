@@ -2,7 +2,11 @@ package wacc_05.symbol_table.identifier_objects
 
 open class TypeIdentifier : IdentifierObject() {
 
-    open fun getStackSize() : Int {
+    open fun getStackSize(): Int {
+        return 0
+    }
+
+    open fun getSizeBytes(): Int {
         return 0
     }
 
@@ -20,7 +24,7 @@ open class TypeIdentifier : IdentifierObject() {
         val INT_TYPE = IntIdentifier(Int.MIN_VALUE, Int.MAX_VALUE)
         val CHAR_TYPE = CharIdentifier
         val BOOL_TYPE = BoolIdentifier
-        val STRING_TYPE = StringIdentifier
+        val STRING_TYPE = StringIdentifier(0)
         val PAIR_LIT_TYPE = PairLiterIdentifier
         val GENERIC_PAIR_TYPE = GenericPairType()
 
@@ -37,7 +41,11 @@ open class TypeIdentifier : IdentifierObject() {
             return BOOLEAN
         }
 
-        override fun getStackSize() : Int {
+        override fun getStackSize(): Int {
+            return BOOL_SIZE
+        }
+
+        override fun getSizeBytes(): Int {
             return BOOL_SIZE
         }
     }
@@ -47,18 +55,34 @@ open class TypeIdentifier : IdentifierObject() {
             return CHARACTER
         }
 
-        override fun getStackSize() : Int {
+        override fun getStackSize(): Int {
+            return CHAR_SIZE
+        }
+
+        override fun getSizeBytes() : Int {
             return CHAR_SIZE
         }
     }
 
-    object StringIdentifier : TypeIdentifier() {
+    class StringIdentifier(private val length: Int) : TypeIdentifier() {
         override fun toString(): String {
             return STRING
         }
 
-        override fun getStackSize() : Int {
+        override fun getStackSize(): Int {
             return STRING_SIZE
+        }
+
+        override fun getSizeBytes(): Int {
+            return length
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return other is StringIdentifier
+        }
+
+        override fun hashCode(): Int {
+            return length
         }
     }
 
@@ -69,7 +93,11 @@ open class TypeIdentifier : IdentifierObject() {
             return INTEGER
         }
 
-        override fun getStackSize() : Int {
+        override fun getStackSize(): Int {
+            return INT_SIZE
+        }
+
+        override fun getSizeBytes(): Int {
             return INT_SIZE
         }
     }
@@ -98,6 +126,10 @@ open class TypeIdentifier : IdentifierObject() {
         override fun getStackSize(): Int {
             return ARR_SIZE
         }
+
+        override fun getSizeBytes(): Int {
+            return elemType.getSizeBytes() * size
+        }
     }
 
     // a generic pair type to capture the overall pair type. Used to represent the loss
@@ -107,7 +139,7 @@ open class TypeIdentifier : IdentifierObject() {
             return other is GenericPairType
         }
 
-        override fun getStackSize() : Int {
+        override fun getStackSize(): Int {
             return PAIR_SIZE
         }
 
@@ -142,6 +174,11 @@ open class TypeIdentifier : IdentifierObject() {
             }
 
             return false
+        }
+
+        override fun getSizeBytes(): Int {
+            // we only get the stack size because of the loose typing
+            return fstType.getStackSize() + sndType.getStackSize()
         }
 
         override fun hashCode(): Int {
