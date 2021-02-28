@@ -5,11 +5,11 @@ import wacc_05.ast_structure.ASTBaseVisitor
 import wacc_05.ast_structure.StatementAST
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class StackSizeVisitor : ASTBaseVisitor() {
+class StackSizeVisitor {
 
     private var stackSize: Int = 0
 
-    fun getStackSize(stat: StatementAST) : Int {
+    fun getStackSize(stat: StatementAST): Int {
         visitStat(stat)
         return stackSize
     }

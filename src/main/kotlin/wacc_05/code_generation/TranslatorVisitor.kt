@@ -8,7 +8,7 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-class TranslatorVisitor : ASTVisitor<Unit> {
+class TranslatorVisitor : ASTBaseVisitor() {
 
     // Helper method that makes sufficient space on the stack, generate assembly code and decrements
     // the stack pointer at the end
