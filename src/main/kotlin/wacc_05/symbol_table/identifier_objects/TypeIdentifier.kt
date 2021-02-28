@@ -2,6 +2,10 @@ package wacc_05.symbol_table.identifier_objects
 
 open class TypeIdentifier : IdentifierObject() {
 
+    open fun getSize() : Int {
+        return 0
+    }
+
     companion object {
         // static string definitions of the types
         const val BOOLEAN = "bool"
@@ -19,11 +23,22 @@ open class TypeIdentifier : IdentifierObject() {
         val STRING_TYPE = StringIdentifier
         val PAIR_LIT_TYPE = PairLiterIdentifier
         val GENERIC_PAIR_TYPE = GenericPairType()
+
+        const val INT_SIZE: Int = 4
+        const val CHAR_SIZE: Int = 1
+        const val BOOL_SIZE: Int = 1
+        val ARR_SIZE: Int = 4
+        val STRING_SIZE: Int = 4
+        val PAIR_SIZE: Int = 4
     }
 
     object BoolIdentifier : TypeIdentifier() {
         override fun toString(): String {
             return BOOLEAN
+        }
+
+        override fun getSize() : Int {
+            return BOOL_SIZE
         }
     }
 
@@ -31,11 +46,19 @@ open class TypeIdentifier : IdentifierObject() {
         override fun toString(): String {
             return CHARACTER
         }
+
+        override fun getSize() : Int {
+            return CHAR_SIZE
+        }
     }
 
     object StringIdentifier : TypeIdentifier() {
         override fun toString(): String {
             return STRING
+        }
+
+        override fun getSize() : Int {
+            return STRING_SIZE
         }
     }
 
@@ -46,6 +69,9 @@ open class TypeIdentifier : IdentifierObject() {
             return INTEGER
         }
 
+        override fun getSize() : Int {
+            return INT_SIZE
+        }
     }
 
     data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) : TypeIdentifier() {
@@ -56,7 +82,6 @@ open class TypeIdentifier : IdentifierObject() {
         override fun getType(): TypeIdentifier {
             return elemType
         }
-
 
         // we override equality for array types to capture that only the element types need
         // to match for two array types to be equal, regardless of length.
@@ -69,6 +94,10 @@ open class TypeIdentifier : IdentifierObject() {
             result = 31 * result + size
             return result
         }
+
+        override fun getSize(): Int {
+            return ARR_SIZE
+        }
     }
 
     // a generic pair type to capture the overall pair type. Used to represent the loss
@@ -76,6 +105,10 @@ open class TypeIdentifier : IdentifierObject() {
     open class GenericPairType : TypeIdentifier() {
         override fun equals(other: Any?): Boolean {
             return other is GenericPairType
+        }
+
+        override fun getSize() : Int {
+            return PAIR_SIZE
         }
 
         override fun hashCode(): Int {
