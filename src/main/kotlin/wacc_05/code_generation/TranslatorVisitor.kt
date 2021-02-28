@@ -11,7 +11,28 @@ import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 class TranslatorVisitor : ASTVisitor<Unit> {
 
     override fun visitProgramAST(prog: ProgramAST) {
-        TODO("Not yet implemented")
+        // Generate assembly code for each of the functions declared in the program
+        for (func in prog.functionList) {
+            visit(func)
+        }
+
+        AssemblyRepresentation.addMainInstr(LabelInstruction("main"))
+        AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
+
+        // Set up stack size for the main function
+        val stackSizeCalculator = StackSizeVisitor()
+        val stackSize: Int = stackSizeCalculator.getStackSize(prog.stat)
+        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
+
+        // Generate assembly code for the main body
+        visit(prog.stat)
+
+        // Restore the stack pointer and program counter. Return the exit code
+        AssemblyRepresentation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, Immediate(0)))
+        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
+
+        // Put in the .ltorg directive
     }
 
     override fun visitFunctionAST(func: FunctionAST) {
@@ -35,7 +56,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
-
+        // Work on the rhs already done for us?
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
@@ -52,8 +73,6 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
         visit(begin.stat)
         AssemblyRepresentation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
-        // Load 0 into r0, still confused about the addressing mode business. Insert load instruction here
-        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
