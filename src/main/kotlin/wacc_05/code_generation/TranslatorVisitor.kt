@@ -81,6 +81,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
         // Work on the rhs already done for us?
+
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
@@ -128,7 +129,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         visit(ifStat.condExpr)
 
         // Condition checking
-        val destination: Register = ifStat.condExpr.dest!!
+        val destination: Register = ifStat.condExpr.getDestReg()!!
         AssemblyRepresentation.addMainInstr(CompareInstruction(destination, Immediate(0)))
 
         // Branch off to the 'else' body if the condition evaluated to false
@@ -157,7 +158,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     override fun visitReturnAST(ret: StatementAST.ReturnAST) {
         // Evaluate the expression you want to return and access the register that holds the value
         visit(ret.expr)
-        val dest: Register = ret.expr.dest!!
+        val dest: Register = ret.expr.getDestReg()!!
 
         // Move the value into r0 and pop the program counter
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
@@ -188,7 +189,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         visit(whileStat.loopExpr)
         AssemblyRepresentation.addMainInstr(
             CompareInstruction(
-                whileStat.loopExpr.dest!!,
+                whileStat.loopExpr.getDestReg()!!,
                 Immediate(1)
             )
         )
@@ -199,20 +200,20 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         val intValue = Integer.parseInt(liter.sign + liter.value)
         val register = Registers.allocate()
         val mode: AddressingMode = AddressingMode.AddressingMode2(register, Immediate(intValue))
-        liter.dest = register
+        liter.setDestReg(register)
         AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
     }
 
     override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST) {
         val intValue = if (liter.value == "true") 1 else 0
         val register = Registers.allocate()
-        liter.dest = register
+        liter.setDestReg(register)
         AssemblyRepresentation.addMainInstr(MoveInstruction(register, Immediate(intValue)))
     }
 
     override fun visitCharLiterAST(liter: ExprAST.CharLiterAST) {
         val register = Registers.allocate()
-        liter.dest = register
+        liter.setDestReg(register)
         if (liter.value == "'\\0'") {
             AssemblyRepresentation.addMainInstr(MoveInstruction(register, Immediate(0)))
         } else {
@@ -227,7 +228,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
         val register = Registers.allocate()
-        liter.dest = register
+        liter.setDestReg(register)
         val label = MessageLabelInstruction.getUniqueLabel(liter.value)
         AssemblyRepresentation.addDataInstr(label)
         AssemblyRepresentation.addMainInstr(
@@ -240,7 +241,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
         val register = Registers.allocate()
-        liter.dest = register
+        liter.setDestReg(register)
         AssemblyRepresentation.addMainInstr(
             MoveInstruction(
                 register,
@@ -279,7 +280,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
     private fun translateNeg(unop: ExprAST.UnOpAST) {
         visit(unop.expr)
-        val dest: Register = unop.expr.dest!!
+        val dest: Register = unop.expr.getDestReg()!!
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 dest,
@@ -310,7 +311,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         when {
             expr1 is ExprAST.IntLiterAST -> {
                 visit(expr2)
-                val dest: Register = expr2.dest!!
+                val dest: Register = expr2.getDestReg()!!
                 AssemblyRepresentation.addMainInstr(
                     AddInstruction(
                         dest,
@@ -319,11 +320,11 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                     )
                 )
 
-                binop.dest = dest
+                binop.setDestReg(dest)
             }
             expr2 is ExprAST.IntLiterAST -> {
                 visit(expr1)
-                val dest: Register = expr2.dest!!
+                val dest: Register = expr2.getDestReg()!!
                 AssemblyRepresentation.addMainInstr(
                     AddInstruction(
                         dest,
@@ -332,19 +333,19 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                     )
                 )
 
-                binop.dest = dest
+                binop.setDestReg(dest)
             }
             else -> {
                 visit(expr1)
                 visit(expr2)
 
-                val dest1: Register = expr1.dest!!
-                val dest2: Register = expr2.dest!!
+                val dest1: Register = expr1.getDestReg()!!
+                val dest2: Register = expr2.getDestReg()!!
 
                 AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
 
                 Registers.free(dest2)
-                binop.dest = dest1
+                binop.setDestReg(dest1)
             }
         }
     }
@@ -352,7 +353,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     private fun translateSub(binop: ExprAST.BinOpAST) {
         visit(binop.expr1)
 
-        val dest: Register = binop.expr1.dest!!
+        val dest: Register = binop.expr1.getDestReg()!!
 
         /* we can only optimise for expr2 being int liter since we have
              * SUB rd, rn, op -> rd = rn - op, so expr1 must always be placed
@@ -369,27 +370,27 @@ class TranslatorVisitor : ASTVisitor<Unit> {
             }
             else -> {
                 visit(binop.expr2)
-                val dest2: Register = binop.expr2.dest!!
+                val dest2: Register = binop.expr2.getDestReg()!!
 
                 AssemblyRepresentation.addMainInstr(SubtractInstruction(dest, dest, dest2))
                 Registers.free(dest2)
             }
         }
 
-        binop.dest = dest
+        binop.setDestReg(dest)
     }
 
     private fun translateMultiply(binop: ExprAST.BinOpAST) {
         visit(binop.expr1)
         visit(binop.expr2)
 
-        val dest1: Register = binop.expr1.dest!!
-        val dest2: Register = binop.expr2.dest!!
+        val dest1: Register = binop.expr1.getDestReg()!!
+        val dest2: Register = binop.expr2.getDestReg()!!
 
         AssemblyRepresentation.addMainInstr(MultiplyInstruction(dest1, dest1, dest2))
         Registers.free(dest2)
 
-        binop.dest = dest1
+        binop.setDestReg(dest1)
     }
 
     private fun translateDivMod(binop: ExprAST.BinOpAST) {
@@ -397,12 +398,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         visit(binop.expr2)
 
         // get result from expr1 and move into param register 1
-        val dest1: Register = binop.expr1.dest!!
+        val dest1: Register = binop.expr1.getDestReg()!!
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest1))
         Registers.free(dest1)
 
         // get result from expr2 and mvoe into param register 2
-        val dest2: Register = binop.expr2.dest!!
+        val dest2: Register = binop.expr2.getDestReg()!!
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest2))
         Registers.free(dest2)
 
@@ -421,7 +422,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         val dest: Register = Registers.allocate()
         AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r3))
 
-        binop.dest = dest
+        binop.setDestReg(dest)
     }
 
     private fun translateAndOr(binop: ExprAST.BinOpAST) {
@@ -431,7 +432,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         when {
             expr1 is ExprAST.BoolLiterAST -> {
                 visit(expr2)
-                val dest: Register = expr2.dest!!
+                val dest: Register = expr2.getDestReg()!!
 
                 AssemblyRepresentation.addMainInstr(
                     if (binop.operator == "&&") {
@@ -441,12 +442,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                     }
                 )
 
-                binop.dest = dest
+                binop.setDestReg(dest)
             }
 
             expr2 is ExprAST.BoolLiterAST -> {
                 visit(expr1)
-                val dest: Register = expr1.dest!!
+                val dest: Register = expr1.getDestReg()!!
                 AssemblyRepresentation.addMainInstr(
                     if (binop.operator == "&&") {
                         AndInstruction(dest, dest, Immediate(expr2.getValue()))
@@ -455,15 +456,15 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                     }
                 )
 
-                binop.dest = dest
+                binop.setDestReg(dest)
             }
 
             else -> {
                 visit(expr1)
                 visit(expr2)
 
-                val dest1: Register = expr1.dest!!
-                val dest2: Register = expr2.dest!!
+                val dest1: Register = expr1.getDestReg()!!
+                val dest2: Register = expr2.getDestReg()!!
 
                 AssemblyRepresentation.addMainInstr(
                     if (binop.operator == "&&") {
@@ -475,7 +476,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                 Registers.free(dest2)
 
-                binop.dest = dest1
+                binop.setDestReg(dest1)
             }
         }
     }
@@ -487,7 +488,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         when (expr1.getType()) {
             is TypeIdentifier.IntIdentifier -> {
                 visit(expr1)
-                val dest: Register = expr1.dest!!
+                val dest: Register = expr1.getDestReg()!!
 
                 when (expr2) {
                     is ExprAST.IntLiterAST -> {
@@ -501,7 +502,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                     else -> {
                         visit(expr2)
-                        val dest2: Register = expr2.dest!!
+                        val dest2: Register = expr2.getDestReg()!!
                         AssemblyRepresentation.addMainInstr(CompareInstruction(dest, dest2))
                         Registers.free(dest2)
                     }
@@ -574,12 +575,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
                     }
                 }
 
-                binop.dest = dest
+                binop.setDestReg(dest)
             }
 
             is TypeIdentifier.CharIdentifier -> {
                 visit(expr1)
-                val dest: Register = expr1.dest!!
+                val dest: Register = expr1.getDestReg()!!
 
                 when (expr2) {
                     is ExprAST.CharLiterAST -> {
@@ -593,7 +594,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                     else -> {
                         visit(expr2)
-                        val dest2: Register = expr2.dest!!
+                        val dest2: Register = expr2.getDestReg()!!
 
                         AssemblyRepresentation.addMainInstr(CompareInstruction(dest, dest2))
                         Registers.free(dest2)
@@ -674,8 +675,8 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         visit(binop.expr1)
         visit(binop.expr2)
 
-        val dest1: Register = binop.expr1.dest!!
-        val dest2: Register = binop.expr2.dest!!
+        val dest1: Register = binop.expr1.getDestReg()!!
+        val dest2: Register = binop.expr2.getDestReg()!!
 
         AssemblyRepresentation.addMainInstr(CompareInstruction(dest1, dest2))
 
@@ -717,7 +718,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
             }
         }
 
-        binop.dest = dest1
+        binop.setDestReg(dest1)
     }
 
     override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST) {
