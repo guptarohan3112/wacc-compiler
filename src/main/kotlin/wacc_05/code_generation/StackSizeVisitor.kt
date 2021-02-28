@@ -5,7 +5,7 @@ import wacc_05.ast_structure.ASTBaseVisitor
 import wacc_05.ast_structure.StatementAST
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class StackSizeVisitor /*: ASTBaseVisitor<Unit>()*/ {
+class StackSizeVisitor : ASTBaseVisitor() {
 
     private var stackSize: Int = 0
 
