@@ -2,141 +2,174 @@ package wacc_05.ast_structure
 
 import wacc_05.ast_structure.assignment_ast.*
 
-abstract class ASTBaseVisitor<T> : ASTVisitor<T> {
+/* Class: ASTBaseVisitor<T>
+ * ------------------------
+ * A class that will simply visit the children for each
+ * node, or do nothing if they do not have children
+ */
+abstract class ASTBaseVisitor : ASTVisitor<Unit> {
 
-    override fun visitProgramAST(prog: ProgramAST): T {
-        TODO("Not yet implemented")
+    override fun visitProgramAST(prog: ProgramAST) {
+        for (func in prog.functionList) {
+            visitFunctionAST(func)
+        }
+
+        visit(prog.stat)
     }
 
-    override fun visitFunctionAST(func: FunctionAST): T {
-        TODO("Not yet implemented")
+    override fun visitFunctionAST(func: FunctionAST) {
+        if (func.paramList != null) {
+            visitParamListAST(func.paramList)
+        }
+        visit(func.body)
     }
 
-    override fun visitParamListAST(list: ParamListAST): T {
-        TODO("Not yet implemented")
+    override fun visitParamListAST(list: ParamListAST) {
+        for(param in list.paramList) {
+            visitParamAST(param)
+        }
     }
 
-    override fun visitParamAST(param: ParamAST): T {
-        TODO("Not yet implemented")
+    override fun visitParamAST(param: ParamAST) {
+        visit(param.type)
     }
 
-    override fun visitSkipAST(skip: StatementAST.SkipAST): T {
-        TODO("Not yet implemented")
+    override fun visitSkipAST(skip: StatementAST.SkipAST) {
+        // do nothing
     }
 
-    override fun visitDeclAST(decl: StatementAST.DeclAST): T {
-        TODO("Not yet implemented")
+    override fun visitDeclAST(decl: StatementAST.DeclAST) {
+        visit(decl.type)
+        visit(decl.assignment)
     }
 
-    override fun visitAssignAST(assign: StatementAST.AssignAST): T {
-        TODO("Not yet implemented")
+    override fun visitAssignAST(assign: StatementAST.AssignAST) {
+        visitAssignLHSAST(assign.lhs)
+        visit(assign.rhs)
     }
 
-    override fun visitBeginAST(begin: StatementAST.BeginAST): T {
-        TODO("Not yet implemented")
+    override fun visitBeginAST(begin: StatementAST.BeginAST) {
+        visit(begin.stat)
     }
 
-    override fun visitReadAST(read: StatementAST.ReadAST): T {
-        TODO("Not yet implemented")
+    override fun visitReadAST(read: StatementAST.ReadAST) {
+        visitAssignLHSAST(read.lhs)
     }
 
-    override fun visitExitAST(exit: StatementAST.ExitAST): T {
-        TODO("Not yet implemented")
+    override fun visitExitAST(exit: StatementAST.ExitAST) {
+        visit(exit.expr)
     }
 
-    override fun visitFreeAST(free: StatementAST.FreeAST): T {
-        TODO("Not yet implemented")
+    override fun visitFreeAST(free: StatementAST.FreeAST) {
+        visit(free.expr)
     }
 
-    override fun visitIfAST(ifStat: StatementAST.IfAST): T {
-        TODO("Not yet implemented")
+    override fun visitIfAST(ifStat: StatementAST.IfAST) {
+        visit(ifStat.condExpr)
+        visit(ifStat.thenStat)
+        visit(ifStat.elseStat)
     }
 
-    override fun visitPrintAST(print: StatementAST.PrintAST): T {
-        TODO("Not yet implemented")
+    override fun visitPrintAST(print: StatementAST.PrintAST) {
+        visit(print.expr)
     }
 
-    override fun visitReturnAST(ret: StatementAST.ReturnAST): T {
-        TODO("Not yet implemented")
+    override fun visitReturnAST(ret: StatementAST.ReturnAST) {
+        visit(ret.expr)
     }
 
-    override fun visitSequentialAST(seq: StatementAST.SequentialAST): T {
-        TODO("Not yet implemented")
+    override fun visitSequentialAST(seq: StatementAST.SequentialAST) {
+        visit(seq.stat1)
+        visit(seq.stat2)
     }
 
-    override fun visitWhileAST(whileStat: StatementAST.WhileAST): T {
-        TODO("Not yet implemented")
+    override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
+        visit(whileStat.loopExpr)
+        visit(whileStat.body)
     }
 
-    override fun visitIntLiterAST(liter: ExprAST.IntLiterAST): T {
-        TODO("Not yet implemented")
+    override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
+        // do nothing
     }
 
-    override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST): T {
-        TODO("Not yet implemented")
+    override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST) {
+        // do nothing
     }
 
-    override fun visitCharLiterAST(liter: ExprAST.CharLiterAST): T {
-        TODO("Not yet implemented")
+    override fun visitCharLiterAST(liter: ExprAST.CharLiterAST) {
+        // do nothing
     }
 
-    override fun visitStrLiterAST(liter: ExprAST.StrLiterAST): T {
-        TODO("Not yet implemented")
+    override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
+        // do nothing
     }
 
-    override fun visitPairLiterAST(liter: ExprAST.PairLiterAST): T {
-        TODO("Not yet implemented")
+    override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
+        // do nothing
     }
 
-    override fun visitIdentAST(ident: ExprAST.IdentAST): T {
-        TODO("Not yet implemented")
+    override fun visitIdentAST(ident: ExprAST.IdentAST) {
+        // do nothing
     }
 
-    override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST): T {
-        TODO("Not yet implemented")
+    override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
+        for(elem in arrayElem.exprs) {
+            visit(elem)
+        }
     }
 
-    override fun visitUnOpAST(unop: ExprAST.UnOpAST): T {
-        TODO("Not yet implemented")
+    override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
+        visit(unop.expr)
     }
 
-    override fun visitBinOpAST(binop: ExprAST.BinOpAST): T {
-        TODO("Not yet implemented")
+    override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
+        visit(binop.expr1)
+        visit(binop.expr2)
     }
 
-    override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST): T {
-        TODO("Not yet implemented")
+    override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST) {
+        // do nothing
     }
 
-    override fun visitArrayTypeAST(type: TypeAST.ArrayTypeAST): T {
-        TODO("Not yet implemented")
+    override fun visitArrayTypeAST(type: TypeAST.ArrayTypeAST) {
+        visit(type.elemsType)
     }
 
-    override fun visitPairTypeAST(type: TypeAST.PairTypeAST): T {
-        TODO("Not yet implemented")
+    override fun visitPairTypeAST(type: TypeAST.PairTypeAST) {
+        visitPairElemTypeAST(type.fstType)
+        visitPairElemTypeAST(type.sndType)
     }
 
-    override fun visitPairElemTypeAST(elemType: TypeAST.PairElemTypeAST): T {
-        TODO("Not yet implemented")
+    override fun visitPairElemTypeAST(elemType: TypeAST.PairElemTypeAST) {
+        if(elemType.type != null) {
+            visit(elemType.type)
+        }
     }
 
-    override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST): T {
-        TODO("Not yet implemented")
+    override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
+        // do nothing
     }
 
-    override fun visitAssignLHSAST(lhs: AssignLHSAST): T {
-        TODO("Not yet implemented")
+    override fun visitAssignLHSAST(lhs: AssignLHSAST) {
+        if(lhs.arrElem != null) {
+            visitArrayElemAST(lhs.arrElem!!)
+        } else if(lhs.pairElem != null) {
+            visitPairElemAST(lhs.pairElem!!)
+        }
     }
 
-    override fun visitFuncCallAST(funcCall: FuncCallAST): T {
-        TODO("Not yet implemented")
+    override fun visitFuncCallAST(funcCall: FuncCallAST) {
+        for(arg in funcCall.args) {
+            visit(arg)
+        }
     }
 
-    override fun visitNewPairAST(newPair: NewPairAST): T {
-        TODO("Not yet implemented")
+    override fun visitNewPairAST(newPair: NewPairAST) {
+        visit(newPair.fst)
+        visit(newPair.snd)
     }
 
-    override fun visitPairElemAST(pairElem: PairElemAST): T {
-        TODO("Not yet implemented")
+    override fun visitPairElemAST(pairElem: PairElemAST) {
+        visit(pairElem.elem)
     }
 }
