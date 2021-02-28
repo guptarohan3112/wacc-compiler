@@ -42,7 +42,7 @@ object AssemblyRepresentation {
             out.println("\n\t.text\n")
 
             out.println("\t.global main")
-            out.println("\tmain:")
+//            out.println("\tmain:")
 
             mainInstrs.forEach { instr->
                 out.println(printInstr(instr))
