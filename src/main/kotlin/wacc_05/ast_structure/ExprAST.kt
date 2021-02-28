@@ -188,7 +188,7 @@ sealed class ExprAST : AssignRHSAST() {
             val results: ArrayList<Instruction> = ArrayList()
 
             results.addAll(expr.translate())
-            val dest: Register = expr.getDestReg()!!
+            val dest: Register = expr.getDestReg()
             results.add(LoadInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, null)))
             results.add(ReverseSubtractInstruction(dest, dest, Immediate(0)))
             return results
@@ -245,8 +245,8 @@ sealed class ExprAST : AssignRHSAST() {
             results.addAll(expr1.translate())
             results.addAll(expr2.translate())
 
-            val dest1: Register = expr1.getDestReg()!!
-            val dest2: Register = expr2.getDestReg()!!
+            val dest1: Register = expr1.getDestReg()
+            val dest2: Register = expr2.getDestReg()
 
             results.add(MultiplyInstruction(dest1, dest1, dest2))
 
@@ -257,15 +257,14 @@ sealed class ExprAST : AssignRHSAST() {
             return results
         }
 
-        // NOTE: use caller save when calling translateDivide() ??
         private fun translateDivide(): ArrayList<Instruction> {
             val results: ArrayList<Instruction> = ArrayList()
 
             results.addAll(expr1.translate())
             results.addAll(expr2.translate())
 
-            val dest1: Register = expr1.getDestReg()!!
-            val dest2: Register = expr2.getDestReg()!!
+            val dest1: Register = expr1.getDestReg()
+            val dest2: Register = expr2.getDestReg()
 
             if (dest1 != Registers.r0) {
                 results.add(MoveInstruction(Registers.r0, dest1))
@@ -297,14 +296,14 @@ sealed class ExprAST : AssignRHSAST() {
             when {
                 expr1 is BoolLiterAST -> {
                     results.addAll(expr2.translate())
-                    val dest: Register = expr2.getDestReg()!!
+                    val dest: Register = expr2.getDestReg()
                     results.add(AndInstruction(dest, dest, Immediate(expr1.getValue())))
 
                     setDestReg(dest)
                 }
                 expr2 is BoolLiterAST -> {
                     results.addAll(expr1.translate())
-                    val dest: Register = expr1.getDestReg()!!
+                    val dest: Register = expr1.getDestReg()
                     results.add(AndInstruction(dest, dest, Immediate(expr2.getValue())))
 
                     setDestReg(dest)
@@ -312,8 +311,8 @@ sealed class ExprAST : AssignRHSAST() {
                 else -> {
                     results.addAll(expr1.translate())
                     results.addAll(expr2.translate())
-                    val dest1: Register = expr1.getDestReg()!!
-                    val dest2: Register = expr2.getDestReg()!!
+                    val dest1: Register = expr1.getDestReg()
+                    val dest2: Register = expr2.getDestReg()
 
                     results.add(AndInstruction(dest1, dest1, dest2))
                     Registers.free(dest2)
@@ -331,14 +330,14 @@ sealed class ExprAST : AssignRHSAST() {
             when {
                 expr1 is BoolLiterAST -> {
                     results.addAll(expr2.translate())
-                    val dest: Register = expr2.getDestReg()!!
+                    val dest: Register = expr2.getDestReg()
                     results.add(OrInstruction(dest, dest, Immediate(expr1.getValue())))
 
                     setDestReg(dest)
                 }
                 expr2 is BoolLiterAST -> {
                     results.addAll(expr1.translate())
-                    val dest: Register = expr1.getDestReg()!!
+                    val dest: Register = expr1.getDestReg()
                     results.add(OrInstruction(dest, dest, Immediate(expr2.getValue())))
 
                     setDestReg(dest)
@@ -346,8 +345,8 @@ sealed class ExprAST : AssignRHSAST() {
                 else -> {
                     results.addAll(expr1.translate())
                     results.addAll(expr2.translate())
-                    val dest1: Register = expr1.getDestReg()!!
-                    val dest2: Register = expr2.getDestReg()!!
+                    val dest1: Register = expr1.getDestReg()
+                    val dest2: Register = expr2.getDestReg()
 
                     results.add(OrInstruction(dest1, dest1, dest2))
                     Registers.free(dest2)

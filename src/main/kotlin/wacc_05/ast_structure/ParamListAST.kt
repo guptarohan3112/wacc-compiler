@@ -18,7 +18,7 @@ class ParamListAST(val paramList: ArrayList<ParamAST>) : AST() {
         val list: ArrayList<ParamIdentifier> = ArrayList()
 
         for (param in paramList) {
-            list.add(ParamIdentifier(param.getType(st)))
+            list.add(ParamIdentifier(param.getType()))
         }
 
         return list
