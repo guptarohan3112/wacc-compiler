@@ -9,12 +9,15 @@ import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUnique
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class TranslatorVisitor : ASTVisitor<Unit> {
+
     override fun visitProgramAST(prog: ProgramAST) {
         TODO("Not yet implemented")
     }
 
     override fun visitFunctionAST(func: FunctionAST) {
-        TODO("Not yet implemented")
+        val stackSizeCalculator = StackSizeVisitor()
+        val stackSize: Int = stackSizeCalculator.getStackSize(func.body)
+        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
     }
 
     override fun visitParamListAST(list: ParamListAST) {
