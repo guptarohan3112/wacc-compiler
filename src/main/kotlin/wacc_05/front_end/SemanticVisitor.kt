@@ -8,7 +8,7 @@ import wacc_05.symbol_table.identifier_objects.*
 class SemanticVisitor(
     private val symbolTable: SymbolTable,
     private val errorHandler: SemanticErrors
-) : ASTBaseVisitor() {
+) : ASTVisitor<Unit> {
 
     override fun visitProgramAST(prog: ProgramAST) {
         prog.st = symbolTable
