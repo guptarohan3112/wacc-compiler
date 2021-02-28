@@ -2,7 +2,7 @@ package wacc_05.symbol_table.identifier_objects
 
 open class TypeIdentifier : IdentifierObject() {
 
-    open fun getSize() : Int {
+    open fun getStackSize() : Int {
         return 0
     }
 
@@ -27,9 +27,9 @@ open class TypeIdentifier : IdentifierObject() {
         const val INT_SIZE: Int = 4
         const val CHAR_SIZE: Int = 1
         const val BOOL_SIZE: Int = 1
-        val ARR_SIZE: Int = 4
-        val STRING_SIZE: Int = 4
-        val PAIR_SIZE: Int = 4
+        const val ARR_SIZE: Int = 4
+        const val STRING_SIZE: Int = 4
+        const val PAIR_SIZE: Int = 4
     }
 
     object BoolIdentifier : TypeIdentifier() {
@@ -37,7 +37,7 @@ open class TypeIdentifier : IdentifierObject() {
             return BOOLEAN
         }
 
-        override fun getSize() : Int {
+        override fun getStackSize() : Int {
             return BOOL_SIZE
         }
     }
@@ -47,7 +47,7 @@ open class TypeIdentifier : IdentifierObject() {
             return CHARACTER
         }
 
-        override fun getSize() : Int {
+        override fun getStackSize() : Int {
             return CHAR_SIZE
         }
     }
@@ -57,7 +57,7 @@ open class TypeIdentifier : IdentifierObject() {
             return STRING
         }
 
-        override fun getSize() : Int {
+        override fun getStackSize() : Int {
             return STRING_SIZE
         }
     }
@@ -69,7 +69,7 @@ open class TypeIdentifier : IdentifierObject() {
             return INTEGER
         }
 
-        override fun getSize() : Int {
+        override fun getStackSize() : Int {
             return INT_SIZE
         }
     }
@@ -95,7 +95,7 @@ open class TypeIdentifier : IdentifierObject() {
             return result
         }
 
-        override fun getSize(): Int {
+        override fun getStackSize(): Int {
             return ARR_SIZE
         }
     }
@@ -107,7 +107,7 @@ open class TypeIdentifier : IdentifierObject() {
             return other is GenericPairType
         }
 
-        override fun getSize() : Int {
+        override fun getStackSize() : Int {
             return PAIR_SIZE
         }
 
