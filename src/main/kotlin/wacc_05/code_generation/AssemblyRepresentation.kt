@@ -16,7 +16,7 @@ object AssemblyRepresentation {
     private val mainInstrs: ArrayList<Instruction> = ArrayList()
 
     // IO functions that are called in the user defined program
-    private val ioInstrs: HashSet<IOInstruction> = HashSet()
+    private val pInstrs: HashSet<PInstruction> = HashSet()
 
     fun addDataInstr(instr: Instruction) {
         dataInstrs.add(instr)
@@ -26,9 +26,10 @@ object AssemblyRepresentation {
         mainInstrs.add(instr)
     }
 
-    fun addIOInstr(io_instr: IOInstruction) {
-        ioInstrs.add(io_instr)
-        if (io_instr is IOInstruction.p_throw_overflow_error){
+    fun addPInstr(io_instr: PInstruction) {
+        pInstrs.add(io_instr)
+        pInstrs.add(io_instr)
+        if (io_instr is PInstruction.p_throw_overflow_error){
             AssemblyRepresentation.addMainInstr(
                 BranchInstruction(io_instr::class.java.simpleName, Condition.LVS)
             )
@@ -60,7 +61,7 @@ object AssemblyRepresentation {
 
             sb.append("\n")
 
-            ioInstrs.forEach {
+            pInstrs.forEach {
                 val instructions = it.applyIO()
                 instructions.forEach { instr ->
                     sb.append(printInstr(instr))

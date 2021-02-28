@@ -87,10 +87,11 @@ object WaccCompiler {
         }
 
         if (!validOnly) {
-            println("Generating assembly file : $filePath.s")
             val translatorVisitor = TranslatorVisitor()
             translatorVisitor.visit(ast)
-            AssemblyRepresentation.buildAssembly(File(filePath).nameWithoutExtension)
+            val fileName = File(filePath).nameWithoutExtension
+            println("Generating assembly file : $fileName.s")
+            AssemblyRepresentation.buildAssembly(fileName)
             println("Generation of assembly file complete")
         }
 
