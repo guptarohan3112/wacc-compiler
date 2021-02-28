@@ -10,37 +10,61 @@ import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class TranslatorVisitor : ASTVisitor<Unit> {
 
+    // Helper method that makes sufficient space on the stack, generate assembly code and decrements
+    // the stack pointer at the end
+    private fun setUpScope(bodyInScope: StatementAST) {
+        AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
+
+        // Calculate stack size for scope and decrement the stack pointer accordingly
+        val stackSizeCalculator = StackSizeVisitor()
+        val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope)
+        if (stackSize != 0) {
+            AssemblyRepresentation.addMainInstr(
+                SubtractInstruction(
+                    Registers.sp,
+                    Registers.sp,
+                    Immediate(stackSize)
+                )
+            )
+        }
+
+        // Generate assembly code for the body statement
+        visit(bodyInScope)
+
+        // Restore the stack pointer and program counter. Return the exit code
+        AssemblyRepresentation.addMainInstr(
+            AddInstruction(
+                Registers.sp,
+                Registers.sp,
+                Immediate(stackSize)
+            )
+        )
+    }
+
     override fun visitProgramAST(prog: ProgramAST) {
         // Generate assembly code for each of the functions declared in the program
         for (func in prog.functionList) {
             visit(func)
         }
 
+        // Generate code for the main body
         AssemblyRepresentation.addMainInstr(LabelInstruction("main"))
-        AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
+        setUpScope(prog.stat)
 
-        // Set up stack size for the main function
-        val stackSizeCalculator = StackSizeVisitor()
-        val stackSize: Int = stackSizeCalculator.getStackSize(prog.stat)
-        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
-
-        // Generate assembly code for the main body
-        visit(prog.stat)
-
-        // Restore the stack pointer and program counter. Return the exit code
-        AssemblyRepresentation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
+        // Return the exit code (assuming 0 upon success) and pop the program counter
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, Immediate(0)))
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
-
-        // Put in the .ltorg directive
+        // Put in the .ltorg directive?
     }
 
     override fun visitFunctionAST(func: FunctionAST) {
-        val stackSizeCalculator = StackSizeVisitor()
-        val stackSize: Int = stackSizeCalculator.getStackSize(func.body)
-        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
-        // Some instruction adding inserted here
-        AssemblyRepresentation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
+        // Create the label for the function
+        AssemblyRepresentation.addMainInstr(LabelInstruction(func.funcName))
+
+        // Generate code to allocate space on the stack for variable as well as the function body
+        setUpScope(func.body)
+
+        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
     }
 
     override fun visitParamListAST(list: ParamListAST) {
@@ -66,13 +90,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     // Store the address of the program counter (?) into the link registers so that a function can
     // return to this address when completing its functionality
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
-        AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
-        // Below will change to account for number of bytes that need to be allocated for variables. How? Change 0 to calculated number
-        val stackSizeCalculator = StackSizeVisitor()
-        val stackSize: Int = stackSizeCalculator.getStackSize(begin.stat)
-        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
-        visit(begin.stat)
-        AssemblyRepresentation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
+        setUpScope(begin.stat)
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
@@ -137,7 +155,13 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitReturnAST(ret: StatementAST.ReturnAST) {
-        TODO("Not yet implemented")
+        // Evaluate the expression you want to return and access the register that holds the value
+        visit(ret.expr)
+        val dest: Register = ret.expr.dest!!
+
+        // Move the value into r0 and pop the program counter
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
     }
 
     override fun visitSequentialAST(seq: StatementAST.SequentialAST) {
@@ -162,7 +186,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
         // Comparison and jump if equal
         visit(whileStat.loopExpr)
-        AssemblyRepresentation.addMainInstr(CompareInstruction(whileStat.loopExpr.dest!!, Immediate(1)))
+        AssemblyRepresentation.addMainInstr(
+            CompareInstruction(
+                whileStat.loopExpr.dest!!,
+                Immediate(1)
+            )
+        )
         AssemblyRepresentation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
 
@@ -187,7 +216,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         if (liter.value == "'\\0'") {
             AssemblyRepresentation.addMainInstr(MoveInstruction(register, Immediate(0)))
         } else {
-            AssemblyRepresentation.addMainInstr(MoveInstruction(register, ImmediateChar(liter.value)))
+            AssemblyRepresentation.addMainInstr(
+                MoveInstruction(
+                    register,
+                    ImmediateChar(liter.value)
+                )
+            )
         }
     }
 
@@ -222,7 +256,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         val identOffset: Int = identObj.getAddr()
         val sp: Int = ident.st!!.getStackPtr()
         val spOffset: Int = identOffset - sp
-        AssemblyRepresentation.addMainInstr(LoadInstruction(register, AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))))
+        AssemblyRepresentation.addMainInstr(
+            LoadInstruction(
+                register,
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
+            )
+        )
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
@@ -241,7 +280,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     private fun translateNeg(unop: ExprAST.UnOpAST) {
         visit(unop.expr)
         val dest: Register = unop.expr.dest!!
-        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, null)))
+        AssemblyRepresentation.addMainInstr(
+            LoadInstruction(
+                dest,
+                AddressingMode.AddressingMode2(Registers.sp, null)
+            )
+        )
         AssemblyRepresentation.addMainInstr(ReverseSubtractInstruction(dest, dest, Immediate(0)))
     }
 
@@ -267,14 +311,26 @@ class TranslatorVisitor : ASTVisitor<Unit> {
             expr1 is ExprAST.IntLiterAST -> {
                 visit(expr2)
                 val dest: Register = expr2.dest!!
-                AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr1.getValue())))
+                AssemblyRepresentation.addMainInstr(
+                    AddInstruction(
+                        dest,
+                        dest,
+                        Immediate(expr1.getValue())
+                    )
+                )
 
                 binop.dest = dest
             }
             expr2 is ExprAST.IntLiterAST -> {
                 visit(expr1)
                 val dest: Register = expr2.dest!!
-                AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(expr2.getValue())))
+                AssemblyRepresentation.addMainInstr(
+                    AddInstruction(
+                        dest,
+                        dest,
+                        Immediate(expr2.getValue())
+                    )
+                )
 
                 binop.dest = dest
             }
@@ -303,7 +359,13 @@ class TranslatorVisitor : ASTVisitor<Unit> {
              * in a register */
         when (binop.expr2) {
             is ExprAST.IntLiterAST -> {
-                AssemblyRepresentation.addMainInstr(SubtractInstruction(dest, dest, Immediate(binop.expr2.getValue())))
+                AssemblyRepresentation.addMainInstr(
+                    SubtractInstruction(
+                        dest,
+                        dest,
+                        Immediate(binop.expr2.getValue())
+                    )
+                )
             }
             else -> {
                 visit(binop.expr2)
@@ -429,7 +491,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                 when (expr2) {
                     is ExprAST.IntLiterAST -> {
-                        AssemblyRepresentation.addMainInstr(CompareInstruction(dest, Immediate(expr2.getValue())))
+                        AssemblyRepresentation.addMainInstr(
+                            CompareInstruction(
+                                dest,
+                                Immediate(expr2.getValue())
+                            )
+                        )
                     }
 
                     else -> {
@@ -442,20 +509,68 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                 when (binop.operator) {
                     ">" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.GT))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.LE))
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(1),
+                                Condition.GT
+                            )
+                        )
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(0),
+                                Condition.LE
+                            )
+                        )
                     }
                     ">=" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.GE))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.LT))
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(1),
+                                Condition.GE
+                            )
+                        )
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(0),
+                                Condition.LT
+                            )
+                        )
                     }
                     "<" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.LT))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.GE))
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(1),
+                                Condition.LT
+                            )
+                        )
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(0),
+                                Condition.GE
+                            )
+                        )
                     }
                     "<=" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.LE))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.GT))
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(1),
+                                Condition.LE
+                            )
+                        )
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(0),
+                                Condition.GT
+                            )
+                        )
                     }
                 }
 
@@ -468,7 +583,12 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                 when (expr2) {
                     is ExprAST.CharLiterAST -> {
-                        AssemblyRepresentation.addMainInstr(CompareInstruction(dest, ImmediateChar(expr2.value)))
+                        AssemblyRepresentation.addMainInstr(
+                            CompareInstruction(
+                                dest,
+                                ImmediateChar(expr2.value)
+                            )
+                        )
                     }
 
                     else -> {
@@ -482,20 +602,68 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
                 when (binop.operator) {
                     ">" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.HI))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.LS))
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(1),
+                                Condition.HI
+                            )
+                        )
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(0),
+                                Condition.LS
+                            )
+                        )
                     }
                     ">=" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.HS))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.LO))
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(1),
+                                Condition.HS
+                            )
+                        )
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(0),
+                                Condition.LO
+                            )
+                        )
                     }
                     "<" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.LO))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.HS))
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(1),
+                                Condition.LO
+                            )
+                        )
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(0),
+                                Condition.HS
+                            )
+                        )
                     }
                     "<=" -> {
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(1), Condition.LS))
-                        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Immediate(0), Condition.HI))
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(1),
+                                Condition.LS
+                            )
+                        )
+                        AssemblyRepresentation.addMainInstr(
+                            MoveInstruction(
+                                dest,
+                                Immediate(0),
+                                Condition.HI
+                            )
+                        )
                     }
                 }
             }
@@ -515,13 +683,37 @@ class TranslatorVisitor : ASTVisitor<Unit> {
 
         when (binop.operator) {
             "==" -> {
-                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(1), Condition.EQ))
-                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(0), Condition.NE))
+                AssemblyRepresentation.addMainInstr(
+                    MoveInstruction(
+                        dest1,
+                        Immediate(1),
+                        Condition.EQ
+                    )
+                )
+                AssemblyRepresentation.addMainInstr(
+                    MoveInstruction(
+                        dest1,
+                        Immediate(0),
+                        Condition.NE
+                    )
+                )
             }
 
             "!=" -> {
-                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(1), Condition.NE))
-                AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Immediate(0), Condition.EQ))
+                AssemblyRepresentation.addMainInstr(
+                    MoveInstruction(
+                        dest1,
+                        Immediate(1),
+                        Condition.NE
+                    )
+                )
+                AssemblyRepresentation.addMainInstr(
+                    MoveInstruction(
+                        dest1,
+                        Immediate(0),
+                        Condition.EQ
+                    )
+                )
             }
         }
 
