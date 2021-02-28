@@ -22,7 +22,7 @@ class ParamAST(
     }
 
     fun getType(st: SymbolTable): TypeIdentifier {
-        return type.getType(st)
+        return type.getType()
     }
 
 }
