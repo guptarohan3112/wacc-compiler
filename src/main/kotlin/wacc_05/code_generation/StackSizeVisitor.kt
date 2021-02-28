@@ -33,7 +33,7 @@ class StackSizeVisitor /*: ASTBaseVisitor<Unit>()*/ {
         }
     }
 
-    fun visitStat(stat: StatementAST) {
+    private fun visitStat(stat: StatementAST) {
         return when (stat) {
             is StatementAST.DeclAST -> {
                 val size: Int = getSizeOfType(stat.type.getType())

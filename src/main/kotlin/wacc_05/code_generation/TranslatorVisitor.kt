@@ -18,6 +18,8 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         val stackSizeCalculator = StackSizeVisitor()
         val stackSize: Int = stackSizeCalculator.getStackSize(func.body)
         AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
+        // Some instruction adding inserted here
+        AssemblyRepresentation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
     }
 
     override fun visitParamListAST(list: ParamListAST) {
@@ -33,7 +35,7 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
-        TODO("Not yet implemented")
+
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
@@ -48,6 +50,10 @@ class TranslatorVisitor : ASTVisitor<Unit> {
         val stackSizeCalculator = StackSizeVisitor()
         val stackSize: Int = stackSizeCalculator.getStackSize(begin.stat)
         AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
+        visit(begin.stat)
+        AssemblyRepresentation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
+        // Load 0 into r0, still confused about the addressing mode business. Insert load instruction here
+        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
