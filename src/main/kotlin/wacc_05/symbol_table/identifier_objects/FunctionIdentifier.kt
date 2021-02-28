@@ -8,6 +8,8 @@ class FunctionIdentifier(
     private val st: SymbolTable
 ) : IdentifierObject() {
 
+    private var stackSize: Int = 0
+
     fun getSymbolTable(): SymbolTable {
         return st
     }
@@ -22,5 +24,13 @@ class FunctionIdentifier(
 
     override fun getType(): TypeIdentifier {
         return getReturnType()
+    }
+
+    fun getStackSize(): Int {
+        return stackSize
+    }
+
+    fun setStackSize(stackSize: Int) {
+        this.stackSize = stackSize
     }
 }

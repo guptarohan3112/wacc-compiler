@@ -2,17 +2,18 @@ package wacc_05.code_generation
 
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
-import wacc_05.ast_structure.ASTVisitor
 import wacc_05.code_generation.instructions.*
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
+import wacc_05.symbol_table.SymbolTable
+import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class TranslatorVisitor : ASTBaseVisitor() {
 
     // Helper method that makes sufficient space on the stack, generate assembly code and decrements
     // the stack pointer at the end
-    private fun setUpScope(bodyInScope: StatementAST) {
+    private fun setUpScope(bodyInScope: StatementAST): Int {
         AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
 
         // Calculate stack size for scope and decrement the stack pointer accordingly
@@ -28,17 +29,21 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         }
 
-        // Generate assembly code for the body statement
-        visit(bodyInScope)
+        return stackSize
 
-        // Restore the stack pointer and program counter. Return the exit code
-        AssemblyRepresentation.addMainInstr(
-            AddInstruction(
-                Registers.sp,
-                Registers.sp,
-                Immediate(stackSize)
-            )
-        )
+//        bodyInScope.st().setStackPtr(bodyInScope.st().getStackPtr() - stackSize)
+
+//        // Generate assembly code for the body statement
+//        visit(bodyInScope)
+//
+//        // Restore the stack pointer and program counter. Return the exit code
+//        AssemblyRepresentation.addMainInstr(
+//            AddInstruction(
+//                Registers.sp,
+//                Registers.sp,
+//                Immediate(stackSize)
+//            )
+//        )
     }
 
     override fun visitProgramAST(prog: ProgramAST) {
@@ -49,7 +54,22 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Generate code for the main body
         AssemblyRepresentation.addMainInstr(LabelInstruction("main"))
-        setUpScope(prog.stat)
+        val stackSize: Int = setUpScope(prog.stat)
+
+        // Decrement the stack pointer value and update the symbol table
+        prog.stat.st().setStackPtr(prog.stat.st().getStackPtr() - stackSize)
+
+        // Generate assembly code for the body statement
+        visit(prog.stat)
+
+        // Restore the stack pointer and program counter. Return the exit code
+        AssemblyRepresentation.addMainInstr(
+            AddInstruction(
+                Registers.sp,
+                Registers.sp,
+                Immediate(stackSize)
+            )
+        )
 
         // Return the exit code (assuming 0 upon success) and pop the program counter
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, Immediate(0)))
@@ -57,20 +77,38 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Put in the .ltorg directive?
     }
 
+    // TODO: Loading local variables and deal with parameters and offsets
     override fun visitFunctionAST(func: FunctionAST) {
         // Create the label for the function
         AssemblyRepresentation.addMainInstr(LabelInstruction(func.funcName))
 
         // Generate code to allocate space on the stack for variable as well as the function body
-        setUpScope(func.body)
+        val stackSize: Int = setUpScope(func.body)
+        val symTab: SymbolTable = func.st()
+        val funcIdent = symTab.lookup(func.funcName) as FunctionIdentifier
+        funcIdent.setStackSize(stackSize)
+
+        // Generate assembly code for the body statement
+        visit(func.body)
+
+        // Restore the stack pointer and program counter. Return the exit code
+        AssemblyRepresentation.addMainInstr(
+            AddInstruction(
+                Registers.sp,
+                Registers.sp,
+                Immediate(stackSize)
+            )
+        )
 
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
     }
 
+    // TODO: Look above
     override fun visitParamListAST(list: ParamListAST) {
         TODO("Not yet implemented")
     }
 
+    // TODO: Look above
     override fun visitParamAST(param: ParamAST) {
         TODO("Not yet implemented")
     }
@@ -79,11 +117,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
         return
     }
 
+    // TODO: keep track of how much of the allocated stack space has been taken up
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
         // Work on the rhs already done for us?
 
     }
 
+    // TODO:
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
         TODO("Not yet implemented")
     }
@@ -94,6 +134,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         setUpScope(begin.stat)
     }
 
+    // TODO: IO
     override fun visitReadAST(read: StatementAST.ReadAST) {
         TODO("Not yet implemented")
     }
@@ -120,6 +161,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     }
 
+    // TOOO: Heap memory
     override fun visitFreeAST(free: StatementAST.FreeAST) {
         TODO("Not yet implemented")
     }
@@ -151,6 +193,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(nextLabel)
     }
 
+    // Call and add IO instructions
     override fun visitPrintAST(print: StatementAST.PrintAST) {
         TODO("Not yet implemented")
     }
@@ -265,6 +308,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         )
     }
 
+    // TODO: Heap memory
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         TODO("Not yet implemented")
     }
@@ -746,7 +790,42 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
-        TODO("Not yet implemented")
+        var totalSize: Int = 0
+        for (arg in funcCall.args.reversed()) {
+            visit(arg)
+            val dest: Register = arg.getDestReg()
+            val size = arg.getType().getStackSize()
+            AssemblyRepresentation.addMainInstr(
+                StoreInstruction(
+                    dest,
+                    AddressingMode.AddressingMode2(Registers.sp, Immediate(-1 * size))
+                )
+            )
+            AssemblyRepresentation.addMainInstr(
+                AddInstruction(
+                    Registers.sp,
+                    Registers.sp,
+                    Immediate(-1 * size)
+                )
+            )
+            totalSize += size
+            Registers.free(dest)
+        }
+
+        val funcIdent: FunctionIdentifier = funcCall.st().lookupAll(funcCall.funcName) as FunctionIdentifier
+
+        val funcStackSize: Int = funcIdent.getStackSize()
+        funcIdent.getSymbolTable().setStackPtr(funcCall.st().getStackPtr() - totalSize - funcStackSize)
+
+        AssemblyRepresentation.addMainInstr(BranchInstruction(funcCall.funcName, Condition.L))
+
+        // Move the result into an available register
+        val reg: Register = Registers.allocate()
+        AssemblyRepresentation.addMainInstr(MoveInstruction(reg, Registers.r0))
+
+        funcCall.setDestReg(reg)
+
+        AssemblyRepresentation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(totalSize)))
     }
 
     override fun visitNewPairAST(newPair: NewPairAST) {
