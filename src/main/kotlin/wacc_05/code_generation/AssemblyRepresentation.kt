@@ -52,8 +52,7 @@ object AssemblyRepresentation {
             }
 
             sb.append("\n\t.text\n")
-
-            sb.append("\t.global main\n")
+            sb.append("\n\t.global main\n")
 
             mainInstrs.forEach { instr->
                 sb.append(printInstr(instr))
