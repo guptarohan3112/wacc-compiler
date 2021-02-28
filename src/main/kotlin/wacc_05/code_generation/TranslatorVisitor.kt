@@ -6,16 +6,18 @@ import wacc_05.ast_structure.ASTVisitor
 import wacc_05.code_generation.instructions.*
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
-import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class TranslatorVisitor : ASTVisitor<Unit> {
+
     override fun visitProgramAST(prog: ProgramAST) {
         TODO("Not yet implemented")
     }
 
     override fun visitFunctionAST(func: FunctionAST) {
-        TODO("Not yet implemented")
+        val stackSizeCalculator = StackSizeVisitor()
+        val stackSize: Int = stackSizeCalculator.getStackSize(func.body)
+        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
     }
 
     override fun visitParamListAST(list: ParamListAST) {
@@ -43,8 +45,9 @@ class TranslatorVisitor : ASTVisitor<Unit> {
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
         AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
         // Below will change to account for number of bytes that need to be allocated for variables. How? Change 0 to calculated number
-        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(0)))
-        // Need to have one pass of the program before adding instructions?
+        val stackSizeCalculator = StackSizeVisitor()
+        val stackSize: Int = stackSizeCalculator.getStackSize(begin.stat)
+        AssemblyRepresentation.addMainInstr(SubtractInstruction(Registers.sp, Registers.sp, Immediate(stackSize)))
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
