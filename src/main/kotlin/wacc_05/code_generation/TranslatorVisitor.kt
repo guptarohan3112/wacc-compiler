@@ -868,20 +868,24 @@ class TranslatorVisitor : ASTBaseVisitor() {
         binop.setDestReg(dest1)
     }
 
+    // types do not require any assembly code
     override fun visitBaseTypeAST(type: TypeAST.BaseTypeAST) {
-        TODO("Not yet implemented")
+        return
     }
 
+    // types do not require any assembly code
     override fun visitArrayTypeAST(type: TypeAST.ArrayTypeAST) {
-        TODO()
+        return
     }
 
+    // types do not require any assembly code
     override fun visitPairTypeAST(type: TypeAST.PairTypeAST) {
-        TODO("Not yet implemented")
+        return
     }
 
+    // types do not require any assembly code
     override fun visitPairElemTypeAST(elemType: TypeAST.PairElemTypeAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
@@ -932,8 +936,9 @@ class TranslatorVisitor : ASTBaseVisitor() {
         arrayLiter.setDestReg(arrLocation)
     }
 
+    // handled by visitAssignAST
     override fun visitAssignLHSAST(lhs: AssignLHSAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
