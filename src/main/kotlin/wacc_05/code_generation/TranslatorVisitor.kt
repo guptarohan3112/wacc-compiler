@@ -7,6 +7,7 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
+import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class TranslatorVisitor : ASTBaseVisitor() {
@@ -76,6 +77,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val funcIdent = symTab.lookup(func.funcName) as FunctionIdentifier
         funcIdent.setStackSize(stackSize)
 
+        if (func.paramList != null) {
+            visit(func.paramList)
+        }
+
         // Generate assembly code for the body statement
         visit(func.body)
 
@@ -94,12 +99,20 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     // TODO: Look above
     override fun visitParamListAST(list: ParamListAST) {
-        TODO("Not yet implemented")
+        var offset = 0
+        val symbolTable: SymbolTable = list.st()
+
+        // Store the offset of the parameter relative to the stack address of the first parameter
+        for (param in list.paramList) {
+            val paramIdent: ParamIdentifier = symbolTable.lookup(param.name) as ParamIdentifier
+            paramIdent.setOffset(offset)
+            offset += param.getType().getStackSize()
+        }
     }
 
     // TODO: Look above
     override fun visitParamAST(param: ParamAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     override fun visitSkipAST(skip: StatementAST.SkipAST) {
@@ -116,7 +129,12 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Store the value at the destination register at a particular offset to the stack pointer (bottom up)
         val currOffset = scope.getStackPtrOffset()
-        AssemblyRepresentation.addMainInstr(StoreInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, Immediate(currOffset))))
+        AssemblyRepresentation.addMainInstr(
+            StoreInstruction(
+                dest,
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(currOffset))
+            )
+        )
 
         // Set the absolute stack address of the variable in the corresponding variable identifier
         val boundaryAddr = scope.getStackPtr()
