@@ -106,22 +106,14 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    // TODO: Look above
+    // There is no assembly code that needs to be generated for parameters.
+    // Setting the correct offset of the parameter is done in visitAndUpdateParams
     override fun visitParamListAST(list: ParamListAST) {
-//        var offset = 0
-//        val symbolTable: SymbolTable = list.st()
-//
-//        // Store the offset of the parameter relative to the stack address of the first parameter
-//        for (param in list.paramList) {
-//            val paramIdent: ParamIdentifier = symbolTable.lookup(param.name) as ParamIdentifier
-//            paramIdent.setOffset(offset)
-//            offset += param.getType().getStackSize()
-//        }
         return
     }
 
     // There is no assembly code that needs to be generated for parameters.
-    // Setting the correct offset of the parameter is done in the list
+    // Setting the correct offset of the parameter is done in visitAndUpdateParams
     override fun visitParamAST(param: ParamAST) {
         return
     }
@@ -130,7 +122,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
         return
     }
 
-    // TODO: keep track of how much of the allocated stack space has been taken up
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
         // Generate code for the right hand side of the declaration
         visit(decl.assignment)
@@ -157,15 +148,59 @@ class TranslatorVisitor : ASTBaseVisitor() {
         scope.updatePtrOffset(size)
     }
 
-    // TODO:
+    // In progress
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
-        TODO("Not yet implemented")
+        // Generate code for the right hand side of the statement
+        visit(assign.rhs)
+        val dest: Register = assign.rhs.getDestReg()
+
+        val lhs: AssignLHSAST = assign.lhs
+        when {
+            lhs.ident != null -> {
+                // Find the corresponding variable identifier
+                val varIdent: VariableIdentifier =
+                    assign.st().lookupAll(lhs.ident) as VariableIdentifier
+
+                // Calculate the offset relative to the current stack pointer position
+                val offset: Int = varIdent.getAddr()
+                val sp: Int = assign.st().getStackPtr()
+
+                // Store the value at the destination register at the calculated offset to the sp
+                AssemblyRepresentation.addMainInstr(
+                    StoreInstruction(
+                        dest,
+                        AddressingMode.AddressingMode2(Registers.sp, Immediate(offset - sp))
+                    )
+                )
+            }
+            lhs.arrElem != null -> {
+                // Insert solution here
+            }
+            lhs.pairElem != null -> {
+                // Insert solution here
+            }
+            else -> {
+                // Do nothing
+            }
+        }
     }
 
     // Store the address of the program counter (?) into the link registers so that a function can
     // return to this address when completing its functionality
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
-        setUpScopeBegin(begin.stat)
+        val stackSize: Int = setUpScopeBegin(begin.stat)
+
+        // Generate assembly code for the body statement
+        visit(begin.stat)
+
+        // Restore the stack pointer
+        AssemblyRepresentation.addMainInstr(
+            AddInstruction(
+                Registers.sp,
+                Registers.sp,
+                Immediate(stackSize)
+            )
+        )
     }
 
     // TODO: IO
