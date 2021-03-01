@@ -16,7 +16,7 @@ class SymbolTable(private val parentST: SymbolTable?) {
     // hashmap storing mappings from a string identifier to a corresponding IdentifierObject
     private val map: HashMap<String, IdentifierObject?> = HashMap()
     // stack pointer for this scope //TODO: Change 1024...
-    private var sp: Int = 0
+    private var spAndOffset: Pair<Int, Int> = Pair(0, 0)
 
     /* Function: add()
      * ------------------------------
@@ -49,11 +49,23 @@ class SymbolTable(private val parentST: SymbolTable?) {
     }
 
     fun getStackPtr(): Int {
-        return sp
+        return spAndOffset.first
     }
 
+    // When setting the boundary stack pointer, change the offset from that to be 0
     fun setStackPtr(sp: Int) {
-        this.sp = sp
+        this.spAndOffset = Pair(sp, 0)
+    }
+
+    fun getStackPtrOffset(): Int {
+        return spAndOffset.second
+    }
+
+    fun updatePtrOffset(update: Int) {
+        val ptr = this.spAndOffset.first
+        var currOffset = this.spAndOffset.second
+        currOffset += update
+        this.spAndOffset = Pair(ptr, currOffset)
     }
 
     fun isMain(): Boolean {

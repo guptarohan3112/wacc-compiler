@@ -108,7 +108,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     // TODO: keep track of how much of the allocated stack space has been taken up
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
-        // Work on the rhs already done for us?
+        // Generate code for the right hand side of the declaration
+        visit(decl.assignment)
+        val dest: Register = decl.assignment.getDestReg()
+
+        // Store the value at the destination register at a particular offset to the stack pointer
+        // Update the amount of space taken up on the stack relative to the boundary and the current stack frame
+
 
     }
 
