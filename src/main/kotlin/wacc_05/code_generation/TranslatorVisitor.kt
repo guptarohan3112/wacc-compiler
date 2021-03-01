@@ -101,7 +101,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         for (param in list.paramList) {
             val paramIdent: ParamIdentifier = symbolTable.lookup(param.name) as ParamIdentifier
             paramIdent.setOffset(offset)
-            offset += param.getType().getStackSize()
+            offset += param.getType(symbolTable).getStackSize()
         }
     }
 
