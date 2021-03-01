@@ -34,28 +34,30 @@ object AssemblyRepresentation {
     fun buildAssembly(file_name: String) {
 
         File("$file_name.s").printWriter().use { out ->
-            out.println("\t.data\n")
+            val sb: StringBuilder = StringBuilder()
+            sb.append("\t.data\n")
             dataInstrs.forEach { instr->
-                out.println(printInstr(instr))
+                sb.append(printInstr(instr))
             }
 
-            out.println("\n\t.text\n")
+            sb.append("\n\t.text\n")
 
-            out.println("\t.global main")
-//            out.println("\tmain:")
+            sb.append("\t.global main")
 
             mainInstrs.forEach { instr->
-                out.println(printInstr(instr))
+                sb.append(printInstr(instr))
             }
 
-            out.println()
+            sb.append("\n")
 
             ioInstrs.forEach {
                 val instructions = it.applyIO()
                 instructions.forEach { instr ->
-                    out.println(printInstr(instr))
+                    sb.append(printInstr(instr))
                 }
             }
+
+            out.println(sb.toString())
         }
 
 
