@@ -110,7 +110,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    // TODO: Look above
+    // There is no assembly code that needs to be generated for parameters.
+    // Setting the correct offset of the parameter is done in the list
     override fun visitParamAST(param: ParamAST) {
         return
     }
