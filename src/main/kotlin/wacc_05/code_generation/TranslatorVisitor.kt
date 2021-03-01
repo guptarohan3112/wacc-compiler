@@ -208,25 +208,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitExitAST(exit: StatementAST.ExitAST) {
-        val reg: Register = Registers.allocate() // or is it r4?
-        // Load the allocated register with the exit code. Insert solution below
-        when (exit.expr) {
-            is ExprAST.IdentAST -> {
-                // Need to get the address of the variable stored on the stack
-                // How do we know the offset?
-            }
-            is ExprAST.IntLiterAST -> {
-                val exitCode: Int = exit.expr.getValue()
-                // Add the load instruction with the correct parameters
-            }
-            else -> {
-                visit(exit.expr)
-            }
-        }
-        // Move the exit code into r0 and then call the C function exit (system call will be imported from a library)
-        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
-        AssemblyRepresentation.addMainInstr(BranchInstruction("exit", Condition.L))
+        // Evaluate the exiting instruction and get destination register
+        visit(exit.expr)
+        val dest: Register = exit.expr.getDestReg()
 
+        // Move contents of the register in r0 for calling exit
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        AssemblyRepresentation.addMainInstr(BranchInstruction("exit", Condition.L))
     }
 
     // TOOO: Heap memory
