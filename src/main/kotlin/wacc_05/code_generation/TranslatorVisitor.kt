@@ -195,7 +195,32 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     // Call and add IO instructions
     override fun visitPrintAST(print: StatementAST.PrintAST) {
-        TODO("Not yet implemented")
+        visit(print.expr)
+        AssemblyRepresentation.addIOInstr(IOInstruction.p_print_ln())
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, print.expr.getDestReg()))
+        // TODO: Need to push appropriate part in data to print the type of expression
+        if (print.expr.getType() == TypeIdentifier.INT_TYPE) {
+            // Add %d placeholder
+            AssemblyRepresentation.addIOInstr(IOInstruction.p_print_int())
+            AssemblyRepresentation.addMainInstr(BranchInstruction("p_print_int", Condition.L))
+        }
+        if (print.expr.getType() == TypeIdentifier.BOOL_TYPE) {
+        }
+        if (print.expr.getType() == TypeIdentifier.CHAR_TYPE) {
+        }
+        if (print.expr.getType() == TypeIdentifier.STRING_TYPE) {
+        }
+        if (print.expr.getType() == TypeIdentifier.CHAR_TYPE) {
+        }
+        if (print.expr.getType() == TypeIdentifier.PAIR_LIT_TYPE) {
+        }
+//        if (print.expr.getType() == TypeIdentifier.ARRAY) {
+//        }
+
+
+        if (print.newLine) {
+            AssemblyRepresentation.addMainInstr(BranchInstruction("p_print_ln", Condition.L))
+        }
     }
 
     override fun visitReturnAST(ret: StatementAST.ReturnAST) {
