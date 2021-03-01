@@ -173,13 +173,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 )
             }
             lhs.arrElem != null -> {
-                val arrIdent: VariableIdentifier =
-                    assign.st().lookup(lhs.arrElem!!.ident) as VariableIdentifier
+                val arrElem = lhs.arrElem!!
+                visit(arrElem)
+                val arrDest: Register = arrElem.getDestReg()
 
-                val offset: Int = arrIdent.getAddr()
-                val sp: Int = assign.st().getStackPtr()
+                AssemblyRepresentation.addMainInstr(StoreInstruction(dest, AddressingMode.AddressingMode2(arrDest)))
 
-
+                Registers.free(arrDest)
             }
             lhs.pairElem != null -> {
                 val pairElem: PairElemAST = lhs.pairElem!!
@@ -200,6 +200,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 // Do nothing
             }
         }
+
+        Registers.free(dest)
     }
 
     // Store the address of the program counter (?) into the link registers so that a function can
