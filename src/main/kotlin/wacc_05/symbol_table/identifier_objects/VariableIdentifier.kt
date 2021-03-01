@@ -1,7 +1,9 @@
 package wacc_05.symbol_table.identifier_objects
 
 class VariableIdentifier(private val type: TypeIdentifier) : IdentifierObject() {
+
     private var addr: Int = -1
+
     override fun getType(): TypeIdentifier {
         return type
     }
