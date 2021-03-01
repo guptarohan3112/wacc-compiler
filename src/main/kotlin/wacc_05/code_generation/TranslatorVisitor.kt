@@ -7,6 +7,7 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier.Companion.INT_SIZE
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class TranslatorVisitor : ASTBaseVisitor() {
@@ -770,7 +771,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitArrayTypeAST(type: TypeAST.ArrayTypeAST) {
-        TODO("Not yet implemented")
+        TODO()
     }
 
     override fun visitPairTypeAST(type: TypeAST.PairTypeAST) {
@@ -782,7 +783,51 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
-        TODO("Not yet implemented")
+        // we want to allocate (length * size of elem) + INT_SIZE
+        val elemsSize: Int = arrayLiter.elems[0].getType().getSizeBytes()
+        val arrAllocation: Int = arrayLiter.elemsLength() * elemsSize + INT_SIZE
+
+        // load allocation into param register for malloc and branch
+        AssemblyRepresentation.addMainInstr(
+            LoadInstruction(
+                Registers.r0,
+                AddressingMode.AddressingLabel("$arrAllocation")
+            )
+        )
+
+        AssemblyRepresentation.addMainInstr(BranchInstruction("malloc", Condition.L))
+
+        // store the array address in an allocated register
+        val arrLocation: Register = Registers.allocate()
+        AssemblyRepresentation.addMainInstr(MoveInstruction(arrLocation, Registers.r0))
+
+        // we start the index at +4 so we can store the size of the array at +0
+        var arrIndex = INT_SIZE
+        for (elem in arrayLiter.elems) {
+            visit(elem)
+            val dest: Register = elem.getDestReg()
+            AssemblyRepresentation.addMainInstr(
+                StoreInstruction(
+                    dest,
+                    AddressingMode.AddressingMode2(arrLocation, Immediate(arrIndex))
+                )
+            )
+            arrIndex += elemsSize
+            Registers.free(dest)
+        }
+
+        // store the length of the array at arrLocation +0
+        val sizeDest: Register = Registers.allocate()
+        AssemblyRepresentation.addMainInstr(
+            LoadInstruction(
+                sizeDest,
+                AddressingMode.AddressingLabel("${arrayLiter.elemsLength()}")
+            )
+        )
+        AssemblyRepresentation.addMainInstr(StoreInstruction(sizeDest, AddressingMode.AddressingMode2(arrLocation)))
+        Registers.free(sizeDest)
+
+        arrayLiter.setDestReg(arrLocation)
     }
 
     override fun visitAssignLHSAST(lhs: AssignLHSAST) {

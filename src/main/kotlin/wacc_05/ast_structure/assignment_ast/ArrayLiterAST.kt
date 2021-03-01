@@ -19,6 +19,10 @@ class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<Ex
         }
     }
 
+    fun elemsLength(): Int {
+        return elems.size
+    }
+
     override fun translate(): ArrayList<Instruction> {
         return ArrayList()
     }
