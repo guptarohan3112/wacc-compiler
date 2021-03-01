@@ -94,8 +94,6 @@ object WaccCompiler {
             println("Generation of assembly file complete")
         }
 
-
-
         if (debug) {
             println("FINISHED")
         }

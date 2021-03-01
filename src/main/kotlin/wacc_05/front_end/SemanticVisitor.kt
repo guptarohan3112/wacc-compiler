@@ -46,7 +46,7 @@ class SemanticVisitor(
             val newFuncIdent =
                 FunctionIdentifier(
                     returnTypeIdent,
-                    func.paramList?.getParams(symTab) ?: ArrayList(),
+                    func.paramList?.getParams() ?: ArrayList(),
                     funcST
                 )
 

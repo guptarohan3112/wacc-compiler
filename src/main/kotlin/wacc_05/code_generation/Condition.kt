@@ -11,5 +11,8 @@ enum class Condition {
     HI,
     LS,
     HS,
-    LO
+    LO,
+    LEQ,
+    LLT,
+    CS
 }

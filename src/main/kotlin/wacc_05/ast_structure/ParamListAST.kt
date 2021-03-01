@@ -14,7 +14,7 @@ class ParamListAST(val paramList: ArrayList<ParamAST>) : AST() {
         return visitor.visitParamListAST(this)
     }
 
-    fun getParams(st: SymbolTable): ArrayList<ParamIdentifier> {
+    fun getParams(): ArrayList<ParamIdentifier> {
         val list: ArrayList<ParamIdentifier> = ArrayList()
 
         for (param in paramList) {
@@ -23,5 +23,7 @@ class ParamListAST(val paramList: ArrayList<ParamAST>) : AST() {
 
         return list
     }
+
+
 
 }
