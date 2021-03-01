@@ -3,12 +3,9 @@ package wacc_05.code_generation
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.code_generation.instructions.*
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
-import wacc_05.symbol_table.identifier_objects.ParamIdentifier
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+import wacc_05.symbol_table.identifier_objects.*
 
 class TranslatorVisitor : ASTBaseVisitor() {
 
@@ -78,7 +75,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         funcIdent.setStackSize(stackSize)
 
         if (func.paramList != null) {
-            visit(func.paramList)
+            visitAndUpdateParams(stackSize, func.paramList)
         }
 
         // Generate assembly code for the body statement
@@ -97,9 +94,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
     }
 
-    // TODO: Look above
-    override fun visitParamListAST(list: ParamListAST) {
-        var offset = 0
+    private fun visitAndUpdateParams(stackSize: Int, list: ParamListAST) {
+        var offset = stackSize
         val symbolTable: SymbolTable = list.st()
 
         // Store the offset of the parameter relative to the stack address of the first parameter
@@ -108,6 +104,20 @@ class TranslatorVisitor : ASTBaseVisitor() {
             paramIdent.setOffset(offset)
             offset += param.getType().getStackSize()
         }
+    }
+
+    // TODO: Look above
+    override fun visitParamListAST(list: ParamListAST) {
+//        var offset = 0
+//        val symbolTable: SymbolTable = list.st()
+//
+//        // Store the offset of the parameter relative to the stack address of the first parameter
+//        for (param in list.paramList) {
+//            val paramIdent: ParamIdentifier = symbolTable.lookup(param.name) as ParamIdentifier
+//            paramIdent.setOffset(offset)
+//            offset += param.getType().getStackSize()
+//        }
+        return
     }
 
     // There is no assembly code that needs to be generated for parameters.
@@ -344,12 +354,18 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
         // Find the stack address of the identifier (relative to the top of the stack, 0 for us)
-        val identObj: VariableIdentifier = ident.st().lookupAll(ident.value) as VariableIdentifier
-        val identOffset: Int = identObj.getAddr()
+        val identObj: IdentifierObject = ident.st().lookupAll(ident.value)!!
 
-        // Calculate the stack space between the current stack pointer and the identifier
-        val sp: Int = ident.st().getStackPtr()
-        val spOffset: Int = identOffset - sp
+        var spOffset = 0
+        if (identObj is VariableIdentifier) {
+            // Calculate the stack space between the current stack pointer and the identifier
+            val identOffset: Int = identObj.getAddr()
+            val sp: Int = ident.st().getStackPtr()
+            spOffset = identOffset - sp
+        } else if (identObj is ParamIdentifier) {
+            // Obtain the offset from the param identifier field
+            spOffset = identObj.getOffset()
+        }
 
         // Obtain an available register and load stack value into this register
         val register = Registers.allocate()
