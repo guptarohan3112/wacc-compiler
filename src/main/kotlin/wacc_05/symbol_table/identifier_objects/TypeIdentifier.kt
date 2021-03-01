@@ -59,7 +59,7 @@ open class TypeIdentifier : IdentifierObject() {
             return CHAR_SIZE
         }
 
-        override fun getSizeBytes() : Int {
+        override fun getSizeBytes(): Int {
             return CHAR_SIZE
         }
     }
@@ -158,8 +158,16 @@ open class TypeIdentifier : IdentifierObject() {
             return fstType
         }
 
+        fun getFstSizeBytes(): Int {
+            return fstType.getSizeBytes()
+        }
+
         fun getSndType(): TypeIdentifier {
             return sndType
+        }
+
+        fun getSndSizeBytes(): Int {
+            return sndType.getSizeBytes()
         }
 
         // we override equals here to capture that two pair types are equal if they have the same
@@ -177,8 +185,8 @@ open class TypeIdentifier : IdentifierObject() {
         }
 
         override fun getSizeBytes(): Int {
-            // we only get the stack size because of the loose typing
-            return fstType.getStackSize() + sndType.getStackSize()
+            // since both fst and snd get allocated into a PAIR_SIZE byte address
+            return 2 * PAIR_SIZE
         }
 
         override fun hashCode(): Int {

@@ -2,6 +2,11 @@ package wacc_05.code_generation
 
 sealed class AddressingMode : Operand() {
 
+    data class AddressingLabel(private val label: String) : AddressingMode() {
+        override fun toString(): String {
+            return "=$label"
+        }
+    }
 
     /*
     Addressing Mode 2:
@@ -12,6 +17,7 @@ sealed class AddressingMode : Operand() {
     */
     data class AddressingMode2(private val regN: Register, private val operand: Operand? = null) : AddressingMode() {
         private var labelName: String? = null
+
         constructor(regN: Register, labelName: String) : this(regN) {
             this.labelName = labelName
         }
