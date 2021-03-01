@@ -217,9 +217,22 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(BranchInstruction("exit", Condition.L))
     }
 
-    // TOOO: Heap memory
     override fun visitFreeAST(free: StatementAST.FreeAST) {
-        TODO("Not yet implemented")
+        // Evaluate the expression that you are freeing and obtain the destination register
+        visit(free.expr)
+        val dest: Register = free.expr.getDestReg()
+
+        // Move the contents of the destination register into r0
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
+
+        // Add the IO instruction and branch instruction corresponding to the type of the expression
+        if (free.expr.getType() is TypeIdentifier.ArrayIdentifier) {
+            AssemblyRepresentation.addIOInstr(IOInstruction.p_free_array())
+            AssemblyRepresentation.addMainInstr(BranchInstruction("p_free_array", Condition.L))
+        } else {
+            AssemblyRepresentation.addIOInstr(IOInstruction.p_free_pair())
+            AssemblyRepresentation.addMainInstr(BranchInstruction("p_free_pair", Condition.L))
+        }
     }
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
