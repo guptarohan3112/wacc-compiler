@@ -42,7 +42,7 @@ object AssemblyRepresentation {
 
             sb.append("\n\t.text\n")
 
-            sb.append("\t.global main")
+            sb.append("\t.global main\n")
 
             mainInstrs.forEach { instr->
                 sb.append(printInstr(instr))
@@ -74,9 +74,9 @@ object AssemblyRepresentation {
 
     private fun printInstr(instr: Instruction): String {
         return if (instr is LabelInstruction) {
-            "\t$instr"
+            "\t$instr\n"
         } else {
-            "\t\t$instr"
+            "\t\t$instr\n"
         }
     }
 }

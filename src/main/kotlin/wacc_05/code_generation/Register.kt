@@ -8,7 +8,12 @@ package wacc_05.code_generation
 class Register(private val number: Int) : Operand(), Comparable<Register> {
 
     override fun toString(): String {
-        return "r$number"
+        return when(number) {
+            13 -> "sp"
+            14 -> "lr"
+            15 -> "pc"
+            else -> "r$number"
+        }
     }
 
 
