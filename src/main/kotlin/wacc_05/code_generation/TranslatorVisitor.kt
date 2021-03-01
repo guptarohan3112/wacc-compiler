@@ -173,10 +173,28 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 )
             }
             lhs.arrElem != null -> {
-                // Insert solution here
+                val arrIdent: VariableIdentifier =
+                    assign.st().lookup(lhs.arrElem!!.ident) as VariableIdentifier
+
+                val offset: Int = arrIdent.getAddr()
+                val sp: Int = assign.st().getStackPtr()
+
+
             }
             lhs.pairElem != null -> {
-                // Insert solution here
+                val pairElem: PairElemAST = lhs.pairElem!!
+
+                visitPairElemAST(pairElem)
+                val pairLocation: Register = pairElem.getDestReg()
+
+                AssemblyRepresentation.addMainInstr(
+                    StoreInstruction(
+                        dest,
+                        AddressingMode.AddressingMode2(pairLocation)
+                    )
+                )
+
+                Registers.free(pairLocation)
             }
             else -> {
                 // Do nothing
@@ -412,9 +430,51 @@ class TranslatorVisitor : ASTBaseVisitor() {
         )
     }
 
-    // TODO: Heap memory
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
-        TODO("Not yet implemented")
+        val ident: VariableIdentifier = arrayElem.st().lookupAll(arrayElem.ident) as VariableIdentifier
+        val sp = arrayElem.st().getStackPtrOffset()
+        val offset: Int = ident.getAddr() + TypeIdentifier.INT_SIZE
+
+        // move the start of the array into dest register
+        val dest: Register = Registers.allocate()
+        AssemblyRepresentation.addMainInstr(
+            StoreInstruction(
+                dest,
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset - sp))
+            )
+        )
+
+        // for each element, change dest to the location of that index
+        // (this may be the address of another
+        for (expr in arrayElem.exprs) {
+            // do LDR rX [rX] in case rX represents the address of an array
+            AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
+            visit(expr)
+            val exprDest: Register = expr.getDestReg()
+
+            // set parameters and branch to check the index
+            AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, exprDest))
+            AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest))
+            AssemblyRepresentation.addIOInstr(IOInstruction.p_check_array_bounds())
+            AssemblyRepresentation.addMainInstr(BranchInstruction("p_check_array_bounds", Condition.L))
+
+            when (expr.getType().getStackSize()) {
+                4 -> {
+                    AssemblyRepresentation.addMainInstr(
+                        AddInstruction(
+                            dest,
+                            dest,
+                            ShiftOperand(exprDest, ShiftOperand.Shift.LSL, 2)
+                        )
+                    )
+                }
+                else -> {
+                    AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, exprDest))
+                }
+            }
+        }
+
+        arrayElem.setDestReg(dest)
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
@@ -1077,8 +1137,18 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(pairElem.elem)
         val dest: Register = pairElem.elem.getDestReg()
 
-        if(!pairElem.isFst) {
-            AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest, Immediate(4))))
+        // set param and branch to check for null dereference
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        AssemblyRepresentation.addMainInstr(BranchInstruction("p_check_null_pointer", Condition.L))
+        AssemblyRepresentation.addIOInstr(IOInstruction.p_check_null_pointer())
+
+        if (!pairElem.isFst) {
+            AssemblyRepresentation.addMainInstr(
+                LoadInstruction(
+                    dest,
+                    AddressingMode.AddressingMode2(dest, Immediate(4))
+                )
+            )
         }
 
         pairElem.setDestReg(dest)
