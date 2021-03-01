@@ -112,10 +112,20 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(decl.assignment)
         val dest: Register = decl.assignment.getDestReg()
 
-        // Store the value at the destination register at a particular offset to the stack pointer
+        val scope: SymbolTable = decl.st()
+
+        // Store the value at the destination register at a particular offset to the stack pointer (bottom up)
+        val currOffset = scope.getStackPtrOffset()
+        AssemblyRepresentation.addMainInstr(StoreInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, Immediate(currOffset))))
+
+        // Set the absolute stack address of the variable in the corresponding variable identifier
+        val boundaryAddr = scope.getStackPtr()
+        val varObj: VariableIdentifier = scope.lookupAll(decl.varName) as VariableIdentifier
+        varObj.setAddr(boundaryAddr + currOffset)
+
         // Update the amount of space taken up on the stack relative to the boundary and the current stack frame
-
-
+        val size = decl.type.getType().getStackSize()
+        scope.updatePtrOffset(size)
     }
 
     // TODO:
@@ -314,12 +324,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
-        val register = Registers.allocate()
-        // offset relative to the top of the stack
-        val identObj: VariableIdentifier = ident.st?.lookupAll(ident.value) as VariableIdentifier
+        // Find the stack address of the identifier (relative to the top of the stack, 0 for us)
+        val identObj: VariableIdentifier = ident.st().lookupAll(ident.value) as VariableIdentifier
         val identOffset: Int = identObj.getAddr()
-        val sp: Int = ident.st!!.getStackPtr()
+
+        // Calculate the stack space between the current stack pointer and the identifier
+        val sp: Int = ident.st().getStackPtr()
         val spOffset: Int = identOffset - sp
+
+        // Obtain an available register and load stack value into this register
+        val register = Registers.allocate()
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 register,
