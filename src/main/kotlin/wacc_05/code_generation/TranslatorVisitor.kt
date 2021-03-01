@@ -60,7 +60,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Put in the .ltorg directive?
     }
 
-    // TODO: Loading local variables and deal with parameters and offsets
     override fun visitFunctionAST(func: FunctionAST) {
         // Create the label for the function
         val funcLabel = "f_${func.funcName}"
