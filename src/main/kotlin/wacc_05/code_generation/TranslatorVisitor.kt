@@ -1073,6 +1073,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
-        TODO("Not yet implemented")
+        visit(pairElem.elem)
+        val dest: Register = pairElem.elem.getDestReg()
+
+        if(!pairElem.isFst) {
+            AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest, Immediate(4))))
+        }
+
+        pairElem.setDestReg(dest)
     }
 }
