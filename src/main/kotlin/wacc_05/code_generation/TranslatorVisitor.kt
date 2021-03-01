@@ -147,7 +147,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
         scope.updatePtrOffset(size)
     }
 
-    // In progress
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
         // Generate code for the right hand side of the statement
         visit(assign.rhs)
@@ -356,7 +355,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
         val intValue = Integer.parseInt(liter.sign + liter.value)
         val register = Registers.allocate()
-        val mode: AddressingMode = AddressingMode.AddressingMode2(register, Immediate(intValue))
+        val mode: AddressingMode = AddressingMode.AddressingLabel("$intValue")
         liter.setDestReg(register)
         AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
     }

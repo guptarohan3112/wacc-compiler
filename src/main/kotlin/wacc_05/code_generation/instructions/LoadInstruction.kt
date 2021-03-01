@@ -17,7 +17,7 @@ class LoadInstruction(private val reg: Register, private val addrMode: Addressin
 //    LDRSB r4, [r4]
 
     override fun toString(): String {
-        return if (addrMode is AddressingMode2) {
+        return if (addrMode is AddressingMode2 || addrMode is AddressingMode.AddressingLabel) {
             "LDR${cond ?: ""} $reg, $addrMode"
         } else if (addrMode is AddressingMode3) {
             "LDRSB $reg, $addrMode"
