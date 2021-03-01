@@ -246,10 +246,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Add the IO instruction and branch instruction corresponding to the type of the expression
         if (free.expr.getType() is TypeIdentifier.ArrayIdentifier) {
-            AssemblyRepresentation.addIOInstr(IOInstruction.p_free_array())
+            AssemblyRepresentation.addPInstr(PInstruction.p_free_array())
             AssemblyRepresentation.addMainInstr(BranchInstruction("p_free_array", Condition.L))
         } else {
-            AssemblyRepresentation.addIOInstr(IOInstruction.p_free_pair())
+            AssemblyRepresentation.addPInstr(PInstruction.p_free_pair())
             AssemblyRepresentation.addMainInstr(BranchInstruction("p_free_pair", Condition.L))
         }
     }
@@ -284,12 +284,12 @@ class TranslatorVisitor : ASTBaseVisitor() {
     // Call and add IO instructions
     override fun visitPrintAST(print: StatementAST.PrintAST) {
         visit(print.expr)
-        AssemblyRepresentation.addIOInstr(IOInstruction.p_print_ln())
+        AssemblyRepresentation.addPInstr(PInstruction.p_print_ln())
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, print.expr.getDestReg()))
         // TODO: Need to push appropriate part in data to print the type of expression
         if (print.expr.getType() == TypeIdentifier.INT_TYPE) {
             // Add %d placeholder
-            AssemblyRepresentation.addIOInstr(IOInstruction.p_print_int())
+            AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
             AssemblyRepresentation.addMainInstr(BranchInstruction("p_print_int", Condition.L))
         }
         if (print.expr.getType() == TypeIdentifier.BOOL_TYPE) {
