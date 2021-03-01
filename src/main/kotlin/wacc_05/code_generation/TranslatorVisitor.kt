@@ -456,7 +456,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             // set parameters and branch to check the index
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, exprDest))
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest))
-            AssemblyRepresentation.addIOInstr(IOInstruction.p_check_array_bounds())
+            AssemblyRepresentation.addPInstr(PInstruction.p_check_array_bounds())
             AssemblyRepresentation.addMainInstr(BranchInstruction("p_check_array_bounds", Condition.L))
 
             when (expr.getType().getStackSize()) {
@@ -1141,7 +1141,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // set param and branch to check for null dereference
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
         AssemblyRepresentation.addMainInstr(BranchInstruction("p_check_null_pointer", Condition.L))
-        AssemblyRepresentation.addIOInstr(IOInstruction.p_check_null_pointer())
+        AssemblyRepresentation.addPInstr(PInstruction.p_check_null_pointer())
 
         if (!pairElem.isFst) {
             AssemblyRepresentation.addMainInstr(
