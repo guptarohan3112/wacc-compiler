@@ -311,7 +311,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
     // Call and add IO instructions
     override fun visitPrintAST(print: StatementAST.PrintAST) {
         visit(print.expr)
-        AssemblyRepresentation.addPInstr(PInstruction.p_print_ln())
         val reg: Register = print.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
         // TODO: Need to push appropriate part in data to print the type of expression
