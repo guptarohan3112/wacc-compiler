@@ -15,8 +15,8 @@ class MessageLabelInstruction(private val name: String, private val string: Stri
 
     init {
         length = string.length
-        if (string.contains("\\0"))
-            length -= 1
+        val count = string.count{"\\".contains(it)}
+        length -= count
     }
 
     override fun toString(): String {
