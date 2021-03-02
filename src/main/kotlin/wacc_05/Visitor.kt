@@ -269,7 +269,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         // node accordingly
         return when {
             ctx.IDENT() != null -> {
-                AssignLHSAST(ctx = ctx, ident = ctx.IDENT().text)
+                AssignLHSAST(ctx = ctx, ident = ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), value = ctx.IDENT().text))
             }
             ctx.pairElem() != null -> {
                 AssignLHSAST(ctx = ctx, pairElem = visitPairElem(ctx.pairElem()))

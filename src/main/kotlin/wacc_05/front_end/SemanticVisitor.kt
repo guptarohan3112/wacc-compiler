@@ -441,13 +441,13 @@ class SemanticVisitor(
         } else if (lhs.pairElem != null) {
             visitChild(symTab, lhs.pairElem!!)
         } else {
-            val type = symTab.lookupAll(lhs.ident!!)
+            val type = symTab.lookupAll(lhs.ident?.value!!)
             if (type == null) {
-                errorHandler.invalidIdentifier(lhs.ctx, lhs.ident)
+                errorHandler.invalidIdentifier(lhs.ctx, lhs.ident.value)
                 // Add the identifier into symbol table for error recovery
-                symTab.add(lhs.ident, VariableIdentifier(TypeIdentifier.GENERIC))
+                symTab.add(lhs.ident.value, VariableIdentifier(TypeIdentifier.GENERIC))
             } else if (type is FunctionIdentifier) {
-                errorHandler.invalidAssignment(lhs.ctx, lhs.ident)
+                errorHandler.invalidAssignment(lhs.ctx, lhs.ident.value)
             }
         }
     }

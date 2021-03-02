@@ -39,10 +39,9 @@ open class StatSemanticTests {
 
         val read = StatementAST.ReadAST(
             WaccParser.StatReadContext(WaccParser.StatContext()),
-            AssignLHSAST(
-                WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
-                "x"
-            )
+            AssignLHSAST(WaccParser.AssignLHSContext(
+                WaccParser.StatContext(), 0), ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(),
+                0), "x")),
         )
 
         read.st = st
@@ -56,10 +55,9 @@ open class StatSemanticTests {
 
         val read = StatementAST.ReadAST(
             WaccParser.StatReadContext(WaccParser.StatContext()),
-            AssignLHSAST(
-                WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
-                "x"
-            )
+            AssignLHSAST(WaccParser.AssignLHSContext(
+                WaccParser.StatContext(), 0), ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(),
+                0), "x")),
         )
 
         read.st = st
@@ -75,10 +73,9 @@ open class StatSemanticTests {
 
         val read = StatementAST.ReadAST(
             WaccParser.StatReadContext(WaccParser.StatContext()),
-            AssignLHSAST(
-                WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
-                "x"
-            )
+            AssignLHSAST(WaccParser.AssignLHSContext(
+                WaccParser.StatContext(), 0), ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(),
+                0), "x")),
         )
 
         read.st = st
