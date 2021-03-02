@@ -255,6 +255,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Move contents of the register in r0 for calling exit
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
         AssemblyRepresentation.addMainInstr(BranchInstruction("exit", Condition.L))
+        Registers.free(dest)
     }
 
     override fun visitFreeAST(free: StatementAST.FreeAST) {
@@ -274,6 +275,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addPInstr(PInstruction.p_free_pair())
             AssemblyRepresentation.addMainInstr(BranchInstruction("p_free_pair", Condition.L))
         }
+
+        Registers.free(dest)
     }
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
@@ -301,13 +304,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Make label for whatever follows the if statement
         AssemblyRepresentation.addMainInstr(nextLabel)
+
+        Registers.free(destination)
     }
 
     // Call and add IO instructions
     override fun visitPrintAST(print: StatementAST.PrintAST) {
         visit(print.expr)
         AssemblyRepresentation.addPInstr(PInstruction.p_print_ln())
-        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, print.expr.getDestReg()))
+        val reg: Register = print.expr.getDestReg()
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
         // TODO: Need to push appropriate part in data to print the type of expression
         if (print.expr.getType() == TypeIdentifier.INT_TYPE) {
             // Add %d placeholder
@@ -331,6 +337,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         if (print.newLine) {
             AssemblyRepresentation.addMainInstr(BranchInstruction("p_print_ln", Condition.L))
         }
+        Registers.free(reg)
     }
 
     override fun visitReturnAST(ret: StatementAST.ReturnAST) {
@@ -341,6 +348,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Move the value into r0 and pop the program counter
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
+        Registers.free(dest)
     }
 
     override fun visitSequentialAST(seq: StatementAST.SequentialAST) {
@@ -363,14 +371,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Label for condition checking
         AssemblyRepresentation.addMainInstr(condLabel)
 
+        val reg: Register = whileStat.loopExpr.getDestReg()
         // Comparison and jump if equal
         visit(whileStat.loopExpr)
         AssemblyRepresentation.addMainInstr(
             CompareInstruction(
-                whileStat.loopExpr.getDestReg(),
+                reg,
                 Immediate(1)
             )
         )
+        Registers.free(reg)
         AssemblyRepresentation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
 
@@ -412,7 +422,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 register,
-                AddressingMode.AddressingMode2(register, label.getLabel())
+                AddressingMode.AddressingLabel(label.getLabel())
             )
         )
     }
@@ -496,6 +506,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, exprDest))
                 }
             }
+            Registers.free(exprDest)
         }
 
         arrayElem.setDestReg(dest)

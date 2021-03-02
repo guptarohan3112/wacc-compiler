@@ -20,7 +20,7 @@ sealed class PInstruction {
                 CompareInstruction(Registers.r0, Immediate(0)),
                 LoadInstruction(
                     Registers.r0,
-                    AddressingMode.AddressingMode2(Registers.r0, nullLabel.getLabel()),
+                    AddressingMode.AddressingLabel(nullLabel.getLabel()),
                     Condition.EQ
                 ),
                 BranchInstruction("p_throw_runtime_error", Condition.LEQ),
@@ -46,7 +46,7 @@ sealed class PInstruction {
                 LabelInstruction("p_read_int"),
                 PushInstruction(Registers.lr),
                 MoveInstruction(Registers.r1, Registers.r0),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingMode2(Registers.r0, readLabel.getLabel())),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(readLabel.getLabel())),
                 AddInstruction(Registers.r0, Registers.r0, Immediate(4)),
                 BranchInstruction("scanf", Condition.L),
                 PopInstruction(Registers.pc)
@@ -70,7 +70,7 @@ sealed class PInstruction {
                 LabelInstruction("p_read_char"),
                 PushInstruction(Registers.lr),
                 MoveInstruction(Registers.r1, Registers.r0),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingMode2(Registers.r0, readLabel.getLabel())),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(readLabel.getLabel())),
                 AddInstruction(Registers.r0, Registers.r0, Immediate(4)),
                 BranchInstruction("scanf", Condition.L),
                 PopInstruction(Registers.pc)
@@ -93,7 +93,7 @@ sealed class PInstruction {
             return arrayListOf(
                 LabelInstruction("p_print_ln"),
                 PushInstruction(Registers.lr),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingMode2(Registers.r0, terminalLabel.getLabel())),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(terminalLabel.getLabel())),
                 AddInstruction(Registers.r0, Registers.r0, Immediate(4)),
                 BranchInstruction("puts", Condition.L),
                 MoveInstruction(Registers.r0, Immediate(0)),
@@ -142,8 +142,8 @@ sealed class PInstruction {
                 LabelInstruction("p_print_bool"),
                 PushInstruction(Registers.lr),
                 CompareInstruction(Registers.r0, Immediate(0)),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingMode2(Registers.r0, trueLabel.getLabel())),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingMode2(Registers.r0, falseLabel.getLabel())),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(trueLabel.getLabel())),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(falseLabel.getLabel())),
                 AddInstruction(Registers.r0, Registers.r0, Immediate(4)),
                 BranchInstruction("printf", Condition.L),
                 MoveInstruction(Registers.r0, Immediate(0)),
@@ -170,7 +170,7 @@ sealed class PInstruction {
                 LabelInstruction("p_print_int"),
                 PushInstruction(Registers.lr),
                 MoveInstruction(Registers.r1, Registers.r0),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingMode2(Registers.r0, printLabel.getLabel())),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(printLabel.getLabel())),
                 AddInstruction(Registers.r0, Registers.r0, Immediate(4)),
                 BranchInstruction("printf", Condition.L),
                 MoveInstruction(Registers.r0, Immediate(0)),
@@ -198,7 +198,7 @@ sealed class PInstruction {
                 PushInstruction(Registers.lr),
                 LoadInstruction(Registers.r1, AddressingMode.AddressingMode2(Registers.r0)),
                 AddInstruction(Registers.r2, Registers.r0, Immediate(4)),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingMode2(Registers.r0, printLabel.getLabel())),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(printLabel.getLabel())),
                 AddInstruction(Registers.r0, Registers.r0, Immediate(4)),
                 BranchInstruction("printf", Condition.L),
                 MoveInstruction(Registers.r0, Immediate(0)),
@@ -227,7 +227,7 @@ sealed class PInstruction {
                 CompareInstruction(Registers.r1, Immediate(0)),
                 LoadInstruction(
                     Registers.r0,
-                    AddressingMode.AddressingMode2(Registers.r0, divLabel.getLabel()),
+                    AddressingMode.AddressingLabel(divLabel.getLabel()),
                     Condition.EQ
                 ),
                 BranchInstruction("p_throw_runtime_error", Condition.LEQ),
@@ -253,7 +253,7 @@ sealed class PInstruction {
             )
             return arrayListOf(
                 LabelInstruction("p_throw_overflow_error"),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingMode2(Registers.r0, overflowLabel.getLabel())),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(overflowLabel.getLabel())),
                 BranchInstruction("p_throw_runtime_error", Condition.L)
             )
         }
@@ -282,7 +282,7 @@ sealed class PInstruction {
                 CompareInstruction(Registers.r0, Immediate(0)),
                 LoadInstruction(
                     Registers.r0,
-                    AddressingMode.AddressingMode2(Registers.r0, labelNegIndex.getLabel()),
+                    AddressingMode.AddressingLabel(labelNegIndex.getLabel()),
                     Condition.LT
                 ),
                 BranchInstruction("p_throw_runtime_error", Condition.LLT),
@@ -290,7 +290,7 @@ sealed class PInstruction {
                 CompareInstruction(Registers.r0, Registers.r1),
                 LoadInstruction(
                     Registers.r0,
-                    AddressingMode.AddressingMode2(Registers.r0, labelTooLargeIndex.getLabel()),
+                    AddressingMode.AddressingLabel(labelTooLargeIndex.getLabel()),
                     Condition.CS
                 ),
                 BranchInstruction("p_throw_runtime_error", Condition.CS),
@@ -320,7 +320,7 @@ sealed class PInstruction {
                 CompareInstruction(Registers.r0, Immediate(0)),
                 LoadInstruction(
                     Registers.r0,
-                    AddressingMode.AddressingMode2(Registers.r0, freeLabel.getLabel()),
+                    AddressingMode.AddressingLabel(freeLabel.getLabel()),
                     Condition.EQ
                 ),
                 BranchInstruction("p_throw_runtime_error", Condition.EQ),
@@ -352,7 +352,7 @@ sealed class PInstruction {
                 LabelInstruction("p_free_array"),
                 PushInstruction(Registers.lr),
                 CompareInstruction(Registers.r0, Immediate(0)),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingMode2(Registers.r0, freeLabel.getLabel()), Condition.EQ),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(freeLabel.getLabel()), Condition.EQ),
                 BranchInstruction("p_throw_runtime_error", Condition.EQ),
                 BranchInstruction("free", Condition.L),
                 PopInstruction(Registers.pc),
