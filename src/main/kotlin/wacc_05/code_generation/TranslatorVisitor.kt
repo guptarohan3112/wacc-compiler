@@ -157,7 +157,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             lhs.ident != null -> {
                 // Find the corresponding variable identifier
                 val varIdent: VariableIdentifier =
-                    assign.st().lookupAll(lhs.ident) as VariableIdentifier
+                    assign.st().lookupAll(lhs.ident.value) as VariableIdentifier
 
                 // Calculate the offset relative to the current stack pointer position
                 val offset: Int = varIdent.getAddr()
@@ -200,7 +200,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
         }
 
-        Registers.free(dest)
+
+//      TODO: Do we need to free? Is this the correct register?
+      Registers.free(dest)
+//        assign.lhs.setDestReg(dest)
     }
 
     // Store the address of the program counter (?) into the link registers so that a function can
@@ -221,9 +224,26 @@ class TranslatorVisitor : ASTBaseVisitor() {
         )
     }
 
-    // TODO: IO
     override fun visitReadAST(read: StatementAST.ReadAST) {
-        TODO("Not yet implemented")
+        var type: TypeIdentifier? = TypeIdentifier()
+        var reg: Register? = null
+
+        if (read.lhs.ident != null) {
+            visit(read.lhs.ident)
+            reg = read.lhs.ident.getDestReg()
+            type = read.st().lookupAll(read.lhs.ident.value)?.getType()
+        }
+
+        if (type == TypeIdentifier.INT_TYPE) {
+            AssemblyRepresentation.addPInstr(PInstruction.p_read_int())
+        }
+
+        if (type == TypeIdentifier.CHAR_TYPE) {
+            AssemblyRepresentation.addPInstr(PInstruction.p_read_char())
+        }
+
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg!!))
+        Registers.free(reg)
     }
 
     override fun visitExitAST(exit: StatementAST.ExitAST) {
@@ -429,6 +449,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
             )
         )
+        ident.setDestReg(register)
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
