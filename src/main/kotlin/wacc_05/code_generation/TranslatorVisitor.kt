@@ -22,14 +22,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Calculate stack size for scope and decrement the stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
         val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope)
-        if (stackSize != 0) {
+        var tmp: Int = stackSize
+        while (tmp > 0) {
             AssemblyRepresentation.addMainInstr(
                 SubtractInstruction(
                     Registers.sp,
                     Registers.sp,
-                    Immediate(stackSize)
+                    Immediate(tmp.coerceAtMost(1024))
                 )
             )
+            tmp -= 1024
         }
         return stackSize
     }
@@ -45,17 +47,19 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     // Restore the stack pointer and print out the relevant assembly code
     private fun restoreStackPointer(stat: StatementAST, stackSize: Int) {
-        if (stackSize != 0) {
+        var tmp: Int = stackSize
+        while (tmp > 0) {
             AssemblyRepresentation.addMainInstr(
                 AddInstruction(
                     Registers.sp,
                     Registers.sp,
-                    Immediate(stackSize)
+                    Immediate(tmp.coerceAtMost(1024))
                 )
             )
-            // Not sure if this is needed
-            stat.st().setStackPtr(stat.st().getStackPtr() + stackSize)
+            tmp -= 1024
         }
+        // Not sure if this is needed
+        stat.st().setStackPtr(stat.st().getStackPtr() + stackSize)
     }
 
     // a helper function for adding "B" to "STR" if the given
@@ -283,8 +287,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
         if (read.lhs.ident != null) {
             visit(read.lhs.ident)
             reg = read.lhs.ident.getDestReg()
-            type = read.st().lookupAll(read.lhs.ident.value)?.getType()
+            type = read.lhs.ident.getType()
         }
+
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg!!))
 
         if (type == TypeIdentifier.INT_TYPE) {
             AssemblyRepresentation.addPInstr(PInstruction.p_read_int())
@@ -294,7 +300,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addPInstr(PInstruction.p_read_char())
         }
 
-        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg!!))
         Registers.free(reg)
     }
 
@@ -510,6 +515,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
         // Find the stack address of the identifier (relative to the top of the stack, 0 for us)
+        println(ident.value)
         val identObj: IdentifierObject = ident.st().lookupAll(ident.value)!!
 
         var spOffset = 0
