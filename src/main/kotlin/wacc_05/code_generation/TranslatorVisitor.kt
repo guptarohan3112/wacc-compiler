@@ -390,9 +390,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Label for condition checking
         AssemblyRepresentation.addMainInstr(condLabel)
 
-        val reg: Register = whileStat.loopExpr.getDestReg()
-        // Comparison and jump if equal
         visit(whileStat.loopExpr)
+        val reg: Register = whileStat.loopExpr.getDestReg()
+
+        // Comparison and jump if equal
         AssemblyRepresentation.addMainInstr(
             CompareInstruction(
                 reg,
