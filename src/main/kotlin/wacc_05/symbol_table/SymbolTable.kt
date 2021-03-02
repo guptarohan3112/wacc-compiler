@@ -15,7 +15,7 @@ import java.util.HashMap
 open class SymbolTable(private val parentST: SymbolTable?) {
     // hashmap storing mappings from a string identifier to a corresponding IdentifierObject
     private val map: HashMap<String, IdentifierObject?> = HashMap()
-    // stack pointer for this scope //TODO: Change 1024...
+    // stack pointer for this scope
     private var spAndOffset: Pair<Int, Int> = Pair(0, 0)
 
     /* Function: add()

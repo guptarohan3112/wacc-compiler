@@ -15,13 +15,22 @@ sealed class AddressingMode : Operand() {
     Zero offset [<Rn>]
     Register offset [<Rn>, +/-<Rm>]
     */
-    data class AddressingMode2(private val regN: Register, private val operand: Operand? = null) : AddressingMode() {
+    data class AddressingMode2(
+        private val regN: Register,
+        private val operand: Operand? = null,
+        private val decrement: Boolean = false
+    ) : AddressingMode() {
 
         override fun toString(): String {
-            if (operand == null || (operand is Immediate && operand.getValue() == 0)) {
-                return "[$regN]"
+            val dec = if (decrement) {
+                "!"
+            } else {
+                ""
             }
-            return "[$regN, $operand]"
+            if (operand == null || (operand is Immediate && operand.getValue() == 0)) {
+                return "[$regN]$dec"
+            }
+            return "[$regN, $operand]$dec"
         }
     }
 
