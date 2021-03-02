@@ -13,6 +13,6 @@ class ShiftOperand(private val reg: Register, private val shift: Shift, private 
     }
 
     override fun toString(): String {
-        return "$reg $shift #$shiftAmount"
+        return "$reg, $shift #$shiftAmount"
     }
 }
