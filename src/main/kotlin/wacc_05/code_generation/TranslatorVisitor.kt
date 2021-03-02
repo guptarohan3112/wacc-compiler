@@ -94,13 +94,15 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(func.body)
 
         // Restore the stack pointer
-        AssemblyRepresentation.addMainInstr(
-            AddInstruction(
-                Registers.sp,
-                Registers.sp,
-                Immediate(stackSize)
+        if (stackSize > 0) {
+            AssemblyRepresentation.addMainInstr(
+                AddInstruction(
+                    Registers.sp,
+                    Registers.sp,
+                    Immediate(stackSize)
+                )
             )
-        )
+        }
 
         // Restore the program counter
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
