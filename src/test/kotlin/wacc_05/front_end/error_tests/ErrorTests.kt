@@ -4,6 +4,7 @@ import org.junit.Test
 
 import wacc_05.WaccCompiler
 import wacc_05.front_end.Error
+import wacc_05.symbol_table.FunctionST
 import java.io.File
 import kotlin.test.assertTrue
 
@@ -33,6 +34,7 @@ class ErrorTests {
         val failedTests: ArrayList<String> = ArrayList()
 
         File(directoryPath).walk().forEach {
+            FunctionST.clear()
             if (it.extension == "wacc") {
                 try {
                     if (WaccCompiler.runCompiler(it.absolutePath, debug=false, validOnly=true) == expected)

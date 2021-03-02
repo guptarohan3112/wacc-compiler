@@ -2,6 +2,7 @@ package wacc_05.front_end
 
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
+import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
@@ -33,32 +34,32 @@ class SemanticVisitor(
         visitChild(symTab, func.returnType)
 
         // Check to make sure function has not already been defined
-        val funcIdent: IdentifierObject? = symTab.lookup(func.funcName)
+        val funcIdent: FunctionIdentifier? = FunctionST.lookup(func.funcName)
         // Create function identifier and add to symbol table
         val funcST = SymbolTable(symTab)
         func.st = funcST
-        if (funcIdent != null && funcIdent is FunctionIdentifier) {
+        if (funcIdent != null) {
             errorHandler.repeatVariableDeclaration(func.ctx, func.funcName)
         } else {
-            func.returnType.st = symTab
+            func.returnType.st = funcST
             val returnTypeIdent: TypeIdentifier = func.returnType.getType()
 
             val newFuncIdent =
                 FunctionIdentifier(
                     returnTypeIdent,
-                    func.paramList?.getParams(symTab) ?: ArrayList(),
+                    func.paramList?.getParams(funcST) ?: ArrayList(),
                     funcST
                 )
 
             funcST.add("returnType", returnTypeIdent)
 
             // add self to higher level symbol table
-            symTab.add(func.funcName, newFuncIdent)
+            FunctionST.add(func.funcName, newFuncIdent)
         }
     }
 
     override fun visitFunctionAST(func: FunctionAST) {
-        val funcIdentifier = func.st().lookupAll(func.funcName)
+        val funcIdentifier = FunctionST.lookupAll(func.funcName)
 
         // we don't give another semantic error if this is not null as it will be a semantic error
         // caused by the inner specifics of the compiler
@@ -454,13 +455,11 @@ class SemanticVisitor(
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
         val symTab: SymbolTable = funcCall.st()
-        when (val funcIdentifier: IdentifierObject? = symTab.lookupAll(funcCall.funcName)) {
+        when (val funcIdentifier: FunctionIdentifier? = FunctionST.lookupAll(funcCall.funcName)) {
             null -> {
                 errorHandler.invalidIdentifier(funcCall.ctx, funcCall.funcName)
             }
-            !is FunctionIdentifier -> {
-                errorHandler.invalidFunction(funcCall.ctx, funcCall.funcName)
-            }
+
             else -> {
                 // Check that the number of args is as expected
                 val noOfArgs: Int = funcIdentifier.getParams().size

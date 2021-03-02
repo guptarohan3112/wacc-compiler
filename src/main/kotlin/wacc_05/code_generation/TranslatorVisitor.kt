@@ -4,6 +4,7 @@ import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.code_generation.instructions.*
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
+import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
@@ -112,8 +113,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val stackSize: Int = startNewBody(func.body)
 
         // Store how amount of allocated space for local variables on the corresponding function identifier
-        val symTab: SymbolTable = func.st()
-        val funcIdent = symTab.lookupAll(func.funcName) as FunctionIdentifier
+        val funcIdent = FunctionST.lookupAll(func.funcName)!!
         funcIdent.setStackSize(stackSize)
 
         if (func.paramList != null) {
@@ -127,6 +127,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         restoreStackPointer(func.body, stackSize)
 
         // Restore the program counter
+        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
     }
 
@@ -201,7 +202,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         when {
             lhs.ident != null -> {
                 // Find the corresponding variable identifier
-                val varIdent: VariableIdentifier =
+                val varIdent =
                     assign.st().lookupAll(lhs.ident.value) as VariableIdentifier
 
                 // Calculate the offset relative to the current stack pointer position
@@ -411,7 +412,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Move the value into r0 and pop the program counter
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
-        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
         Registers.free(dest)
     }
 
@@ -523,14 +523,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
             spOffset = identObj.getOffset()
         }
 
-        // Obtain an available register and load stack value into this register
+        val type = ident.getType()
+
+        // Initialise the mode to be 2 or 3 depending on the type of the identifier
         val register = Registers.allocate()
-        AssemblyRepresentation.addMainInstr(
-            LoadInstruction(
-                register,
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
-            )
-        )
+        var mode: AddressingMode = AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
+        if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
+            mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
+        }
+
+        // Obtain an available register and load stack value into this register
+        AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
         ident.setDestReg(register)
     }
 
@@ -566,14 +569,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, exprDest))
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest))
             AssemblyRepresentation.addPInstr(PInstruction.p_check_array_bounds())
-
-            AssemblyRepresentation.addMainInstr(
-                BranchInstruction(
-                    "p_check_array_bounds",
-                    Condition.L
-                )
-            )
-
 
             when (expr.getType().getStackSize()) {
                 4 -> {
@@ -611,7 +606,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     private fun visitNot(unop: ExprAST.UnOpAST) {
         val dest: Register = unop.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(
-            ExclusiveOr(
+            EorInstruction(
                 dest,
                 dest,
                 Immediate(1)
@@ -1181,8 +1176,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
 
         // Obtain the size of stack space required for the local variables of the function being called
-        val funcIdent: FunctionIdentifier =
-            funcCall.st().lookupAll(funcCall.funcName) as FunctionIdentifier
+        val funcIdent: FunctionIdentifier = FunctionST.lookupAll(funcCall.funcName)!!
         val funcStackSize: Int = funcIdent.getStackSize()
 
         // Store the value for the stack pointer (keeping in mind the arguments and local variables)
