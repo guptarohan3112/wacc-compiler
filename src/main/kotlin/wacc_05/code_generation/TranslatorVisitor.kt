@@ -310,6 +310,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val elseLabel: LabelInstruction = getUniqueLabel()
         AssemblyRepresentation.addMainInstr(BranchInstruction(elseLabel.getLabel(), Condition.EQ))
 
+        // Free the destination register
+        Registers.free(destination)
+
+        // Update the stack pointer for the inner scope of the 'then' branch
+        val currSp: Int = ifStat.st().getStackPtr()
+        ifStat.thenStat.st().setStackPtr(ifStat.thenStat.st().getStackPtr() + currSp)
+
+        val stackSizeThen: Int = calculateStackSize(ifStat.thenStat)
+        ifStat.thenStat.st().setStackPtr(ifStat.thenStat.st().getStackPtr() - stackSizeThen)
+
         // Otherwise enter the 'then' body
         visit(ifStat.thenStat)
 
@@ -319,6 +329,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Label and assembly for the 'else' body
         AssemblyRepresentation.addMainInstr(elseLabel)
+        ifStat.elseStat.st().setStackPtr(ifStat.elseStat.st().getStackPtr() + currSp)
+
+        val stackSizeElse: Int = calculateStackSize(ifStat.elseStat)
+        ifStat.elseStat.st().setStackPtr(ifStat.elseStat.st().getStackPtr() - stackSizeElse)
         visit(ifStat.elseStat)
 
         // Make label for whatever follows the if statement
