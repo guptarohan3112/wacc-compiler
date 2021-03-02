@@ -324,7 +324,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         if (print.expr.getType() is TypeIdentifier.CharIdentifier) {
             AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
         }
-        if (print.expr.getType() is TypeIdentifier.StringIdentifier {
+        if (print.expr.getType() is TypeIdentifier.StringIdentifier) {
             AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
         }
 //        if (print.expr.getType() == TypeIdentifier.CHAR_TYPE) {
