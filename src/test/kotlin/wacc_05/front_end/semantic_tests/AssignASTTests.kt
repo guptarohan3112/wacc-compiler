@@ -9,6 +9,7 @@ import org.junit.Test
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.*
+import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
@@ -257,9 +258,9 @@ class AssignASTTests : StatSemanticTests() {
         // create a generic function identifier of int return type
         // test should succeed since function has same return type as variable x
         val identifier = FunctionIdentifier(intType, ArrayList(), st)
+        FunctionST.add("foo", identifier)
 
         st.add("int", intType)
-        st.add("foo", identifier)
         st.add("x", VariableIdentifier(intType))
 
         val assign = StatementAST.AssignAST(
@@ -380,10 +381,11 @@ class AssignASTTests : StatSemanticTests() {
     @Test
     fun assignASTRHSFuncCallIncorrectTypeCheck() {
         val identifier = FunctionIdentifier(charType, ArrayList(), st)
+        FunctionST.add("foo", identifier)
+
         st.add("int", intType)
         st.add("char", charType)
         st.add("x", VariableIdentifier(intType))
-        st.add("foo", identifier)
 
         every { seh.typeMismatch(any(), any(), any()) } just runs
 
