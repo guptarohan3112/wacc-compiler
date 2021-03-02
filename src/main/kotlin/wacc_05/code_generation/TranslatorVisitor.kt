@@ -375,9 +375,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(print.expr)
         val reg: Register = print.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
-        // TODO: Need to push appropriate part in data to print the type of expression
         if (print.expr.getType() is TypeIdentifier.IntIdentifier) {
-            // Add %d placeholder
             AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
         }
         if (print.expr.getType() is TypeIdentifier.BoolIdentifier) {
@@ -693,7 +691,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
         }
 
-
+        AssemblyRepresentation.addMainInstr(BranchInstruction("p_throw_overflow_error", Condition.LVS))
         AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
@@ -725,6 +723,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
 
         binop.setDestReg(dest)
+        AssemblyRepresentation.addMainInstr(BranchInstruction("p_throw_overflow_error", Condition.LVS))
+        AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
     private fun visitMultiply(binop: ExprAST.BinOpAST) {
@@ -734,10 +734,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val dest1: Register = binop.expr1.getDestReg()
         val dest2: Register = binop.expr2.getDestReg()
 
-        AssemblyRepresentation.addMainInstr(MultiplyInstruction(dest1, dest1, dest2))
+        AssemblyRepresentation.addMainInstr(SMultiplyInstruction(dest1, dest2))
         Registers.free(dest2)
 
         binop.setDestReg(dest1)
+        AssemblyRepresentation.addMainInstr(CompareInstruction(dest2, ShiftOperand(dest1, ShiftOperand.Shift.ASR, 31)))
+        AssemblyRepresentation.addMainInstr(BranchInstruction("p_throw_overflow_error", Condition.LNE))
+        AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
     private fun visitDivMod(binop: ExprAST.BinOpAST) {
