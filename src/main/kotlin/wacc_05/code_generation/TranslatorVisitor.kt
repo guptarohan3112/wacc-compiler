@@ -613,7 +613,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     private fun visitNot(unop: ExprAST.UnOpAST) {
         val dest: Register = unop.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(
-            ExclusiveOr(
+            EorInstruction(
                 dest,
                 dest,
                 Immediate(1)

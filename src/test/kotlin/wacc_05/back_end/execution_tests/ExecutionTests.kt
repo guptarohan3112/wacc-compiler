@@ -3,6 +3,7 @@ package wacc_05.back_end.execution_tests
 import org.junit.Test
 
 import wacc_05.WaccCompiler
+import wacc_05.symbol_table.FunctionST
 import java.io.File
 import java.io.InputStream
 import kotlin.test.assertTrue
@@ -22,6 +23,7 @@ class ExecutionTests {
         val failedTests: ArrayList<String> = ArrayList()
 
         File(directoryPath).walk().forEach {
+            FunctionST.clear()
             if (it.extension == "wacc") {
                 try {
                     // Run the compiler- this should generate the assembly file (to be executed)
