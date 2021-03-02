@@ -59,7 +59,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
 
         // Return the exit code (assuming 0 upon success) and pop the program counter
-        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, Immediate(0)))
+        AssemblyRepresentation.addMainInstr(LoadInstruction(Registers.r0, AddressingMode.AddressingLabel("0")))
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
         // Put in the .ltorg directive?
     }
