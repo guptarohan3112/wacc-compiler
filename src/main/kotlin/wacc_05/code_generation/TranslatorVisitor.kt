@@ -12,7 +12,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
     // Helper method that makes sufficient space on the stack and returns the space that has been allocated
     private fun setUpScopeBegin(bodyInScope: StatementAST): Int {
         AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
+        return calculateStackSize(bodyInScope)
+    }
 
+    private fun calculateStackSize(bodyInScope: StatementAST): Int {
         // Calculate stack size for scope and decrement the stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
         val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope)
@@ -25,7 +28,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 )
             )
         }
-
         return stackSize
     }
 
@@ -46,13 +48,15 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(prog.stat)
 
         // Restore the stack pointer
-        AssemblyRepresentation.addMainInstr(
-            AddInstruction(
-                Registers.sp,
-                Registers.sp,
-                Immediate(stackSize)
+        if (stackSize != 0) {
+            AssemblyRepresentation.addMainInstr(
+                AddInstruction(
+                    Registers.sp,
+                    Registers.sp,
+                    Immediate(stackSize)
+                )
             )
-        )
+        }
 
         // Return the exit code (assuming 0 upon success) and pop the program counter
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, Immediate(0)))
@@ -369,15 +373,31 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val bodyLabel: LabelInstruction = getUniqueLabel()
         AssemblyRepresentation.addMainInstr(bodyLabel)
 
+        val currSp: Int = whileStat.st().getStackPtr()
+        whileStat.body.st().setStackPtr(whileStat.body.st().getStackPtr() + currSp)
+
+        val stackSize: Int = calculateStackSize(whileStat.body)
+        whileStat.body.st().setStackPtr(whileStat.body.st().getStackPtr() - stackSize)
+
         // Loop body
         visit(whileStat.body)
+
+        // Restore the stack pointer
+        if (stackSize != 0) {
+            AssemblyRepresentation.addMainInstr(
+                AddInstruction(
+                    Registers.sp,
+                    Registers.sp,
+                    Immediate(stackSize)
+                )
+            )
+        }
 
         // Label for condition checking
         AssemblyRepresentation.addMainInstr(condLabel)
 
-        val reg: Register = whileStat.loopExpr.getDestReg()
-        // Comparison and jump if equal
         visit(whileStat.loopExpr)
+        val reg: Register = whileStat.loopExpr.getDestReg()
         AssemblyRepresentation.addMainInstr(
             CompareInstruction(
                 reg,
@@ -585,7 +605,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
             expr2 is ExprAST.IntLiterAST -> {
                 visit(expr1)
-                val dest: Register = expr2.getDestReg()
+                val dest: Register = expr1.getDestReg()
                 AssemblyRepresentation.addMainInstr(
                     AddInstruction(
                         dest,
