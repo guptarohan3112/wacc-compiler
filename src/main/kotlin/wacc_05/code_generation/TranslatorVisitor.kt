@@ -314,17 +314,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val reg: Register = print.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
         // TODO: Need to push appropriate part in data to print the type of expression
-        if (print.expr.getType() == TypeIdentifier.INT_TYPE) {
+        if (print.expr.getType() is TypeIdentifier.IntIdentifier) {
             // Add %d placeholder
             AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
         }
-        if (print.expr.getType() == TypeIdentifier.BOOL_TYPE) {
+        if (print.expr.getType() is TypeIdentifier.BoolIdentifier) {
             AssemblyRepresentation.addPInstr(PInstruction.p_print_bool())
         }
-        if (print.expr.getType() == TypeIdentifier.CHAR_TYPE) {
+        if (print.expr.getType() is TypeIdentifier.CharIdentifier) {
             AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
         }
-        if (print.expr.getType() == TypeIdentifier.STRING_TYPE) {
+        if (print.expr.getType() is TypeIdentifier.StringIdentifier {
             AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
         }
 //        if (print.expr.getType() == TypeIdentifier.CHAR_TYPE) {
