@@ -18,6 +18,8 @@ object AssemblyRepresentation {
     // IO functions that are called in the user defined program
     private val pInstrs: HashSet<PInstruction> = HashSet()
 
+    private var hasRuntimeError: Boolean = false
+
     fun addDataInstr(instr: Instruction) {
         dataInstrs.add(instr)
     }
@@ -28,7 +30,7 @@ object AssemblyRepresentation {
 
     fun addPInstr(p_instr: PInstruction) {
         pInstrs.add(p_instr)
-        if (p_instr is PInstruction.p_throw_overflow_error){
+        if (p_instr is PInstruction.p_throw_overflow_error) {
             AssemblyRepresentation.addMainInstr(
                 BranchInstruction(p_instr::class.java.simpleName, Condition.LVS)
             )
@@ -39,6 +41,10 @@ object AssemblyRepresentation {
         )
     }
 
+    fun runtimeErr() {
+        this.hasRuntimeError = true
+    }
+
 
     // This function builds the '.s' file with the information stored in fields (after translation)
     fun buildAssembly(file_name: String) {
@@ -47,23 +53,30 @@ object AssemblyRepresentation {
             val sb: StringBuilder = StringBuilder()
             sb.append("\t.data\n")
 
+            pInstrs.forEach { instr->
+                instr.checkRuntimeErr()
+            }
+
+            if (hasRuntimeError) {
+                pInstrs.add(PInstruction.p_throw_runtime_error())
+                pInstrs.add(PInstruction.p_print_string())
+            }
+
             // Add msg_labels to dataInstrs
             pInstrs.forEach {
                 it.addMessageLabel()
             }
 
-            dataInstrs.forEach { instr->
+            dataInstrs.forEach { instr ->
                 sb.append(printInstr(instr))
             }
 
             sb.append("\n\t.text\n")
             sb.append("\n\t.global main\n")
 
-            mainInstrs.forEach { instr->
+            mainInstrs.forEach { instr ->
                 sb.append(printInstr(instr))
             }
-
-            sb.append("\n")
 
             pInstrs.forEach {
                 val instructions = it.applyIO()

@@ -494,7 +494,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, exprDest))
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest))
             AssemblyRepresentation.addPInstr(PInstruction.p_check_array_bounds())
-            AssemblyRepresentation.addMainInstr(BranchInstruction("p_check_array_bounds", Condition.L))
 
             when (expr.getType().getStackSize()) {
                 4 -> {

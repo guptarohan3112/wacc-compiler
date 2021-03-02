@@ -7,6 +7,7 @@ sealed class PInstruction {
 
     abstract fun applyIO(): ArrayList<Instruction>
     abstract fun addMessageLabel()
+    abstract fun checkRuntimeErr()
 
 
     class p_check_null_pointer : PInstruction() {
@@ -34,6 +35,10 @@ sealed class PInstruction {
             )
             AssemblyRepresentation.addDataInstr(nullLabel)
             this.label = nullLabel.getLabel()
+        }
+
+        override fun checkRuntimeErr() {
+            AssemblyRepresentation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -68,6 +73,10 @@ sealed class PInstruction {
             this.label = readLabel.getLabel()
         }
 
+        override fun checkRuntimeErr() {
+            return
+        }
+
         override fun equals(other: Any?): Boolean {
             return other is p_read_int
         }
@@ -97,6 +106,10 @@ sealed class PInstruction {
             val readLabel = MessageLabelInstruction.getUniqueLabel("%c\\0")
             AssemblyRepresentation.addDataInstr(readLabel)
             this.label = readLabel.getLabel()
+        }
+
+        override fun checkRuntimeErr() {
+            return
         }
 
         override fun equals(other: Any?): Boolean {
@@ -131,6 +144,10 @@ sealed class PInstruction {
             label = terminalLabel.getLabel()
         }
 
+        override fun checkRuntimeErr() {
+            return
+        }
+
         override fun equals(other: Any?): Boolean {
             return other is p_print_ln
         }
@@ -156,6 +173,10 @@ sealed class PInstruction {
 
         override fun addMessageLabel() {
             return
+        }
+
+        override fun checkRuntimeErr() {
+            AssemblyRepresentation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -197,6 +218,10 @@ sealed class PInstruction {
             labelFalse = falseLabel.getLabel()
         }
 
+        override fun checkRuntimeErr() {
+            return
+        }
+
         override fun equals(other: Any?): Boolean {
             return other is p_print_bool
         }
@@ -229,6 +254,10 @@ sealed class PInstruction {
             val printLabel = MessageLabelInstruction.getUniqueLabel("%d\\0")
             AssemblyRepresentation.addDataInstr(printLabel)
             label = printLabel.getLabel()
+        }
+
+        override fun checkRuntimeErr() {
+            return
         }
 
         override fun equals(other: Any?): Boolean {
@@ -266,6 +295,10 @@ sealed class PInstruction {
             label = printLabel.getLabel()
         }
 
+        override fun checkRuntimeErr() {
+            return
+        }
+
         override fun equals(other: Any?): Boolean {
             return other is p_print_string
         }
@@ -301,6 +334,10 @@ sealed class PInstruction {
             label = divLabel.getLabel()
         }
 
+        override fun checkRuntimeErr() {
+            AssemblyRepresentation.runtimeErr()
+        }
+
         override fun equals(other: Any?): Boolean {
             return other is p_check_divide_by_zero
         }
@@ -329,6 +366,10 @@ sealed class PInstruction {
             )
             AssemblyRepresentation.addDataInstr(overflowLabel)
             label = overflowLabel.getLabel()
+        }
+
+        override fun checkRuntimeErr() {
+            AssemblyRepresentation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -381,6 +422,10 @@ sealed class PInstruction {
 
         }
 
+        override fun checkRuntimeErr() {
+            AssemblyRepresentation.runtimeErr()
+        }
+
         override fun equals(other: Any?): Boolean {
             return other is p_check_array_bounds
         }
@@ -423,6 +468,10 @@ sealed class PInstruction {
             label = freeLabel.getLabel()
         }
 
+        override fun checkRuntimeErr() {
+            AssemblyRepresentation.runtimeErr()
+        }
+
         override fun equals(other: Any?): Boolean {
             return other is p_free_pair
         }
@@ -439,6 +488,7 @@ sealed class PInstruction {
         private var label: String = ""
 
         override fun applyIO(): ArrayList<Instruction> {
+            AssemblyRepresentation.runtimeErr()
             return arrayListOf(
                 LabelInstruction("p_free_array"),
                 PushInstruction(Registers.lr),
@@ -454,6 +504,10 @@ sealed class PInstruction {
             val freeLabel = MessageLabelInstruction.getUniqueLabel("NullReferenceError: dereference a null reference\\n\\0")
             AssemblyRepresentation.addDataInstr(freeLabel)
             label = freeLabel.getLabel()
+        }
+
+        override fun checkRuntimeErr() {
+            AssemblyRepresentation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
