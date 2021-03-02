@@ -325,7 +325,7 @@ sealed class PInstruction {
 
         override fun addMessageLabel() {
             val overflowLabel = MessageLabelInstruction.getUniqueLabel(
-                "OverflowError: the result is too small/large to store in a 4-byte signed-integer.\n"
+                "OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\\0"
             )
             AssemblyRepresentation.addDataInstr(overflowLabel)
             label = overflowLabel.getLabel()
@@ -451,7 +451,8 @@ sealed class PInstruction {
         }
 
         override fun addMessageLabel() {
-            val freeLabel = MessageLabelInstruction.getUniqueLabel("NullReferenceError: dereference a null reference\\n\\0")
+            val freeLabel =
+                MessageLabelInstruction.getUniqueLabel("NullReferenceError: dereference a null reference\\n\\0")
             AssemblyRepresentation.addDataInstr(freeLabel)
             label = freeLabel.getLabel()
         }

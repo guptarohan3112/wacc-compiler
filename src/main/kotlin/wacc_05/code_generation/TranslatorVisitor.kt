@@ -593,7 +593,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     AddInstruction(
                         dest,
                         dest,
-                        Immediate(expr1.getValue())
+                        Immediate(expr1.getValue()),
+                        Condition.S
                     )
                 )
 
@@ -601,12 +602,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
             expr2 is ExprAST.IntLiterAST -> {
                 visit(expr1)
-                val dest: Register = expr2.getDestReg()
+                val dest: Register = expr1.getDestReg()
                 AssemblyRepresentation.addMainInstr(
                     AddInstruction(
                         dest,
                         dest,
-                        Immediate(expr2.getValue())
+                        Immediate(expr2.getValue()),
+                        Condition.S
                     )
                 )
 
@@ -619,12 +621,15 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 val dest1: Register = expr1.getDestReg()
                 val dest2: Register = expr2.getDestReg()
 
-                AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2))
+                AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2, Condition.S))
 
                 Registers.free(dest2)
                 binop.setDestReg(dest1)
             }
         }
+
+
+        AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
     private fun visitSub(binop: ExprAST.BinOpAST) {
