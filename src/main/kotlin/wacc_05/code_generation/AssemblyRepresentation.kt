@@ -18,6 +18,8 @@ object AssemblyRepresentation {
     // IO functions that are called in the user defined program
     private val pInstrs: HashSet<PInstruction> = HashSet()
 
+    private var hasRuntimeError: Boolean = false
+
     fun addDataInstr(instr: Instruction) {
         dataInstrs.add(instr)
     }
@@ -39,6 +41,10 @@ object AssemblyRepresentation {
         )
     }
 
+    fun runtimeErr() {
+        this.hasRuntimeError = true
+    }
+
 
     // This function builds the '.s' file with the information stored in fields (after translation)
     fun buildAssembly(file_name: String) {
@@ -46,6 +52,15 @@ object AssemblyRepresentation {
         File("$file_name.s").printWriter().use { out ->
             val sb: StringBuilder = StringBuilder()
             sb.append("\t.data\n")
+
+            pInstrs.forEach { instr ->
+                instr.checkRuntimeErr()
+            }
+
+            if (hasRuntimeError) {
+                pInstrs.add(PInstruction.p_throw_runtime_error())
+                pInstrs.add(PInstruction.p_print_string())
+            }
 
             // Add msg_labels to dataInstrs
             pInstrs.forEach {
@@ -62,8 +77,6 @@ object AssemblyRepresentation {
             mainInstrs.forEach { instr ->
                 sb.append(printInstr(instr))
             }
-
-            sb.append("\n")
 
             pInstrs.forEach {
                 val instructions = it.applyIO()

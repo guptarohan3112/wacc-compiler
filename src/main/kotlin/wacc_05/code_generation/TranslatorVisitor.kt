@@ -320,10 +320,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Add the IO instruction and branch instruction corresponding to the type of the expression
         if (free.expr.getType() is TypeIdentifier.ArrayIdentifier) {
             AssemblyRepresentation.addPInstr(PInstruction.p_free_array())
-            AssemblyRepresentation.addMainInstr(BranchInstruction("p_free_array", Condition.L))
         } else {
             AssemblyRepresentation.addPInstr(PInstruction.p_free_pair())
-            AssemblyRepresentation.addMainInstr(BranchInstruction("p_free_pair", Condition.L))
         }
 
         Registers.free(dest)
@@ -570,12 +568,14 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, exprDest))
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest))
             AssemblyRepresentation.addPInstr(PInstruction.p_check_array_bounds())
+
             AssemblyRepresentation.addMainInstr(
                 BranchInstruction(
                     "p_check_array_bounds",
                     Condition.L
                 )
             )
+
 
             when (expr.getType().getStackSize()) {
                 4 -> {
@@ -1295,7 +1295,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // set param and branch to check for null dereference
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
-        AssemblyRepresentation.addMainInstr(BranchInstruction("p_check_null_pointer", Condition.L))
         AssemblyRepresentation.addPInstr(PInstruction.p_check_null_pointer())
 
         if (!pairElem.isFst) {
