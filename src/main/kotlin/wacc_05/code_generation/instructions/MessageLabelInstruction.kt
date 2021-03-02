@@ -18,7 +18,7 @@ class MessageLabelInstruction(private val name: String, private val string: Stri
     }
 
     override fun toString(): String {
-        return "$name:\n\t\t.word $length\n\t\t.ascii \"$string\""
+        return "$name:\n\t\t.word $length\n\t\t.ascii $string"
     }
 
 }
