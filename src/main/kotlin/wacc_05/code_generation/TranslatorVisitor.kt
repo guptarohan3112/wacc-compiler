@@ -529,7 +529,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
         // Find the stack address of the identifier (relative to the top of the stack, 0 for us)
-        println(ident.value)
         val identObj: IdentifierObject = ident.st().lookupAll(ident.value)!!
 
         var spOffset = 0
@@ -787,7 +786,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // allocate a register to move the result into
         val dest: Register = Registers.allocate()
-        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r3))
+        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r1))
 
         binop.setDestReg(dest)
     }
