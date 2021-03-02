@@ -145,6 +145,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Update the amount of space taken up on the stack relative to the boundary and the current stack frame
         val size = decl.type.getType().getStackSize()
         scope.updatePtrOffset(size)
+        Registers.free(dest)
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
@@ -241,6 +242,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(free.expr)
         val dest: Register = free.expr.getDestReg()
 
+        // Move the contents of the destination register into r0
         // Move the contents of the destination register into r0
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
 
