@@ -4,6 +4,7 @@ import antlr.WaccParser
 import wacc_05.ast_structure.ExprAST
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.ast_structure.ASTVisitor
+import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
@@ -12,7 +13,7 @@ class FuncCallAST(val ctx: WaccParser.FuncCallContext, val funcName: String, val
     AssignRHSAST() {
 
     override fun getType(): TypeIdentifier {
-        return (st().lookupAll(funcName) as FunctionIdentifier).getReturnType()
+        return FunctionST.lookupAll(funcName)!!.getReturnType()
     }
 
     override fun translate(): ArrayList<Instruction> {

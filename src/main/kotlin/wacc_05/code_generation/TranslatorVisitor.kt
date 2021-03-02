@@ -4,6 +4,7 @@ import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.code_generation.instructions.*
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
+import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
@@ -112,8 +113,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val stackSize: Int = startNewBody(func.body)
 
         // Store how amount of allocated space for local variables on the corresponding function identifier
-        val symTab: SymbolTable = func.st()
-        val funcIdent = symTab.lookupAll(func.funcName) as FunctionIdentifier
+        val funcIdent = FunctionST.lookupAll(func.funcName)!!
         funcIdent.setStackSize(stackSize)
 
         if (func.paramList != null) {
@@ -201,7 +201,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         when {
             lhs.ident != null -> {
                 // Find the corresponding variable identifier
-                val varIdent: VariableIdentifier =
+                val varIdent =
                     assign.st().lookupAll(lhs.ident.value) as VariableIdentifier
 
                 // Calculate the offset relative to the current stack pointer position
@@ -1178,8 +1178,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
 
         // Obtain the size of stack space required for the local variables of the function being called
-        val funcIdent: FunctionIdentifier =
-            funcCall.st().lookupAll(funcCall.funcName) as FunctionIdentifier
+        val funcIdent: FunctionIdentifier = FunctionST.lookupAll(funcCall.funcName)!!
         val funcStackSize: Int = funcIdent.getStackSize()
 
         // Store the value for the stack pointer (keeping in mind the arguments and local variables)

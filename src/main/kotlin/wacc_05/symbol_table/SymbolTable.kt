@@ -12,7 +12,7 @@ import java.util.HashMap
  *            level symbol table. NOTE we do not have a child SymbolTable stored here directly - these are instead
  *            stored in IdentifierObjects
  */
-class SymbolTable(private val parentST: SymbolTable?) {
+open class SymbolTable(private val parentST: SymbolTable?) {
     // hashmap storing mappings from a string identifier to a corresponding IdentifierObject
     private val map: HashMap<String, IdentifierObject?> = HashMap()
     // stack pointer for this scope //TODO: Change 1024...
@@ -24,7 +24,7 @@ class SymbolTable(private val parentST: SymbolTable?) {
      * Param name - the string identifier we want this mapping to have
      * Param obj - the object we want to map to. This should not be null.
      */
-    fun add(name: String, obj: IdentifierObject) {
+    open fun add(name: String, obj: IdentifierObject) {
         map[name] = obj
     }
 
@@ -34,7 +34,7 @@ class SymbolTable(private val parentST: SymbolTable?) {
      * Param name - the identifier we wish to look up
      * Returns the corresponding identifier object if found or null otherwise
      */
-    fun lookup(name: String): IdentifierObject? {
+    open fun lookup(name: String): IdentifierObject? {
         return map.getOrDefault(name, null)
     }
 
@@ -44,7 +44,7 @@ class SymbolTable(private val parentST: SymbolTable?) {
      * Param name - the identifier we wish to look up
      * Returns the corresponding identifier object if found or null otherwise
      */
-    fun lookupAll(name: String): IdentifierObject? {
+    open fun lookupAll(name: String): IdentifierObject? {
         return lookup(name) ?: parentST?.lookupAll(name)
     }
 
