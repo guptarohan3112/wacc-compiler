@@ -72,6 +72,10 @@ open class SymbolTable(private val parentST: SymbolTable?) {
         return parentST == null
     }
 
+    fun clear() {
+        map.clear()
+    }
+
     companion object {
         /* Function: makeTopLevel()
          * ------------------------
