@@ -30,15 +30,11 @@ object AssemblyRepresentation {
 
     fun addPInstr(p_instr: PInstruction) {
         pInstrs.add(p_instr)
-        if (p_instr is PInstruction.p_throw_overflow_error) {
+        if (p_instr !is PInstruction.p_throw_overflow_error) {
             AssemblyRepresentation.addMainInstr(
                 BranchInstruction(p_instr::class.java.simpleName, Condition.LVS)
             )
         }
-
-        AssemblyRepresentation.addMainInstr(
-            BranchInstruction(p_instr::class.java.simpleName, Condition.L)
-        )
     }
 
     fun runtimeErr() {
