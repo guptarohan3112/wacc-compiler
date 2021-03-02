@@ -259,7 +259,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             lhs.pairElem != null -> {
                 val pairElem: PairElemAST = lhs.pairElem!!
 
-                visitPairElemAST(pairElem)
+                visitPairElemFstPhase(pairElem)
                 val pairLocation: Register = pairElem.getDestReg()
 
                 AssemblyRepresentation.addMainInstr(
@@ -1231,9 +1231,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // move the value for fst into the address given by malloc
         AssemblyRepresentation.addMainInstr(
-            StoreInstruction(
+            getStoreInstruction(
                 fstDest,
-                AddressingMode.AddressingMode2(Registers.r0)
+                AddressingMode.AddressingMode2(Registers.r0),
+                newPair.fst.getType()
             )
         )
         Registers.free(fstDest)
@@ -1261,9 +1262,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // move value for snd into the address given by malloc
         AssemblyRepresentation.addMainInstr(
-            StoreInstruction(
+            getStoreInstruction(
                 sndDest,
-                AddressingMode.AddressingMode2(Registers.r0)
+                AddressingMode.AddressingMode2(Registers.r0),
+                newPair.snd.getType()
             )
         )
         Registers.free(sndDest)
@@ -1279,6 +1281,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
+        visitPairElemFstPhase(pairElem)
+        val dest: Register = pairElem.getDestReg()
+
+        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
+    }
+
+    /* completes visiting pair elems to the point that the address of it is in the dest register,
+     * which we can load again to get the value or write to
+     * returns the destination register
+     */
+    private fun visitPairElemFstPhase(pairElem: PairElemAST) {
         visit(pairElem.elem)
         val dest: Register = pairElem.elem.getDestReg()
 
@@ -1296,8 +1309,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
         } else {
             AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
         }
-
-        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
 
         pairElem.setDestReg(dest)
     }
