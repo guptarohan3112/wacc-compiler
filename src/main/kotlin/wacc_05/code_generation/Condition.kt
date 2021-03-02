@@ -14,5 +14,6 @@ enum class Condition {
     LO,
     LEQ,
     LLT,
-    CS
+    CS,
+    LVS
 }
