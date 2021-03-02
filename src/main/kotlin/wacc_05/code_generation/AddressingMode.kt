@@ -18,10 +18,10 @@ sealed class AddressingMode : Operand() {
     data class AddressingMode2(private val regN: Register, private val operand: Operand? = null) : AddressingMode() {
 
         override fun toString(): String {
-            if (operand != null) {
-                return "[$regN, $operand]"
+            if (operand == null || (operand is Immediate && operand.getValue() == 0)) {
+                return "[$regN]"
             }
-            return "[$regN]"
+            return "[$regN, $operand]"
         }
     }
 
