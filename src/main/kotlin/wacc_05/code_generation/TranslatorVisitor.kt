@@ -29,6 +29,19 @@ class TranslatorVisitor : ASTBaseVisitor() {
         return stackSize
     }
 
+    // a helper function for adding "B" to "STR" if the given
+    private fun getStoreInstruction(
+        reg: Register,
+        addr: AddressingMode.AddressingMode2,
+        type: TypeIdentifier
+    ): StoreInstruction {
+        return if (type.getStackSize() == 1) {
+            StoreInstruction(reg, addr, Condition.B)
+        } else {
+            StoreInstruction(reg, addr)
+        }
+    }
+
     override fun visitProgramAST(prog: ProgramAST) {
         // Generate assembly code for each of the functions declared in the program
         for (func in prog.functionList) {
@@ -136,11 +149,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AddressingMode.AddressingMode2(Registers.sp, Immediate(currOffset))
         }
 
-        if (decl.assignment.getType().getSizeBytes() == 1) {
-            AssemblyRepresentation.addMainInstr(StoreInstruction(dest, mode, Condition.B))
-        } else {
-            AssemblyRepresentation.addMainInstr(StoreInstruction(dest, mode))
-        }
+        AssemblyRepresentation.addMainInstr(getStoreInstruction(dest, mode, decl.assignment.getType()))
 
         // Set the absolute stack address of the variable in the corresponding variable identifier
         val boundaryAddr = scope.getStackPtr()
@@ -176,21 +185,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 }
 
                 // Store the value at the destination register at the calculated offset to the sp
-                when (varIdent.getType().getStackSize()) {
-                    1 -> {
-                        AssemblyRepresentation.addMainInstr(
-                            StoreInstruction(
-                                dest, mode, Condition.B
-                            )
-                        )
-                    }
-
-                    else -> {
-                        AssemblyRepresentation.addMainInstr(
-                            StoreInstruction(dest, mode)
-                        )
-                    }
-                }
+                AssemblyRepresentation.addMainInstr(getStoreInstruction(dest, mode, varIdent.getType()))
             }
             lhs.arrElem != null -> {
                 val arrElem = lhs.arrElem!!
