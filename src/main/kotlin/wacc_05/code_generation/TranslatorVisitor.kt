@@ -525,14 +525,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
             spOffset = identObj.getOffset()
         }
 
-        // Obtain an available register and load stack value into this register
+        val type = ident.getType()
+
+        // Initialise the mode to be 2 or 3 depending on the type of the identifier
         val register = Registers.allocate()
-        AssemblyRepresentation.addMainInstr(
-            LoadInstruction(
-                register,
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
-            )
-        )
+        var mode: AddressingMode = AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
+        if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
+            mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
+        }
+
+        // Obtain an available register and load stack value into this register
+        AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
         ident.setDestReg(register)
     }
 
