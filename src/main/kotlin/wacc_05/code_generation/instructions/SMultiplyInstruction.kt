@@ -6,6 +6,6 @@ class SMultiplyInstruction(private val reg1: Register, private val reg2: Registe
     Instruction {
 
     override fun toString(): String {
-        return "SMUL $reg1, $reg2, $reg1, $reg2"
+        return "SMULL $reg1, $reg2, $reg1, $reg2"
     }
 }
