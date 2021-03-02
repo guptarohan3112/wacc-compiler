@@ -322,7 +322,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addPInstr(PInstruction.p_print_bool())
         }
         if (print.expr.getType() is TypeIdentifier.CharIdentifier) {
-            AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
+            AssemblyRepresentation.addMainInstr(BranchInstruction("putchar", Condition.L))
         }
         if (print.expr.getType() is TypeIdentifier.StringIdentifier) {
             AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
