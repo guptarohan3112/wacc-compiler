@@ -9,7 +9,9 @@ import wacc_05.symbol_table.identifier_objects.*
 
 class TranslatorVisitor : ASTBaseVisitor() {
 
-    // Helper method that makes sufficient space on the stack and returns the space that has been allocated
+    /* UTILITY METHODS USED BY DIFFERENT VISIT METHODS IN THIS VISITOR
+       ---------------------------------------------------------------
+     */
     private fun startNewBody(bodyInScope: StatementAST): Int {
         AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
         return calculateStackSize(bodyInScope)
@@ -31,6 +33,15 @@ class TranslatorVisitor : ASTBaseVisitor() {
         return stackSize
     }
 
+    private fun setUpInnerScope(stat: StatementAST, child: StatementAST): Int {
+        val currSp: Int = stat.st().getStackPtr()
+        child.st().setStackPtr(child.st().getStackPtr() + currSp)
+
+        val stackSize: Int = calculateStackSize(child)
+        child.st().setStackPtr(child.st().getStackPtr() - stackSize)
+        return stackSize
+    }
+
     // a helper function for adding "B" to "STR" if the given
     private fun getStoreInstruction(
         reg: Register,
@@ -43,6 +54,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
             StoreInstruction(reg, addr)
         }
     }
+
+    /* MAIN VISIT METHODS (OVERIDDEN FROM THE BASE VISITOR CLASS)
+       ---------------------------------------------------------
+     */
 
     override fun visitProgramAST(prog: ProgramAST) {
         // Generate assembly code for each of the functions declared in the program
@@ -467,15 +482,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
         )
         Registers.free(reg)
         AssemblyRepresentation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
-    }
-
-    private fun setUpInnerScope(stat: StatementAST, child: StatementAST): Int {
-        val currSp: Int = stat.st().getStackPtr()
-        child.st().setStackPtr(child.st().getStackPtr() + currSp)
-
-        val stackSize: Int = calculateStackSize(child)
-        child.st().setStackPtr(child.st().getStackPtr() - stackSize)
-        return stackSize
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
