@@ -28,13 +28,13 @@ object AssemblyRepresentation {
 
     fun addPInstr(p_instr: PInstruction) {
         pInstrs.add(p_instr)
-        if (p_instr is PInstruction.p_throw_overflow_error){
-            AssemblyRepresentation.addMainInstr(
+        if (p_instr is PInstruction.p_throw_overflow_error) {
+            addMainInstr(
                 BranchInstruction(p_instr::class.java.simpleName, Condition.LVS)
             )
         }
 
-        AssemblyRepresentation.addMainInstr(
+        addMainInstr(
             BranchInstruction(p_instr::class.java.simpleName, Condition.L)
         )
     }
@@ -52,14 +52,14 @@ object AssemblyRepresentation {
                 it.addMessageLabel()
             }
 
-            dataInstrs.forEach { instr->
+            dataInstrs.forEach { instr ->
                 sb.append(printInstr(instr))
             }
 
             sb.append("\n\t.text\n")
             sb.append("\n\t.global main\n")
 
-            mainInstrs.forEach { instr->
+            mainInstrs.forEach { instr ->
                 sb.append(printInstr(instr))
             }
 
