@@ -143,6 +143,10 @@ open class TypeIdentifier : IdentifierObject() {
             return PAIR_SIZE
         }
 
+        override fun getSizeBytes(): Int {
+            return PAIR_SIZE
+        }
+
         override fun hashCode(): Int {
             return javaClass.hashCode()
         }

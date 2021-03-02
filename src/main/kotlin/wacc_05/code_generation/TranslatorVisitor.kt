@@ -1188,7 +1188,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 Registers.r0,
-                AddressingMode.AddressingLabel("${TypeIdentifier.PAIR_SIZE}")
+                AddressingMode.AddressingLabel("${2 * TypeIdentifier.PAIR_SIZE}")
             )
         )
 
@@ -1280,7 +1280,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     AddressingMode.AddressingMode2(dest, Immediate(4))
                 )
             )
+        } else {
+            AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
         }
+
+        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
 
         pairElem.setDestReg(dest)
     }
