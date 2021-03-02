@@ -32,7 +32,7 @@ object AssemblyRepresentation {
         pInstrs.add(p_instr)
         if (p_instr !is PInstruction.p_throw_overflow_error) {
             AssemblyRepresentation.addMainInstr(
-                BranchInstruction(p_instr::class.java.simpleName, Condition.LVS)
+                BranchInstruction(p_instr::class.java.simpleName, Condition.L)
             )
         }
     }
