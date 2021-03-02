@@ -318,25 +318,30 @@ class TranslatorVisitor : ASTBaseVisitor() {
         if (print.expr.getType() == TypeIdentifier.INT_TYPE) {
             // Add %d placeholder
             AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
-            AssemblyRepresentation.addMainInstr(BranchInstruction("p_print_int", Condition.L))
         }
         if (print.expr.getType() == TypeIdentifier.BOOL_TYPE) {
+            AssemblyRepresentation.addPInstr(PInstruction.p_print_bool())
         }
         if (print.expr.getType() == TypeIdentifier.CHAR_TYPE) {
+            AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
         }
         if (print.expr.getType() == TypeIdentifier.STRING_TYPE) {
+            AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
         }
-        if (print.expr.getType() == TypeIdentifier.CHAR_TYPE) {
-        }
-        if (print.expr.getType() == TypeIdentifier.PAIR_LIT_TYPE) {
-        }
+//        if (print.expr.getType() == TypeIdentifier.CHAR_TYPE) {
+//
+//        }
+//        if (print.expr.getType() == TypeIdentifier.PAIR_LIT_TYPE) {
+//            AssemblyRepresentation.addPInstr(PInstruction.p_print())
+//        }
 //        if (print.expr.getType() == TypeIdentifier.ARRAY) {
 //        }
 
 
         if (print.newLine) {
-            AssemblyRepresentation.addMainInstr(BranchInstruction("p_print_ln", Condition.L))
+            AssemblyRepresentation.addPInstr(PInstruction.p_print_ln())
         }
+
         Registers.free(reg)
     }
 
