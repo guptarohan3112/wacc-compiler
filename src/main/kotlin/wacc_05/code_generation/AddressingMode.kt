@@ -43,6 +43,9 @@ sealed class AddressingMode : Operand() {
     data class AddressingMode3(private val regN: Register, private val operand: Operand) : AddressingMode() {
 
         override fun toString(): String {
+            if (operand is Immediate && operand.getValue() == 0) {
+                return "[$regN]"
+            }
             return "[$regN, $operand]"
         }
 

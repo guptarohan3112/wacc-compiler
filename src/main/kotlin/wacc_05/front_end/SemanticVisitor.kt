@@ -5,6 +5,7 @@ import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
+import java.lang.reflect.Type
 
 class SemanticVisitor(
     private val symbolTable: SymbolTable,
@@ -263,8 +264,14 @@ class SemanticVisitor(
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
+        val identifier: IdentifierObject = ident.st().lookupAll(ident.value)!!
         if (ident.st().lookupAll(ident.value) == null) {
             errorHandler.invalidIdentifier(ident.ctx, ident.value)
+            // Add the identifier into symbol table for error recovery
+            ident.st().add(ident.value, VariableIdentifier(TypeIdentifier.GENERIC))
+        }
+        if (identifier is FunctionIdentifier) {
+            errorHandler.invalidAssignment(ident.ctx, ident.value)
         }
     }
 
@@ -442,14 +449,7 @@ class SemanticVisitor(
         } else if (lhs.pairElem != null) {
             visitChild(symTab, lhs.pairElem!!)
         } else {
-            val type = symTab.lookupAll(lhs.ident?.value!!)
-            if (type == null) {
-                errorHandler.invalidIdentifier(lhs.ctx, lhs.ident.value)
-                // Add the identifier into symbol table for error recovery
-                symTab.add(lhs.ident.value, VariableIdentifier(TypeIdentifier.GENERIC))
-            } else if (type is FunctionIdentifier) {
-                errorHandler.invalidAssignment(lhs.ctx, lhs.ident.value)
-            }
+            visitChild(symTab, lhs.ident!!)
         }
     }
 

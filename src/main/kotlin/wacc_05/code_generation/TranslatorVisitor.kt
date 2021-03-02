@@ -22,14 +22,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Calculate stack size for scope and decrement the stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
         val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope)
-        if (stackSize != 0) {
+        var tmp: Int = stackSize
+        while (tmp > 0) {
             AssemblyRepresentation.addMainInstr(
                 SubtractInstruction(
                     Registers.sp,
                     Registers.sp,
-                    Immediate(stackSize)
+                    Immediate(tmp.coerceAtMost(1024))
                 )
             )
+            tmp -= 1024
         }
         return stackSize
     }
@@ -45,17 +47,19 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     // Restore the stack pointer and print out the relevant assembly code
     private fun restoreStackPointer(stat: StatementAST, stackSize: Int) {
-        if (stackSize != 0) {
+        var tmp: Int = stackSize
+        while (tmp > 0) {
             AssemblyRepresentation.addMainInstr(
                 AddInstruction(
                     Registers.sp,
                     Registers.sp,
-                    Immediate(stackSize)
+                    Immediate(tmp.coerceAtMost(1024))
                 )
             )
-            // Not sure if this is needed
-            stat.st().setStackPtr(stat.st().getStackPtr() + stackSize)
+            tmp -= 1024
         }
+        // Not sure if this is needed
+        stat.st().setStackPtr(stat.st().getStackPtr() + stackSize)
     }
 
     // a helper function for adding "B" to "STR" if the given
@@ -297,8 +301,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
         if (read.lhs.ident != null) {
             visit(read.lhs.ident)
             reg = read.lhs.ident.getDestReg()
-            type = read.st().lookupAll(read.lhs.ident.value)?.getType()
+            type = read.lhs.ident.getType()
         }
+
+        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg!!))
 
         if (type == TypeIdentifier.INT_TYPE) {
             AssemblyRepresentation.addPInstr(PInstruction.p_read_int())
@@ -308,7 +314,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addPInstr(PInstruction.p_read_char())
         }
 
-        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg!!))
         Registers.free(reg)
     }
 
@@ -528,14 +533,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
             spOffset = identObj.getOffset()
         }
 
-        // Obtain an available register and load stack value into this register
+        val type = ident.getType()
+
+        // Initialise the mode to be 2 or 3 depending on the type of the identifier
         val register = Registers.allocate()
-        AssemblyRepresentation.addMainInstr(
-            LoadInstruction(
-                register,
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
-            )
-        )
+        var mode: AddressingMode = AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
+        if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
+            mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
+        }
+
+        // Obtain an available register and load stack value into this register
+        AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
         ident.setDestReg(register)
     }
 
@@ -688,7 +696,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
         }
 
-
+        AssemblyRepresentation.addMainInstr(BranchInstruction("p_throw_overflow_error", Condition.LVS))
         AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
@@ -720,6 +728,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
 
         binop.setDestReg(dest)
+        AssemblyRepresentation.addMainInstr(BranchInstruction("p_throw_overflow_error", Condition.LVS))
+        AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
     private fun visitMultiply(binop: ExprAST.BinOpAST) {
@@ -729,10 +739,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val dest1: Register = binop.expr1.getDestReg()
         val dest2: Register = binop.expr2.getDestReg()
 
-        AssemblyRepresentation.addMainInstr(MultiplyInstruction(dest1, dest1, dest2))
+        AssemblyRepresentation.addMainInstr(SMultiplyInstruction(dest1, dest2))
         Registers.free(dest2)
 
         binop.setDestReg(dest1)
+        AssemblyRepresentation.addMainInstr(CompareInstruction(dest2, ShiftOperand(dest1, ShiftOperand.Shift.ASR, 31)))
+        AssemblyRepresentation.addMainInstr(BranchInstruction("p_throw_overflow_error", Condition.LNE))
+        AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
     private fun visitDivMod(binop: ExprAST.BinOpAST) {
@@ -764,7 +777,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // allocate a register to move the result into
         val dest: Register = Registers.allocate()
-        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r3))
+        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r1))
 
         binop.setDestReg(dest)
     }
