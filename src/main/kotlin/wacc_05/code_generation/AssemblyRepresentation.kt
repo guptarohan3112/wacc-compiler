@@ -26,17 +26,16 @@ object AssemblyRepresentation {
         mainInstrs.add(instr)
     }
 
-    fun addPInstr(io_instr: PInstruction) {
-        pInstrs.add(io_instr)
-        pInstrs.add(io_instr)
-        if (io_instr is PInstruction.p_throw_overflow_error){
+    fun addPInstr(p_instr: PInstruction) {
+        pInstrs.add(p_instr)
+        if (p_instr is PInstruction.p_throw_overflow_error){
             AssemblyRepresentation.addMainInstr(
-                BranchInstruction(io_instr::class.java.simpleName, Condition.LVS)
+                BranchInstruction(p_instr::class.java.simpleName, Condition.LVS)
             )
         }
 
         AssemblyRepresentation.addMainInstr(
-            BranchInstruction(io_instr::class.java.simpleName, Condition.L)
+            BranchInstruction(p_instr::class.java.simpleName, Condition.L)
         )
     }
 
@@ -47,6 +46,12 @@ object AssemblyRepresentation {
         File("$file_name.s").printWriter().use { out ->
             val sb: StringBuilder = StringBuilder()
             sb.append("\t.data\n")
+
+            // Add msg_labels to dataInstrs
+            pInstrs.forEach {
+                it.addMessageLabel()
+            }
+
             dataInstrs.forEach { instr->
                 sb.append(printInstr(instr))
             }
@@ -69,7 +74,6 @@ object AssemblyRepresentation {
 
             out.println(sb.toString())
         }
-
 
         // Create '.s' file with file_name
 

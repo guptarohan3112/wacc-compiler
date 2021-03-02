@@ -391,7 +391,8 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         Returns a StrLiterAST node with the value of the literal as a string
      */
     override fun visitStrLit(ctx: WaccParser.StrLitContext): ExprAST.StrLiterAST {
-        return ExprAST.StrLiterAST(ctx.STR_LIT().text)
+        val string: String = ctx.STR_LIT().text
+        return ExprAST.StrLiterAST(string.substring(1, string.length-1))
     }
 
     /* Function: visitNewPair()
