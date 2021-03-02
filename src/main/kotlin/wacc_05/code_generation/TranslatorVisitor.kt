@@ -120,6 +120,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val funcIdent = FunctionST.lookupAll(func.funcName)!!
         funcIdent.setStackSize(stackSize)
 
+        println("Stack size: $stackSize")
+
         if (func.paramList != null) {
             visitAndUpdateParams(stackSize, func.paramList)
         }
@@ -141,9 +143,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Store the offset of the parameter relative to the stack address of the first parameter
         for (param in list.paramList) {
+            offset += param.getType(symbolTable).getStackSize()
             val paramIdent: ParamIdentifier = symbolTable.lookup(param.name) as ParamIdentifier
             paramIdent.setOffset(offset)
-            offset += param.getType(symbolTable).getStackSize()
+            println("param offset: ${paramIdent.getOffset()}")
         }
     }
 
@@ -206,17 +209,28 @@ class TranslatorVisitor : ASTBaseVisitor() {
         when {
             lhs.ident != null -> {
                 // Find the corresponding variable identifier
-                val varIdent =
-                    assign.st().lookupAll(lhs.ident.value) as VariableIdentifier
+                val varIdent = assign.st().lookupAll(lhs.ident.value)!!
 
                 // Calculate the offset relative to the current stack pointer position
-                val offset: Int = varIdent.getAddr()
-                val sp: Int = assign.st().getStackPtr()
 
-                val mode: AddressingMode.AddressingMode2 = if (offset - sp == 0) {
+                var diff = 0
+                when (varIdent) {
+                    is ParamIdentifier -> {
+                        diff = varIdent.getOffset()
+                    }
+                    is VariableIdentifier -> {
+                        val offset: Int = varIdent.getAddr()
+                        val sp: Int = assign.st().getStackPtr()
+                        diff = offset - sp
+                    }
+                    else -> {
+                    }
+                }
+
+                val mode: AddressingMode.AddressingMode2 = if (diff == 0) {
                     AddressingMode.AddressingMode2(Registers.sp)
                 } else {
-                    AddressingMode.AddressingMode2(Registers.sp, Immediate(offset - sp))
+                    AddressingMode.AddressingMode2(Registers.sp, Immediate(diff))
                 }
 
                 // Store the value at the destination register at the calculated offset to the sp
@@ -1153,53 +1167,35 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
-        var totalSize = 0
+        var argsSize = 0
+        val funcIdent = FunctionST.lookupAll(funcCall.funcName)!!
+
         for (arg in funcCall.args.reversed()) {
-            // Generate code to evaluate each argument and obtain the register that has the value
             visit(arg)
             val dest: Register = arg.getDestReg()
 
-            // Store the value obtained below the current stack pointer
-            // Decrement the stack pointer to account for this- pre-indexing with auto indexing
-            val size = arg.getType().getStackSize()
-            AssemblyRepresentation.addMainInstr(
-                StoreInstruction(
-                    dest,
-                    AddressingMode.AddressingMode2(Registers.sp, Immediate(-1 * size))
-                )
-            )
-            AssemblyRepresentation.addMainInstr(
-                AddInstruction(
-                    Registers.sp,
-                    Registers.sp,
-                    Immediate(-1 * size)
-                )
-            )
+            val size: Int = arg.getType().getStackSize()
 
-            // Calculate the total size of stack space allocated for arguments here. Free the register
-            totalSize += size
-            Registers.free(dest)
+            AssemblyRepresentation.addMainInstr(
+                StoreInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, Immediate(-1 * size), true))
+            )
+            argsSize += size
+            funcIdent.getSymbolTable().setStackPtr(funcIdent.getSymbolTable().getStackPtr() - size)
         }
-
-        // Obtain the size of stack space required for the local variables of the function being called
-        val funcIdent: FunctionIdentifier = FunctionST.lookupAll(funcCall.funcName)!!
-        val funcStackSize: Int = funcIdent.getStackSize()
-
-        // Store the value for the stack pointer (keeping in mind the arguments and local variables)
-        val symTab: SymbolTable = funcIdent.getSymbolTable()
-        symTab.setStackPtr(funcCall.st().getStackPtr() - totalSize - funcStackSize)
 
         // Branch to the function label in the assembly code
         AssemblyRepresentation.addMainInstr(BranchInstruction("f_${funcCall.funcName}", Condition.L))
 
-        // Restore the stack pointer
-        AssemblyRepresentation.addMainInstr(
-            AddInstruction(
-                Registers.sp,
-                Registers.sp,
-                Immediate(totalSize)
+        //Restore the stack pointer
+        if (argsSize > 0) {
+            AssemblyRepresentation.addMainInstr(
+                AddInstruction(
+                    Registers.sp,
+                    Registers.sp,
+                    Immediate(argsSize)
+                )
             )
-        )
+        }
 
         // Move the result of the function into an available register
         val reg: Register = Registers.allocate()
