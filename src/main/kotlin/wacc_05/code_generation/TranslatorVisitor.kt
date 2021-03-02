@@ -1112,7 +1112,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         symTab.setStackPtr(funcCall.st().getStackPtr() - totalSize - funcStackSize)
 
         // Branch to the function label in the assembly code
-        AssemblyRepresentation.addMainInstr(BranchInstruction(funcCall.funcName, Condition.L))
+        AssemblyRepresentation.addMainInstr(BranchInstruction("f_${funcCall.funcName}", Condition.L))
 
         // Restore the stack pointer
         AssemblyRepresentation.addMainInstr(
