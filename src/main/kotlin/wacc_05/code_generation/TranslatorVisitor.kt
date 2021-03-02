@@ -83,7 +83,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Store how amount of allocated space for local variables on the corresponding function identifier
         val symTab: SymbolTable = func.st()
-        val funcIdent = symTab.lookup(func.funcName) as FunctionIdentifier
+        val funcIdent = symTab.lookupAll(func.funcName) as FunctionIdentifier
         funcIdent.setStackSize(stackSize)
 
         if (func.paramList != null) {
