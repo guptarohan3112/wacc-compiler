@@ -1,5 +1,6 @@
 package wacc_05.code_generation
 
+import wacc_05.code_generation.instructions.BranchInstruction
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.code_generation.instructions.LabelInstruction
 import java.io.File
@@ -27,6 +28,15 @@ object AssemblyRepresentation {
 
     fun addIOInstr(io_instr: IOInstruction) {
         ioInstrs.add(io_instr)
+        if (io_instr is IOInstruction.p_throw_overflow_error){
+            AssemblyRepresentation.addMainInstr(
+                BranchInstruction(io_instr::class.java.simpleName, Condition.LVS)
+            )
+        }
+
+        AssemblyRepresentation.addMainInstr(
+            BranchInstruction(io_instr::class.java.simpleName, Condition.L)
+        )
     }
 
 
@@ -42,7 +52,7 @@ object AssemblyRepresentation {
 
             sb.append("\n\t.text\n")
 
-            sb.append("\t.global main")
+            sb.append("\t.global main\n")
 
             mainInstrs.forEach { instr->
                 sb.append(printInstr(instr))
@@ -74,9 +84,9 @@ object AssemblyRepresentation {
 
     private fun printInstr(instr: Instruction): String {
         return if (instr is LabelInstruction) {
-            "\t$instr"
+            "\t$instr\n"
         } else {
-            "\t\t$instr"
+            "\t\t$instr\n"
         }
     }
 }
