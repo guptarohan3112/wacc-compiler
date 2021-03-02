@@ -42,6 +42,21 @@ class TranslatorVisitor : ASTBaseVisitor() {
         return stackSize
     }
 
+    // Restore the stack pointer and print out the relevant assembly code
+    private fun restoreStackPointer(stat: StatementAST, stackSize: Int) {
+        if (stackSize != 0) {
+            AssemblyRepresentation.addMainInstr(
+                AddInstruction(
+                    Registers.sp,
+                    Registers.sp,
+                    Immediate(stackSize)
+                )
+            )
+            // Not sure if this is needed
+            stat.st().setStackPtr(stat.st().getStackPtr() + stackSize)
+        }
+    }
+
     // a helper function for adding "B" to "STR" if the given
     private fun getStoreInstruction(
         reg: Register,
@@ -75,16 +90,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Generate assembly code for the body statement
         visit(prog.stat)
 
-        // Restore the stack pointer
-        if (stackSize != 0) {
-            AssemblyRepresentation.addMainInstr(
-                AddInstruction(
-                    Registers.sp,
-                    Registers.sp,
-                    Immediate(stackSize)
-                )
-            )
-        }
+        restoreStackPointer(prog.stat, stackSize)
 
         // Return the exit code (assuming 0 upon success) and pop the program counter
         AssemblyRepresentation.addMainInstr(
@@ -118,13 +124,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(func.body)
 
         // Restore the stack pointer
-        AssemblyRepresentation.addMainInstr(
-            AddInstruction(
-                Registers.sp,
-                Registers.sp,
-                Immediate(stackSize)
-            )
-        )
+        restoreStackPointer(func.body, stackSize)
 
         // Restore the program counter
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
@@ -272,13 +272,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(begin.stat)
 
         // Restore the stack pointer
-        AssemblyRepresentation.addMainInstr(
-            AddInstruction(
-                Registers.sp,
-                Registers.sp,
-                Immediate(stackSize)
-            )
-        )
+        restoreStackPointer(begin.stat, stackSize)
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
@@ -357,13 +351,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(ifStat.thenStat)
 
         // Restore the stack pointer for the 'then' branch
-        AssemblyRepresentation.addMainInstr(
-            AddInstruction(
-                Registers.sp,
-                Registers.sp,
-                Immediate(stackSizeThen)
-            )
-        )
+        restoreStackPointer(ifStat.thenStat, stackSizeThen)
 
         // Unconditionally jump to the label of whatever follows the if statement in the program
         val nextLabel: LabelInstruction = getUniqueLabel()
@@ -376,13 +364,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(ifStat.elseStat)
 
         // Restore the stack pointer for the 'else' branch
-        AssemblyRepresentation.addMainInstr(
-            AddInstruction(
-                Registers.sp,
-                Registers.sp,
-                Immediate(stackSizeElse)
-            )
-        )
+        restoreStackPointer(ifStat.elseStat, stackSizeElse)
 
         // Make label for whatever follows the if statement
         AssemblyRepresentation.addMainInstr(nextLabel)
@@ -457,15 +439,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(whileStat.body)
 
         // Restore the stack pointer
-        if (stackSize != 0) {
-            AssemblyRepresentation.addMainInstr(
-                AddInstruction(
-                    Registers.sp,
-                    Registers.sp,
-                    Immediate(stackSize)
-                )
-            )
-        }
+        restoreStackPointer(whileStat.body, stackSize)
 
         // Label for condition checking
         AssemblyRepresentation.addMainInstr(condLabel)
