@@ -500,16 +500,30 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
+        visit(unop.expr)
+        unop.setDestReg(unop.expr.getDestReg())
+
         when (unop.operator) {
-            "-" -> translateNeg(unop)
-            // TODO
-            else -> {
-            }
+            "-" -> visitNeg(unop)
+//             "chr" -> translateChr(unop)
+//             "ord" -> translateOrd(unop)
+            "!" -> visitNot(unop)
+//            "len" -> translateLen(unop)
         }
     }
 
-    private fun translateNeg(unop: ExprAST.UnOpAST) {
-        visit(unop.expr)
+    private fun visitNot (unop: ExprAST.UnOpAST) {
+        val dest: Register = unop.expr.getDestReg()
+        AssemblyRepresentation.addMainInstr(
+            ExclusiveOr(
+                dest,
+                dest,
+                Immediate(1)
+            )
+        )
+    }
+
+    private fun visitNeg(unop: ExprAST.UnOpAST) {
         val dest: Register = unop.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
@@ -522,19 +536,19 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
         when (binop.operator) {
-            "+" -> translateAdd(binop)
-            "-" -> translateSub(binop)
-            "*" -> translateMultiply(binop)
-            "/", "%" -> translateDivMod(binop)
-            "&&", "||" -> translateAndOr(binop)
-            ">", ">=", "<", "<=" -> translateCompare(binop)
-            "==", "!=" -> translateEquality(binop)
+            "+" -> visitAdd(binop)
+            "-" -> visitSub(binop)
+            "*" -> visitMultiply(binop)
+            "/", "%" -> visitDivMod(binop)
+            "&&", "||" -> visitAndOr(binop)
+            ">", ">=", "<", "<=" -> visitCompare(binop)
+            "==", "!=" -> visitEquality(binop)
             else -> {
             }
         }
     }
 
-    private fun translateAdd(binop: ExprAST.BinOpAST) {
+    private fun visitAdd(binop: ExprAST.BinOpAST) {
         val expr1 = binop.expr1
         val expr2 = binop.expr2
 
@@ -580,7 +594,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    private fun translateSub(binop: ExprAST.BinOpAST) {
+    private fun visitSub(binop: ExprAST.BinOpAST) {
         visit(binop.expr1)
 
         val dest: Register = binop.expr1.getDestReg()
@@ -610,7 +624,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         binop.setDestReg(dest)
     }
 
-    private fun translateMultiply(binop: ExprAST.BinOpAST) {
+    private fun visitMultiply(binop: ExprAST.BinOpAST) {
         visit(binop.expr1)
         visit(binop.expr2)
 
@@ -623,7 +637,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         binop.setDestReg(dest1)
     }
 
-    private fun translateDivMod(binop: ExprAST.BinOpAST) {
+    private fun visitDivMod(binop: ExprAST.BinOpAST) {
         visit(binop.expr1)
         visit(binop.expr2)
 
@@ -636,6 +650,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val dest2: Register = binop.expr2.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest2))
         Registers.free(dest2)
+
+        AssemblyRepresentation.addPInstr(PInstruction.p_check_divide_by_zero())
 
         AssemblyRepresentation.addMainInstr(
             BranchInstruction(
@@ -655,7 +671,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         binop.setDestReg(dest)
     }
 
-    private fun translateAndOr(binop: ExprAST.BinOpAST) {
+    private fun visitAndOr(binop: ExprAST.BinOpAST) {
         val expr1 = binop.expr1
         val expr2 = binop.expr2
 
@@ -711,7 +727,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    private fun translateCompare(binop: ExprAST.BinOpAST) {
+    private fun visitCompare(binop: ExprAST.BinOpAST) {
         val expr1 = binop.expr1
         val expr2 = binop.expr2
 
@@ -901,7 +917,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    private fun translateEquality(binop: ExprAST.BinOpAST) {
+    private fun visitEquality(binop: ExprAST.BinOpAST) {
         visit(binop.expr1)
         visit(binop.expr2)
 

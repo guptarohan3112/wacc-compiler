@@ -2,8 +2,8 @@ package wacc_05
 
 import antlr.WaccLexer
 import antlr.WaccParser
-
-import org.antlr.v4.runtime.*
+import org.antlr.v4.runtime.CharStreams
+import org.antlr.v4.runtime.CommonTokenStream
 import wacc_05.ast_structure.AST
 import wacc_05.code_generation.AssemblyRepresentation
 import wacc_05.code_generation.TranslatorVisitor
@@ -87,10 +87,11 @@ object WaccCompiler {
         }
 
         if (!validOnly) {
-            println("Generating assembly file : $filePath.s")
             val translatorVisitor = TranslatorVisitor()
             translatorVisitor.visit(ast)
-            AssemblyRepresentation.buildAssembly(filePath)
+            val fileName = File(filePath).nameWithoutExtension
+            println("Generating assembly file : $fileName.s")
+            AssemblyRepresentation.buildAssembly(fileName)
             println("Generation of assembly file complete")
         }
 
