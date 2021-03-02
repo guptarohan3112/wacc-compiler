@@ -390,29 +390,23 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(print.expr)
         val reg: Register = print.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
-        // TODO: Need to push appropriate part in data to print the type of expression
-        if (print.expr.getType() is TypeIdentifier.IntIdentifier) {
-            // Add %d placeholder
-            AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
+        when (print.expr.getType()) {
+            is TypeIdentifier.IntIdentifier -> {
+                AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
+            }
+            is TypeIdentifier.BoolIdentifier -> {
+                AssemblyRepresentation.addPInstr(PInstruction.p_print_bool())
+            }
+            is TypeIdentifier.CharIdentifier -> {
+                AssemblyRepresentation.addMainInstr(BranchInstruction("putchar", Condition.L))
+            }
+            is TypeIdentifier.StringIdentifier -> {
+                AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
+            }
+            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier -> {
+                AssemblyRepresentation.addPInstr(PInstruction.p_print_reference())
+            }
         }
-        if (print.expr.getType() is TypeIdentifier.BoolIdentifier) {
-            AssemblyRepresentation.addPInstr(PInstruction.p_print_bool())
-        }
-        if (print.expr.getType() is TypeIdentifier.CharIdentifier) {
-            AssemblyRepresentation.addMainInstr(BranchInstruction("putchar", Condition.L))
-        }
-        if (print.expr.getType() is TypeIdentifier.StringIdentifier) {
-            AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
-        }
-//        if (print.expr.getType() == TypeIdentifier.CHAR_TYPE) {
-//
-//        }
-//        if (print.expr.getType() == TypeIdentifier.PAIR_LIT_TYPE) {
-//            AssemblyRepresentation.addPInstr(PInstruction.p_print())
-//        }
-//        if (print.expr.getType() == TypeIdentifier.ARRAY) {
-//        }
-
 
         if (print.newLine) {
             AssemblyRepresentation.addPInstr(PInstruction.p_print_ln())
@@ -516,12 +510,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
         val register = Registers.allocate()
         liter.setDestReg(register)
-        AssemblyRepresentation.addMainInstr(
-            MoveInstruction(
-                register,
-                AddressingMode.AddressingMode2(register, Immediate(0))
-            )
-        )
+        AssemblyRepresentation.addMainInstr(LoadInstruction(register, AddressingMode.AddressingLabel("0")))
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {

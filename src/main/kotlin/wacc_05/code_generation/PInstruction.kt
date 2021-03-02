@@ -309,6 +309,42 @@ sealed class PInstruction {
 
     }
 
+    class p_print_reference : PInstruction() {
+        private var label: String = ""
+
+        override fun applyIO(): ArrayList<Instruction> {
+            return arrayListOf(
+                LabelInstruction("p_print_reference"),
+                PushInstruction(Registers.lr),
+                MoveInstruction(Registers.r1, Registers.r0),
+                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(label)),
+                AddInstruction(Registers.r0, Registers.r0, Immediate(4)),
+                BranchInstruction("printf", Condition.L),
+                MoveInstruction(Registers.r0, Immediate(0)),
+                BranchInstruction("fflush", Condition.L),
+                PopInstruction(Registers.pc)
+            )
+        }
+
+        override fun addMessageLabel() {
+            val printLabel = MessageLabelInstruction.getUniqueLabel("%p\\0")
+            AssemblyRepresentation.addDataInstr(printLabel)
+            label = printLabel.getLabel()
+        }
+
+        override fun checkRuntimeErr() {
+            return
+        }
+
+        override fun equals(other: Any?): Boolean {
+            return other is p_print_reference
+        }
+
+        override fun hashCode(): Int {
+            return javaClass.hashCode()
+        }
+    }
+
     class p_check_divide_by_zero : PInstruction() {
 
         private var label: String = ""
