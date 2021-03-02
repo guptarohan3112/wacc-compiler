@@ -55,7 +55,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         )
 
         // Return the exit code (assuming 0 upon success) and pop the program counter
-        AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, Immediate(0)))
+        AssemblyRepresentation.addMainInstr(LoadInstruction(Registers.r0, AddressingMode.AddressingLabel("0")))
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
         // Put in the .ltorg directive?
     }
@@ -130,12 +130,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Store the value at the destination register at a particular offset to the stack pointer (bottom up)
         val currOffset = scope.getStackPtrOffset()
-        AssemblyRepresentation.addMainInstr(
-            StoreInstruction(
-                dest,
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(currOffset))
-            )
-        )
+        val mode = if (currOffset == 0) {
+            AddressingMode.AddressingMode2(Registers.sp)
+        } else {
+            AddressingMode.AddressingMode2(Registers.sp, Immediate(currOffset))
+        }
+
+        if (decl.assignment.getType().getSizeBytes() == 1) {
+            AssemblyRepresentation.addMainInstr(StoreInstruction(dest, mode, Condition.B))
+        } else {
+            AssemblyRepresentation.addMainInstr(StoreInstruction(dest, mode))
+        }
 
         // Set the absolute stack address of the variable in the corresponding variable identifier
         val boundaryAddr = scope.getStackPtr()
@@ -164,13 +169,28 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 val offset: Int = varIdent.getAddr()
                 val sp: Int = assign.st().getStackPtr()
 
+                val mode: AddressingMode.AddressingMode2 = if (offset - sp == 0) {
+                    AddressingMode.AddressingMode2(Registers.sp)
+                } else {
+                    AddressingMode.AddressingMode2(Registers.sp, Immediate(offset - sp))
+                }
+
                 // Store the value at the destination register at the calculated offset to the sp
-                AssemblyRepresentation.addMainInstr(
-                    StoreInstruction(
-                        dest,
-                        AddressingMode.AddressingMode2(Registers.sp, Immediate(offset - sp))
-                    )
-                )
+                when (varIdent.getType().getStackSize()) {
+                    1 -> {
+                        AssemblyRepresentation.addMainInstr(
+                            StoreInstruction(
+                                dest, mode, Condition.B
+                            )
+                        )
+                    }
+
+                    else -> {
+                        AssemblyRepresentation.addMainInstr(
+                            StoreInstruction(dest, mode)
+                        )
+                    }
+                }
             }
             lhs.arrElem != null -> {
                 val arrElem = lhs.arrElem!!
@@ -203,7 +223,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
 
 //      TODO: Do we need to free? Is this the correct register?
-      Registers.free(dest)
+        Registers.free(dest)
 //        assign.lhs.setDestReg(dest)
     }
 
@@ -529,7 +549,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    private fun visitNot (unop: ExprAST.UnOpAST) {
+    private fun visitNot(unop: ExprAST.UnOpAST) {
         val dest: Register = unop.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(
             ExclusiveOr(

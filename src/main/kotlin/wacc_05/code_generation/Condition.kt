@@ -1,6 +1,7 @@
 package wacc_05.code_generation
 
 enum class Condition {
+    B,
     L,
     EQ,
     NE,
