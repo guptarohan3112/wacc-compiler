@@ -3,9 +3,7 @@ package wacc_05.ast_structure.assignment_ast
 import antlr.WaccParser
 import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ExprAST
-import wacc_05.code_generation.instructions.Instruction
 import wacc_05.ast_structure.ASTVisitor
-import wacc_05.code_generation.Register
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
@@ -43,11 +41,7 @@ class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: ExprAST.Iden
         }
     }
 
-override fun translate(): ArrayList<Instruction> {
-    return ArrayList()
-}
-
-override fun <T> accept(visitor: ASTVisitor<T>): T {
-    return visitor.visitAssignLHSAST(this)
-}
+    override fun <T> accept(visitor: ASTVisitor<T>): T {
+        return visitor.visitAssignLHSAST(this)
+    }
 }

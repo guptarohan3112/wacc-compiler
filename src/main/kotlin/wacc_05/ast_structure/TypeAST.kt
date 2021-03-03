@@ -1,8 +1,6 @@
 package wacc_05.ast_structure
 
 import antlr.WaccParser
-import wacc_05.code_generation.instructions.Instruction
-import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
@@ -21,10 +19,6 @@ sealed class TypeAST : AST() {
             }
         }
 
-        override fun translate(): ArrayList<Instruction> {
-            return ArrayList()
-        }
-
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitBaseTypeAST(this)
         }
@@ -41,10 +35,6 @@ sealed class TypeAST : AST() {
             return TypeIdentifier.ArrayIdentifier(elemsType.getType(), 0)
         }
 
-        override fun translate(): ArrayList<Instruction> {
-            return ArrayList()
-        }
-
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitArrayTypeAST(this)
         }
@@ -55,10 +45,6 @@ sealed class TypeAST : AST() {
     }
 
     data class PairElemTypeAST(val pair: String? = null, val type: TypeAST?) : AST() {
-
-        override fun translate(): ArrayList<Instruction> {
-            return ArrayList()
-        }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitPairElemTypeAST(this)
@@ -87,10 +73,6 @@ sealed class TypeAST : AST() {
             fstType.st = st()
             sndType.st = st()
             return TypeIdentifier.PairIdentifier(fstType.getType(), sndType.getType())
-        }
-
-        override fun translate(): ArrayList<Instruction> {
-            return ArrayList()
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {

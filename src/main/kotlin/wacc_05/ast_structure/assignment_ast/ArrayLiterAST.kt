@@ -2,9 +2,7 @@ package wacc_05.ast_structure.assignment_ast
 
 import antlr.WaccParser
 import wacc_05.ast_structure.ExprAST
-import wacc_05.code_generation.instructions.Instruction
 import wacc_05.ast_structure.ASTVisitor
-import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<ExprAST>) : AssignRHSAST() {
@@ -21,10 +19,6 @@ class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<Ex
 
     fun elemsLength(): Int {
         return elems.size
-    }
-
-    override fun translate(): ArrayList<Instruction> {
-        return ArrayList()
     }
 
     override fun <T> accept(visitor: ASTVisitor<T>): T {

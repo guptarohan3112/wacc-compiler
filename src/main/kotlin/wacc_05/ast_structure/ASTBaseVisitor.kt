@@ -25,7 +25,7 @@ abstract class ASTBaseVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitParamListAST(list: ParamListAST) {
-        for(param in list.paramList) {
+        for (param in list.paramList) {
             visitParamAST(param)
         }
     }
@@ -113,7 +113,7 @@ abstract class ASTBaseVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
-        for(elem in arrayElem.exprs) {
+        for (elem in arrayElem.exprs) {
             visit(elem)
         }
     }
@@ -141,7 +141,7 @@ abstract class ASTBaseVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitPairElemTypeAST(elemType: TypeAST.PairElemTypeAST) {
-        if(elemType.type != null) {
+        if (elemType.type != null) {
             visit(elemType.type)
         }
     }
@@ -151,15 +151,15 @@ abstract class ASTBaseVisitor : ASTVisitor<Unit> {
     }
 
     override fun visitAssignLHSAST(lhs: AssignLHSAST) {
-        if(lhs.arrElem != null) {
+        if (lhs.arrElem != null) {
             visitArrayElemAST(lhs.arrElem!!)
-        } else if(lhs.pairElem != null) {
+        } else if (lhs.pairElem != null) {
             visitPairElemAST(lhs.pairElem!!)
         }
     }
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
-        for(arg in funcCall.args) {
+        for (arg in funcCall.args) {
             visit(arg)
         }
     }

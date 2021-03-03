@@ -1,6 +1,5 @@
 package wacc_05.ast_structure
 
-import wacc_05.code_generation.instructions.Instruction
 import wacc_05.symbol_table.SymbolTable
 
 abstract class AST {
@@ -16,8 +15,6 @@ abstract class AST {
     fun st(): SymbolTable {
         return st!!
     }
-
-    abstract fun translate(): ArrayList<Instruction>
 
     abstract fun <T> accept(visitor: ASTVisitor<T>): T
 }

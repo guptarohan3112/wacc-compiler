@@ -22,14 +22,6 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
 
-        override fun translate(): ArrayList<Instruction> {
-            val intValue = Integer.parseInt(sign+value)
-            val register = Registers.allocate()
-            val mode: AddressingMode = AddressingMode.AddressingMode2(register, Immediate(intValue))
-//            this.dest = register
-            return arrayListOf(LoadInstruction(register, mode))
-        }
-
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitIntLiterAST(this)
         }
@@ -39,11 +31,6 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.BOOL_TYPE
-        }
-
-        override fun translate(): ArrayList<Instruction> {
-            val intValue = if (value == "true") 1 else 0
-            return arrayListOf(MoveInstruction(Registers.allocate(), Immediate(intValue)))
         }
 
         fun getValue(): Int {
@@ -64,14 +51,6 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.CHAR_TYPE
         }
 
-        override fun translate(): ArrayList<Instruction> {
-            return if (value == "'\\0'") {
-                arrayListOf(MoveInstruction(Registers.allocate(), Immediate(0)))
-            } else {
-                arrayListOf(MoveInstruction(Registers.allocate(), ImmediateChar(value)))
-            }
-        }
-
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitCharLiterAST(this)
         }
@@ -83,12 +62,6 @@ sealed class ExprAST : AssignRHSAST() {
             return TypeIdentifier.StringIdentifier(value.length)
         }
 
-        override fun translate(): ArrayList<Instruction> {
-            // TODO: ADD LABEL FOR MSG
-//            return arrayListOf(LoadInstruction(regs.allocate(), //load instruction)
-            return ArrayList()
-        }
-
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitStrLiterAST(this)
         }
@@ -98,10 +71,6 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.PAIR_LIT_TYPE
-        }
-
-        override fun translate(): ArrayList<Instruction> {
-            return ArrayList()
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
@@ -120,10 +89,6 @@ sealed class ExprAST : AssignRHSAST() {
                     type.getType()
                 }
             }
-        }
-
-        override fun translate(): ArrayList<Instruction> {
-            return ArrayList()
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
@@ -150,10 +115,6 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
-        override fun translate(): ArrayList<Instruction> {
-            return ArrayList()
-        }
-
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitArrayElemAST(this)
         }
@@ -175,23 +136,6 @@ sealed class ExprAST : AssignRHSAST() {
                 "chr" -> TypeIdentifier.CHAR_TYPE
                 else -> TypeIdentifier()
             }
-        }
-
-        override fun translate(): ArrayList<Instruction> {
-            return when (operator) {
-                "-" -> translateNeg()
-                else -> ArrayList()
-            }
-        }
-
-        private fun translateNeg(): ArrayList<Instruction> {
-            val results: ArrayList<Instruction> = ArrayList()
-
-            results.addAll(expr.translate())
-            val dest: Register = expr.getDestReg()
-            results.add(LoadInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, null)))
-            results.add(ReverseSubtractInstruction(dest, dest, Immediate(0)))
-            return results
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
@@ -220,142 +164,6 @@ sealed class ExprAST : AssignRHSAST() {
                 "+", "%", "/", "*", "-" -> TypeIdentifier.INT_TYPE
                 else -> TypeIdentifier.BoolIdentifier
             }
-        }
-
-        override fun translate(): ArrayList<Instruction> {
-            return when (operator) {
-//                "+" -> translateAdd(regs)
-//                "-" -> translateSub(regs)
-//                "*" -> translateMultiply(regs)
-//                "/" -> translateDivide(regs)
-//                "%" -> translateModulo(regs)
-//                "&&" -> translateAnd(regs)
-//                "||" -> translateOr(regs)
-                else -> ArrayList()
-            }
-        }
-
-        private fun translateMultiply(): ArrayList<Instruction> {
-            val results: ArrayList<Instruction> = ArrayList()
-
-            /* here we can't do any optimisation on registers since ARM
-             * requires MULT rd, rm, rs -> rd = rm * rs
-             */
-
-            results.addAll(expr1.translate())
-            results.addAll(expr2.translate())
-
-            val dest1: Register = expr1.getDestReg()
-            val dest2: Register = expr2.getDestReg()
-
-            results.add(MultiplyInstruction(dest1, dest1, dest2))
-
-            Registers.free(dest2)
-
-            setDestReg(dest1)
-
-            return results
-        }
-
-        private fun translateDivide(): ArrayList<Instruction> {
-            val results: ArrayList<Instruction> = ArrayList()
-
-            results.addAll(expr1.translate())
-            results.addAll(expr2.translate())
-
-            val dest1: Register = expr1.getDestReg()
-            val dest2: Register = expr2.getDestReg()
-
-            if (dest1 != Registers.r0) {
-                results.add(MoveInstruction(Registers.r0, dest1))
-                Registers.free(dest1)
-            }
-
-            if (dest2 != Registers.r1) {
-                results.add(MoveInstruction(Registers.r1, dest2))
-                Registers.free(dest2)
-            }
-
-            results.add(BranchInstruction("__aeabi_idiv", Condition.L))
-
-            // not sure about this - we need to move R3 into a destination register
-            // but I am concerned about overwriting it when restoring, or overwriting
-            // a register we are restoring
-
-            return results
-        }
-
-        private fun translateModulo(): ArrayList<Instruction> {
-            // to follow translateDivide()
-            return ArrayList()
-        }
-
-        private fun translateAnd(): ArrayList<Instruction> {
-            val results: ArrayList<Instruction> = ArrayList()
-
-            when {
-                expr1 is BoolLiterAST -> {
-                    results.addAll(expr2.translate())
-                    val dest: Register = expr2.getDestReg()
-                    results.add(AndInstruction(dest, dest, Immediate(expr1.getValue())))
-
-                    setDestReg(dest)
-                }
-                expr2 is BoolLiterAST -> {
-                    results.addAll(expr1.translate())
-                    val dest: Register = expr1.getDestReg()
-                    results.add(AndInstruction(dest, dest, Immediate(expr2.getValue())))
-
-                    setDestReg(dest)
-                }
-                else -> {
-                    results.addAll(expr1.translate())
-                    results.addAll(expr2.translate())
-                    val dest1: Register = expr1.getDestReg()
-                    val dest2: Register = expr2.getDestReg()
-
-                    results.add(AndInstruction(dest1, dest1, dest2))
-                    Registers.free(dest2)
-
-                    setDestReg(dest1)
-                }
-            }
-
-            return results
-        }
-
-        private fun translateOr(): ArrayList<Instruction> {
-            val results: ArrayList<Instruction> = ArrayList()
-
-            when {
-                expr1 is BoolLiterAST -> {
-                    results.addAll(expr2.translate())
-                    val dest: Register = expr2.getDestReg()
-                    results.add(OrInstruction(dest, dest, Immediate(expr1.getValue())))
-
-                    setDestReg(dest)
-                }
-                expr2 is BoolLiterAST -> {
-                    results.addAll(expr1.translate())
-                    val dest: Register = expr1.getDestReg()
-                    results.add(OrInstruction(dest, dest, Immediate(expr2.getValue())))
-
-                    setDestReg(dest)
-                }
-                else -> {
-                    results.addAll(expr1.translate())
-                    results.addAll(expr2.translate())
-                    val dest1: Register = expr1.getDestReg()
-                    val dest2: Register = expr2.getDestReg()
-
-                    results.add(OrInstruction(dest1, dest1, dest2))
-                    Registers.free(dest2)
-
-                    setDestReg(dest1)
-                }
-            }
-
-            return results
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
