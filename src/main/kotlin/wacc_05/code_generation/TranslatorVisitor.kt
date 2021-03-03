@@ -740,6 +740,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 val dest2: Register = expr2.getDestReg()
 
                 AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2, Condition.S))
+                AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2, Condition.S))
 
                 Registers.free(dest2)
                 binop.setDestReg(dest1)
@@ -764,7 +765,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     SubtractInstruction(
                         dest,
                         dest,
-                        Immediate(binop.expr2.getValue())
+                        Immediate(binop.expr2.getValue()),
+                        Condition.S
                     )
                 )
             }
@@ -772,7 +774,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 visit(binop.expr2)
                 val dest2: Register = binop.expr2.getDestReg()
 
-                AssemblyRepresentation.addMainInstr(SubtractInstruction(dest, dest, dest2))
+                AssemblyRepresentation.addMainInstr(SubtractInstruction(dest, dest, dest2, Condition.S))
                 Registers.free(dest2)
             }
         }
