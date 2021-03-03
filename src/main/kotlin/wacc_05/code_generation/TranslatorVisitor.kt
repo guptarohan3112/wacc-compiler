@@ -75,7 +75,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int{
+    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int {
         val identObj: IdentifierObject = scope.st().lookupAll(ident.value)!!
 
         var spOffset = 0
@@ -625,11 +625,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
         when (unop.operator) {
             "-" -> visitNeg(unop)
             "!" -> visitNot(unop)
+            "len" -> visitLen(unop)
         }
     }
 
+    private fun visitLen(unop: ExprAST.UnOpAST) {
+        val dest: Register = unop.getDestReg()
+        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
+    }
+
     private fun visitNot(unop: ExprAST.UnOpAST) {
-        val dest: Register = unop.expr.getDestReg()
+        val dest: Register = unop.getDestReg()
         AssemblyRepresentation.addMainInstr(
             EorInstruction(
                 dest,
@@ -1115,7 +1121,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
         // we want to allocate (length * size of elem) + INT_SIZE
-        val elemsSize: Int = arrayLiter.elems[0].getType().getSizeBytes()
+        val elemsSize: Int = if (arrayLiter.elemsLength() > 0) {
+            arrayLiter.elems[0].getType().getSizeBytes()
+        } else {
+            0
+        }
         val arrAllocation: Int = arrayLiter.elemsLength() * elemsSize + TypeIdentifier.INT_SIZE
 
         // load allocation into param register for malloc and branch
