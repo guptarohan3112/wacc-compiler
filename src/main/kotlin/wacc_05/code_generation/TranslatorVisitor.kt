@@ -266,9 +266,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 val arrDest: Register = arrElem.getDestReg()
 
                 AssemblyRepresentation.addMainInstr(
-                    StoreInstruction(
+                    getStoreInstruction(
                         dest,
-                        AddressingMode.AddressingMode2(arrDest)
+                        AddressingMode.AddressingMode2(arrDest),
+                        arrElem.getType()
                     )
                 )
 
@@ -413,21 +414,25 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(print.expr)
         val reg: Register = print.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
-        when (print.expr.getType()) {
-            is TypeIdentifier.IntIdentifier -> {
+
+        val type = print.expr.getType()
+        when {
+            type is TypeIdentifier.IntIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
             }
-            is TypeIdentifier.BoolIdentifier -> {
+            type is TypeIdentifier.BoolIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_bool())
             }
-            is TypeIdentifier.CharIdentifier -> {
+            type is TypeIdentifier.CharIdentifier -> {
                 AssemblyRepresentation.addMainInstr(BranchInstruction("putchar", Condition.L))
             }
-            is TypeIdentifier.StringIdentifier -> {
+            type is TypeIdentifier.StringIdentifier
+                    || type == TypeIdentifier.ArrayIdentifier(TypeIdentifier.CHAR_TYPE, 0) -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
             }
-            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier,
-            is TypeIdentifier.ArrayIdentifier -> {
+            type is TypeIdentifier.PairIdentifier
+                    || type is TypeIdentifier.PairLiterIdentifier
+                    || type is TypeIdentifier.ArrayIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_reference())
             }
         }
