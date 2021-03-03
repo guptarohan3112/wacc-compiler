@@ -17,6 +17,7 @@ enum class Condition {
     LEQ,
     LLT,
     CS,
+    LCS,
     LVS,
     LNE
 }

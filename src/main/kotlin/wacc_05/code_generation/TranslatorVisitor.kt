@@ -75,7 +75,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int{
+    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int {
         val identObj: IdentifierObject = scope.st().lookupAll(ident.value)!!
 
         var spOffset = 0
@@ -426,7 +426,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
             is TypeIdentifier.StringIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
             }
-            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier -> {
+            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier,
+            is TypeIdentifier.ArrayIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_reference())
             }
         }
@@ -568,15 +569,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         val ident: VariableIdentifier =
             arrayElem.st().lookupAll(arrayElem.ident) as VariableIdentifier
-        val sp = arrayElem.st().getStackPtrOffset()
-        val offset: Int = ident.getAddr() + TypeIdentifier.INT_SIZE
+        val sp = arrayElem.st().getStackPtr()
+        val offset: Int = ident.getAddr()
 
         // move the start of the array into dest register
         val dest: Register = Registers.allocate()
         AssemblyRepresentation.addMainInstr(
-            StoreInstruction(
+            AddInstruction(
                 dest,
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset - sp))
+                Registers.sp,
+                Immediate(offset - sp)
             )
         )
 
@@ -598,6 +600,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest))
             AssemblyRepresentation.addPInstr(PInstruction.p_check_array_bounds())
 
+            AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(TypeIdentifier.INT_SIZE)))
+
             when (expr.getType().getStackSize()) {
                 4 -> {
                     AssemblyRepresentation.addMainInstr(
@@ -613,6 +617,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 }
             }
             Registers.free(exprDest)
+
+            AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
         }
 
         arrayElem.setDestReg(dest)
@@ -625,11 +631,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
         when (unop.operator) {
             "-" -> visitNeg(unop)
             "!" -> visitNot(unop)
+            "len" -> visitLen(unop)
         }
     }
 
+    private fun visitLen(unop: ExprAST.UnOpAST) {
+        val dest: Register = unop.getDestReg()
+        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
+    }
+
     private fun visitNot(unop: ExprAST.UnOpAST) {
-        val dest: Register = unop.expr.getDestReg()
+        val dest: Register = unop.getDestReg()
         AssemblyRepresentation.addMainInstr(
             EorInstruction(
                 dest,
@@ -1115,7 +1127,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
         // we want to allocate (length * size of elem) + INT_SIZE
-        val elemsSize: Int = arrayLiter.elems[0].getType().getSizeBytes()
+        val elemsSize: Int = if (arrayLiter.elemsLength() > 0) {
+            arrayLiter.elems[0].getType().getSizeBytes()
+        } else {
+            0
+        }
         val arrAllocation: Int = arrayLiter.elemsLength() * elemsSize + TypeIdentifier.INT_SIZE
 
         // load allocation into param register for malloc and branch
