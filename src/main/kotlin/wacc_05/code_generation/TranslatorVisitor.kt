@@ -299,7 +299,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         var reg: Register? = null
 
         if (read.lhs.ident != null) {
-            visit(read.lhs.ident)
+            visitIdentForRead(read.lhs.ident)
             reg = read.lhs.ident.getDestReg()
             type = read.lhs.ident.getType()
         }
@@ -518,6 +518,28 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(LoadInstruction(register, AddressingMode.AddressingLabel("0")))
     }
 
+    private fun visitIdentForRead(ident: ExprAST.IdentAST) {
+        // Find the stack address of the identifier (relative to the top of the stack, 0 for us)
+        val identObj: IdentifierObject = ident.st().lookupAll(ident.value)!!
+
+        var spOffset = 0
+        if (identObj is VariableIdentifier) {
+            // Calculate the stack space between the current stack pointer and the identifier
+            val identOffset: Int = identObj.getAddr()
+            val sp: Int = ident.st().getStackPtr()
+            spOffset = identOffset - sp
+        } else if (identObj is ParamIdentifier) {
+            // Obtain the offset from the param identifier field
+            spOffset = identObj.getOffset()
+        }
+
+        val register: Register = Registers.allocate()
+
+        AssemblyRepresentation.addMainInstr(AddInstruction(register, Registers.sp, Immediate(spOffset)))
+
+        ident.setDestReg(register)
+    }
+
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
         // Find the stack address of the identifier (relative to the top of the stack, 0 for us)
         val identObj: IdentifierObject = ident.st().lookupAll(ident.value)!!
@@ -534,7 +556,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
 
         val type = ident.getType()
-
         // Initialise the mode to be 2 or 3 depending on the type of the identifier
         val register = Registers.allocate()
         var mode: AddressingMode = AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
@@ -606,10 +627,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         when (unop.operator) {
             "-" -> visitNeg(unop)
-//             "chr" -> translateChr(unop)
-//             "ord" -> translateOrd(unop)
             "!" -> visitNot(unop)
-//            "len" -> translateLen(unop)
         }
     }
 
