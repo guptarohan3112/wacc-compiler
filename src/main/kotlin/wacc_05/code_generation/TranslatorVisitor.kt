@@ -89,9 +89,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             val identOffset: Int = identObj.getAddr()
             val sp: Int = scope.st().getStackPtr()
             spOffset = identOffset - sp
-        } else if (identObj is ParamIdentifier) {
-            // Obtain the offset from the param identifier field
-            spOffset = identObj.getOffset()
         }
 
         return spOffset
@@ -144,6 +141,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         if (func.paramList != null) {
             visitAndUpdateParams(stackSize, func.paramList)
+            funcIdent.getSymbolTable().updatePtrOffset(-4)
         }
 
         // Generate assembly code for the body statement
@@ -159,14 +157,15 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     private fun visitAndUpdateParams(stackSize: Int, list: ParamListAST) {
         val symbolTable: SymbolTable = list.st()
-        // sp gets decremented once more before function call due to pre indexing
-        var offset = stackSize + 4
+        val offset = stackSize + 4
 
         // Store the offset of the parameter relative to the stack address of the first parameter
         for (param in list.paramList) {
+            val currOffset: Int = symbolTable.getStackPtrOffset()
             val paramIdent: ParamIdentifier = symbolTable.lookup(param.name) as ParamIdentifier
-            paramIdent.setOffset(offset)
-            offset += param.getType(symbolTable).getStackSize()
+            paramIdent.setAddr(symbolTable.getStackPtr() + currOffset + offset)
+            paramIdent.allocatedNow()
+            symbolTable.updatePtrOffset(param.getType(symbolTable).getStackSize())
         }
     }
 
