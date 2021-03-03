@@ -31,9 +31,10 @@ open class TypeIdentifier : IdentifierObject() {
         const val INT_SIZE: Int = 4
         const val CHAR_SIZE: Int = 1
         const val BOOL_SIZE: Int = 1
-        const val ARR_SIZE: Int = 4
-        const val STRING_SIZE: Int = 4
-        const val PAIR_SIZE: Int = 4
+        const val ADDR_SIZE: Int = 4
+        const val ARR_SIZE: Int = ADDR_SIZE
+        const val STRING_SIZE: Int = ADDR_SIZE
+        const val PAIR_SIZE: Int = ADDR_SIZE
     }
 
     object BoolIdentifier : TypeIdentifier() {
@@ -162,16 +163,8 @@ open class TypeIdentifier : IdentifierObject() {
             return fstType
         }
 
-        fun getFstSizeBytes(): Int {
-            return fstType.getSizeBytes()
-        }
-
         fun getSndType(): TypeIdentifier {
             return sndType
-        }
-
-        fun getSndSizeBytes(): Int {
-            return sndType.getSizeBytes()
         }
 
         // we override equals here to capture that two pair types are equal if they have the same
@@ -190,7 +183,7 @@ open class TypeIdentifier : IdentifierObject() {
 
         override fun getSizeBytes(): Int {
             // since both fst and snd get allocated into a PAIR_SIZE byte address
-            return 2 * PAIR_SIZE
+            return 2 * ADDR_SIZE
         }
 
         override fun hashCode(): Int {

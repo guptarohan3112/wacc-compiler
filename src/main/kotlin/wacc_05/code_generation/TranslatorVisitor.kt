@@ -10,6 +10,8 @@ import wacc_05.symbol_table.identifier_objects.*
 
 class TranslatorVisitor : ASTBaseVisitor() {
 
+    private const val MAX_STACK_SIZE: Int = 1024
+
     /* UTILITY METHODS USED BY DIFFERENT VISIT METHODS IN THIS VISITOR
        ---------------------------------------------------------------
      */
@@ -28,7 +30,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 SubtractInstruction(
                     Registers.sp,
                     Registers.sp,
-                    Immediate(tmp.coerceAtMost(1024))
+                    Immediate(tmp.coerceAtMost(MAX_STACK_SIZE))
                 )
             )
             tmp -= 1024
@@ -1318,7 +1320,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(
             StoreInstruction(
                 Registers.r0,
-                AddressingMode.AddressingMode2(pairLocation, Immediate(allocation))
+                AddressingMode.AddressingMode2(pairLocation, Immediate(TypeIdentifier.ADDR_SIZE))
             )
         )
 
@@ -1348,7 +1350,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addMainInstr(
                 LoadInstruction(
                     dest,
-                    AddressingMode.AddressingMode2(dest, Immediate(4))
+                    AddressingMode.AddressingMode2(dest, Immediate(TypeIdentifier.ADDR_SIZE))
                 )
             )
         } else {
