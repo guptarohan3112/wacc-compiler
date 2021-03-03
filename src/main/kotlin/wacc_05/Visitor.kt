@@ -390,6 +390,9 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitCharLit(ctx: WaccParser.CharLitContext): ExprAST.CharLiterAST {
         val string: String = ctx.CHAR_LIT().text
+        if (string.contains("\\")) {
+            return ExprAST.CharLiterAST(string.substring(2, string.length))
+        }
         return ExprAST.CharLiterAST(string.substring(1, string.length))
     }
 
