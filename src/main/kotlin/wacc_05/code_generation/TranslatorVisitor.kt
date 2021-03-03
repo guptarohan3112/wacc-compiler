@@ -568,15 +568,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         val ident: VariableIdentifier =
             arrayElem.st().lookupAll(arrayElem.ident) as VariableIdentifier
-        val sp = arrayElem.st().getStackPtrOffset()
-        val offset: Int = ident.getAddr() + TypeIdentifier.INT_SIZE
+        val sp = arrayElem.st().getStackPtr()
+        val offset: Int = ident.getAddr()
 
         // move the start of the array into dest register
         val dest: Register = Registers.allocate()
         AssemblyRepresentation.addMainInstr(
-            StoreInstruction(
+            AddInstruction(
                 dest,
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset - sp))
+                Registers.sp,
+                Immediate(offset - sp)
             )
         )
 
@@ -598,6 +599,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest))
             AssemblyRepresentation.addPInstr(PInstruction.p_check_array_bounds())
 
+            AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, Immediate(TypeIdentifier.INT_SIZE)))
+
             when (expr.getType().getStackSize()) {
                 4 -> {
                     AssemblyRepresentation.addMainInstr(
@@ -613,6 +616,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 }
             }
             Registers.free(exprDest)
+
+            AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
         }
 
         arrayElem.setDestReg(dest)

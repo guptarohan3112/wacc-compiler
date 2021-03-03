@@ -441,8 +441,8 @@ sealed class PInstruction {
                     AddressingMode.AddressingLabel(labelLarge),
                     Condition.CS
                 ),
-                BranchInstruction("p_throw_runtime_error", Condition.CS),
-                PopInstruction(Registers.lr)
+                BranchInstruction("p_throw_runtime_error", Condition.LCS),
+                PopInstruction(Registers.pc)
             )
         }
 
