@@ -11,6 +11,7 @@ class StackSizeVisitor {
         return stackSize
     }
 
+    // I think if and while cases can also be ignored
     private fun visitStat(stat: StatementAST) {
         return when (stat) {
             is StatementAST.DeclAST -> {
@@ -23,9 +24,6 @@ class StackSizeVisitor {
             is StatementAST.SequentialAST -> {
                 visitStat(stat.stat1)
                 visitStat(stat.stat2)
-            }
-            is StatementAST.BeginAST -> {
-                visitStat(stat.stat)
             }
             is StatementAST.IfAST -> {
                 // Options:

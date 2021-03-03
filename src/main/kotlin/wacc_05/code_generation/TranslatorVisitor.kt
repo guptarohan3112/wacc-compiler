@@ -303,7 +303,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     // Store the address of the program counter (?) into the link registers so that a function can
     // return to this address when completing its functionality
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
-        val stackSize: Int = startNewBody(begin.stat)
+        val stackSize: Int = setUpInnerScope(begin, begin.stat)
 
         // Generate assembly code for the body statement
         visit(begin.stat)
