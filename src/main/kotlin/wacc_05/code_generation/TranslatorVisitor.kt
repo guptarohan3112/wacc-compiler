@@ -325,6 +325,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
             visitIdentForRead(read.lhs.ident)
             reg = read.lhs.ident.getDestReg()
             type = read.lhs.ident.getType()
+        } else if (read.lhs.pairElem != null) {
+            visitPairElemAST(read.lhs.pairElem!!)
+            reg = read.lhs.pairElem!!.getDestReg()
+            type = read.lhs.pairElem!!.getType()
         }
 
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg!!))
@@ -1332,7 +1336,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visitPairElemFstPhase(pairElem)
         val dest: Register = pairElem.getDestReg()
 
-        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
+//        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
     }
 
     /* completes visiting pair elems to the point that the address of it is in the dest register,
