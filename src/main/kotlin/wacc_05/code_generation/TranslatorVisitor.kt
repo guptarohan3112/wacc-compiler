@@ -820,7 +820,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // allocate a register to move the result into
         val dest: Register = Registers.allocate()
-        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r0))
+
+        if (binop.operator == "/") {
+            AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r0))
+        } else {
+            AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r1))
+        }
+
 
         binop.setDestReg(dest)
     }
