@@ -1067,6 +1067,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                         )
                     }
                 }
+                binop.setDestReg(dest)
+
             }
         }
     }
