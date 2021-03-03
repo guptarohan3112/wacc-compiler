@@ -75,7 +75,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int{
+    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int {
         val identObj: IdentifierObject = scope.st().lookUpAllAndCheckAllocation(ident.value)!!
 
         var spOffset = 0
