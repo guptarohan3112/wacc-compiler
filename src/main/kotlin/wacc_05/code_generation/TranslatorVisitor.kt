@@ -740,7 +740,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 val dest2: Register = expr2.getDestReg()
 
                 AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2, Condition.S))
-                AssemblyRepresentation.addMainInstr(AddInstruction(dest1, dest1, dest2, Condition.S))
 
                 Registers.free(dest2)
                 binop.setDestReg(dest1)
