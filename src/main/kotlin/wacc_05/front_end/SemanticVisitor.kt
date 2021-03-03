@@ -264,14 +264,9 @@ class SemanticVisitor(
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
-        val identifier: IdentifierObject = ident.st().lookupAll(ident.value)!!
-        if (ident.st().lookupAll(ident.value) == null) {
+        val identifier: IdentifierObject? = ident.st().lookupAll(ident.value)
+        if (identifier == null) {
             errorHandler.invalidIdentifier(ident.ctx, ident.value)
-            // Add the identifier into symbol table for error recovery
-            ident.st().add(ident.value, VariableIdentifier(TypeIdentifier.GENERIC))
-        }
-        if (identifier is FunctionIdentifier) {
-            errorHandler.invalidAssignment(ident.ctx, ident.value)
         }
     }
 
@@ -450,6 +445,13 @@ class SemanticVisitor(
             visitChild(symTab, lhs.pairElem!!)
         } else {
             visitChild(symTab, lhs.ident!!)
+            val type = symTab.lookupAll(lhs.ident.value)
+            if (type == null) {
+                // Add the identifier into symbol table for error recovery
+                lhs.ident.st().add(lhs.ident.value, VariableIdentifier(TypeIdentifier.GENERIC))
+            } else if (type is FunctionIdentifier) {
+                errorHandler.invalidAssignment(lhs.ident.ctx, lhs.ident.value)
+            }
         }
     }
 
