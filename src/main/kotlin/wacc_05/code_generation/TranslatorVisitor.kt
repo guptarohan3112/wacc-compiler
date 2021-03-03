@@ -156,12 +156,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     private fun visitAndUpdateParams(stackSize: Int, list: ParamListAST) {
         val symbolTable: SymbolTable = list.st()
-        var offset = stackSize
-
         // sp gets decremented once more before function call due to pre indexing
-        if (list.paramList.isNotEmpty()) {
-            offset += list.paramList[0].getType(symbolTable).getStackSize()
-        }
+        var offset = stackSize + 4
 
         // Store the offset of the parameter relative to the stack address of the first parameter
         for (param in list.paramList) {
@@ -673,7 +669,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 dest,
-                AddressingMode.AddressingMode2(Registers.sp, null)
+                AddressingMode.AddressingMode2(Registers.sp)
             )
         )
         AssemblyRepresentation.addMainInstr(ReverseSubtractInstruction(dest, dest, Immediate(0)))
