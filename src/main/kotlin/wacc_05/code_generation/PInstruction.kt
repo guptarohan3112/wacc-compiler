@@ -360,7 +360,7 @@ sealed class PInstruction {
                     Condition.EQ
                 ),
                 BranchInstruction("p_throw_runtime_error", Condition.LEQ),
-                PopInstruction(Registers.lr)
+                PopInstruction(Registers.pc)
             )
         }
 

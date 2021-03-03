@@ -6,7 +6,10 @@ import wacc_05.code_generation.instructions.*
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.*
+import wacc_05.symbol_table.identifier_objects.IdentifierObject
+import wacc_05.symbol_table.identifier_objects.ParamIdentifier
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class TranslatorVisitor : ASTBaseVisitor() {
 
@@ -817,7 +820,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // allocate a register to move the result into
         val dest: Register = Registers.allocate()
-        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r1))
+        AssemblyRepresentation.addMainInstr(MoveInstruction(dest, Registers.r0))
 
         binop.setDestReg(dest)
     }
