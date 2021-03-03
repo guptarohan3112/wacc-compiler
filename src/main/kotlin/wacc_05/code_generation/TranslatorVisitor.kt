@@ -426,7 +426,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
             is TypeIdentifier.StringIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
             }
-            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier -> {
+            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier,
+            is TypeIdentifier.ArrayIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_reference())
             }
         }
