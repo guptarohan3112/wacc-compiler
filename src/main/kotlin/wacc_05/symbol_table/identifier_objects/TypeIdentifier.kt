@@ -6,10 +6,6 @@ open class TypeIdentifier : IdentifierObject() {
         return 0
     }
 
-    open fun getSizeBytes(): Int {
-        return 0
-    }
-
     companion object {
         // static string definitions of the types
         const val BOOLEAN = "bool"
@@ -31,9 +27,10 @@ open class TypeIdentifier : IdentifierObject() {
         const val INT_SIZE: Int = 4
         const val CHAR_SIZE: Int = 1
         const val BOOL_SIZE: Int = 1
-        const val ARR_SIZE: Int = 4
-        const val STRING_SIZE: Int = 4
-        const val PAIR_SIZE: Int = 4
+        const val ADDR_SIZE: Int = 4
+        const val ARR_SIZE: Int = ADDR_SIZE
+        const val STRING_SIZE: Int = ADDR_SIZE
+        const val PAIR_SIZE: Int = ADDR_SIZE
     }
 
     object BoolIdentifier : TypeIdentifier() {
@@ -45,9 +42,6 @@ open class TypeIdentifier : IdentifierObject() {
             return BOOL_SIZE
         }
 
-        override fun getSizeBytes(): Int {
-            return BOOL_SIZE
-        }
     }
 
     object CharIdentifier : TypeIdentifier() {
@@ -59,9 +53,6 @@ open class TypeIdentifier : IdentifierObject() {
             return CHAR_SIZE
         }
 
-        override fun getSizeBytes(): Int {
-            return CHAR_SIZE
-        }
     }
 
     class StringIdentifier(private val length: Int) : TypeIdentifier() {
@@ -71,10 +62,6 @@ open class TypeIdentifier : IdentifierObject() {
 
         override fun getStackSize(): Int {
             return STRING_SIZE
-        }
-
-        override fun getSizeBytes(): Int {
-            return length
         }
 
         override fun equals(other: Any?): Boolean {
@@ -97,9 +84,6 @@ open class TypeIdentifier : IdentifierObject() {
             return INT_SIZE
         }
 
-        override fun getSizeBytes(): Int {
-            return INT_SIZE
-        }
     }
 
     data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) : TypeIdentifier() {
@@ -127,9 +111,6 @@ open class TypeIdentifier : IdentifierObject() {
             return ARR_SIZE
         }
 
-        override fun getSizeBytes(): Int {
-            return elemType.getSizeBytes() * size
-        }
     }
 
     // a generic pair type to capture the overall pair type. Used to represent the loss
@@ -140,10 +121,6 @@ open class TypeIdentifier : IdentifierObject() {
         }
 
         override fun getStackSize(): Int {
-            return PAIR_SIZE
-        }
-
-        override fun getSizeBytes(): Int {
             return PAIR_SIZE
         }
 
@@ -162,16 +139,8 @@ open class TypeIdentifier : IdentifierObject() {
             return fstType
         }
 
-        fun getFstSizeBytes(): Int {
-            return fstType.getSizeBytes()
-        }
-
         fun getSndType(): TypeIdentifier {
             return sndType
-        }
-
-        fun getSndSizeBytes(): Int {
-            return sndType.getSizeBytes()
         }
 
         // we override equals here to capture that two pair types are equal if they have the same
@@ -186,11 +155,6 @@ open class TypeIdentifier : IdentifierObject() {
             }
 
             return false
-        }
-
-        override fun getSizeBytes(): Int {
-            // since both fst and snd get allocated into a PAIR_SIZE byte address
-            return 2 * PAIR_SIZE
         }
 
         override fun hashCode(): Int {
