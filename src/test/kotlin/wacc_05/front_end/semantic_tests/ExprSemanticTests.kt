@@ -27,7 +27,7 @@ open class ExprSemanticTests {
         st.add("int", intType)
         st.add("x", VariableIdentifier(intType))
 
-        val ident = ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "x")
+        val ident = ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "x")
 
         ident.st = st
         visitor.visitIdentAST(ident)
@@ -39,7 +39,7 @@ open class ExprSemanticTests {
 
         every { seh.invalidIdentifier(any(), any()) } just runs
 
-        val ident = ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "x")
+        val ident = ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "x")
 
         ident.st = st
         visitor.visitIdentAST(ident)

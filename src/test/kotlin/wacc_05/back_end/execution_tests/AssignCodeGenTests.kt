@@ -45,7 +45,7 @@ open class AssignCodeGenTests : StatCodeGenTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"

@@ -156,7 +156,7 @@ class UnOpTests : ExprSemanticTests() {
             "y",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "x"),
+                ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "x"),
                 "len"
             )
         )
@@ -203,7 +203,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "arr"),
+                ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "arr"),
                 "len"
             )
         )

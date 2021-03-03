@@ -40,7 +40,7 @@ open class StatSemanticTests {
         val read = StatementAST.ReadAST(
             WaccParser.StatReadContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(
-                WaccParser.StatContext(), 0), ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(),
+                WaccParser.StatContext(), 0), ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(),
                 0), "x")),
         )
 
@@ -56,7 +56,7 @@ open class StatSemanticTests {
         val read = StatementAST.ReadAST(
             WaccParser.StatReadContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(
-                WaccParser.StatContext(), 0), ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(),
+                WaccParser.StatContext(), 0), ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(),
                 0), "x")),
         )
 
@@ -74,7 +74,7 @@ open class StatSemanticTests {
         val read = StatementAST.ReadAST(
             WaccParser.StatReadContext(WaccParser.StatContext()),
             AssignLHSAST(WaccParser.AssignLHSContext(
-                WaccParser.StatContext(), 0), ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(),
+                WaccParser.StatContext(), 0), ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(),
                 0), "x")),
         )
 
@@ -93,7 +93,7 @@ open class StatSemanticTests {
         val free = StatementAST.FreeAST(
             WaccParser.StatFreeContext(WaccParser.StatContext()),
             ExprAST.IdentAST(
-                WaccParser.ExprContext(WaccParser.StatContext(), 0),
+                WaccParser.IdentContext(WaccParser.StatContext(), 0),
                 "x"
             )
         )
@@ -111,7 +111,7 @@ open class StatSemanticTests {
         val free = StatementAST.FreeAST(
             WaccParser.StatFreeContext(WaccParser.StatContext()),
             ExprAST.IdentAST(
-                WaccParser.ExprContext(WaccParser.StatContext(), 0),
+                WaccParser.IdentContext(WaccParser.StatContext(), 0),
                 "x"
             )
         )
@@ -131,7 +131,7 @@ open class StatSemanticTests {
         val free = StatementAST.FreeAST(
             WaccParser.StatFreeContext(WaccParser.StatContext()),
             ExprAST.IdentAST(
-                WaccParser.ExprContext(WaccParser.StatContext(), 0),
+                WaccParser.IdentContext(WaccParser.StatContext(), 0),
                 "x"
             )
         )

@@ -27,7 +27,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
@@ -52,7 +52,7 @@ class AssignASTTests : StatSemanticTests() {
                 PairElemAST(
                     WaccParser.PairElemContext(WaccParser.StatContext(), 0),
                     ExprAST.IdentAST(
-                        WaccParser.ExprContext(WaccParser.StatContext(), 0), "x"
+                        WaccParser.IdentContext(WaccParser.StatContext(), 0), "x"
                     ), false
                 )
             ), ExprAST.IntLiterAST("+", "3")
@@ -99,7 +99,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
@@ -128,7 +128,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
@@ -158,7 +158,7 @@ class AssignASTTests : StatSemanticTests() {
                 ), PairElemAST(
                     WaccParser.PairElemContext(WaccParser.StatContext(), 0),
                     ExprAST.IdentAST(
-                        WaccParser.ExprContext(WaccParser.StatContext(), 0), "x"
+                        WaccParser.IdentContext(WaccParser.StatContext(), 0), "x"
                     ), true
                 )
             ),
@@ -210,7 +210,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
@@ -240,7 +240,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
@@ -269,7 +269,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
@@ -296,7 +296,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
@@ -324,13 +324,13 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
                 )
             ),
-            ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), "y")
+            ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "y")
         )
 
         assign.st = st
@@ -354,7 +354,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
@@ -395,7 +395,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
@@ -426,7 +426,7 @@ class AssignASTTests : StatSemanticTests() {
                 WaccParser.AssignLHSContext(
                     WaccParser.StatContext(), 0
                 ), ExprAST.IdentAST(
-                    WaccParser.ExprContext(
+                    WaccParser.IdentContext(
                         WaccParser.StatContext(),
                         0
                     ), "x"
