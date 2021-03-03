@@ -680,6 +680,9 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         )
         AssemblyRepresentation.addMainInstr(ReverseSubtractInstruction(dest, dest, Immediate(0)))
+
+        AssemblyRepresentation.addMainInstr(BranchInstruction("p_throw_overflow_error", Condition.LVS))
+        AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
