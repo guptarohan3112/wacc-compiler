@@ -262,7 +262,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
             lhs.arrElem != null -> {
                 val arrElem = lhs.arrElem!!
-                visit(arrElem)
+                visitArrayElemFstPhase(arrElem)
                 val arrDest: Register = arrElem.getDestReg()
 
                 AssemblyRepresentation.addMainInstr(
@@ -567,6 +567,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
+        visitArrayElemFstPhase(arrayElem)
+        val dest: Register = arrayElem.getDestReg()
+
+        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
+    }
+
+    private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
         val ident: VariableIdentifier =
             arrayElem.st().lookupAll(arrayElem.ident) as VariableIdentifier
         val sp = arrayElem.st().getStackPtr()
@@ -574,6 +581,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // move the start of the array into dest register
         val dest: Register = Registers.allocate()
+        arrayElem.setDestReg(dest)
         AssemblyRepresentation.addMainInstr(
             AddInstruction(
                 dest,
@@ -618,11 +626,9 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
             Registers.free(exprDest)
 
-            AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
         }
-
-        arrayElem.setDestReg(dest)
     }
+
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         visit(unop.expr)
