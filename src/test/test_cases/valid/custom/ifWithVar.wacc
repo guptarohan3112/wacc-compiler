@@ -1,0 +1,11 @@
+begin
+  bool hello = true;
+  if true
+  then
+    int x = 5;
+    print x
+  else
+    int y = 9;
+    print y
+  fi
+end

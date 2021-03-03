@@ -48,6 +48,18 @@ open class SymbolTable(private val parentST: SymbolTable?) {
         return lookup(name) ?: parentST?.lookupAll(name)
     }
 
+    open fun lookUpAndCheckAllocation(name: String): IdentifierObject? {
+        val ident: IdentifierObject? = map.getOrDefault(name, null)
+        if (ident is VariableIdentifier && !ident.isAllocated()) {
+            return null
+        }
+        return ident
+    }
+
+    open fun lookUpAllAndCheckAllocation(name: String): IdentifierObject? {
+        return lookUpAndCheckAllocation(name) ?: parentST?.lookUpAllAndCheckAllocation(name)
+    }
+
     fun getStackPtr(): Int {
         return spAndOffset.first
     }

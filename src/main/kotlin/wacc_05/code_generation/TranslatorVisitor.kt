@@ -75,8 +75,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int {
-        val identObj: IdentifierObject = scope.st().lookupAll(ident.value)!!
+    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int{
+        val identObj: IdentifierObject = scope.st().lookUpAllAndCheckAllocation(ident.value)!!
 
         var spOffset = 0
         if (identObj is VariableIdentifier) {
@@ -210,6 +210,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val boundaryAddr = scope.getStackPtr()
         val varObj: VariableIdentifier = scope.lookupAll(decl.varName) as VariableIdentifier
         varObj.setAddr(boundaryAddr + currOffset)
+        varObj.allocatedNow()
 
         // Update the amount of space taken up on the stack relative to the boundary and the current stack frame
         val size = decl.type.getType().getStackSize()
@@ -229,7 +230,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 // Find the corresponding identifier and calculate the offset relative to the current sp
                 val diff = calculateIdentSpOffset(lhs.ident, assign)
                 // Find the corresponding variable identifier
-                val varIdent = assign.st().lookupAll(lhs.ident.value)!!
+                val varIdent = assign.st().lookUpAllAndCheckAllocation(lhs.ident.value)!!
 
 //                var diff = 0
 //                when (varIdent) {
