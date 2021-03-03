@@ -414,7 +414,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(print.expr)
         val reg: Register = print.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
-        when (print.expr.getType()) {
+        val type: TypeIdentifier = print.expr.getType()
+        when (type) {
             is TypeIdentifier.IntIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
             }
@@ -427,9 +428,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
             is TypeIdentifier.StringIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
             }
-            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier,
-            is TypeIdentifier.ArrayIdentifier -> {
+            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_reference())
+            }
+            is TypeIdentifier.ArrayIdentifier -> {
+                if ((type as TypeIdentifier.ArrayIdentifier).getType() == TypeIdentifier.CharIdentifier) {
+                    AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
+                }
+                else {
+                    AssemblyRepresentation.addPInstr(PInstruction.p_print_reference())
+                }
             }
         }
 
