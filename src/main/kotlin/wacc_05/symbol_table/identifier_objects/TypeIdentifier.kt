@@ -6,10 +6,6 @@ open class TypeIdentifier : IdentifierObject() {
         return 0
     }
 
-    open fun getSizeBytes(): Int {
-        return 0
-    }
-
     companion object {
         // static string definitions of the types
         const val BOOLEAN = "bool"
@@ -46,9 +42,6 @@ open class TypeIdentifier : IdentifierObject() {
             return BOOL_SIZE
         }
 
-        override fun getSizeBytes(): Int {
-            return BOOL_SIZE
-        }
     }
 
     object CharIdentifier : TypeIdentifier() {
@@ -60,9 +53,6 @@ open class TypeIdentifier : IdentifierObject() {
             return CHAR_SIZE
         }
 
-        override fun getSizeBytes(): Int {
-            return CHAR_SIZE
-        }
     }
 
     class StringIdentifier(private val length: Int) : TypeIdentifier() {
@@ -72,10 +62,6 @@ open class TypeIdentifier : IdentifierObject() {
 
         override fun getStackSize(): Int {
             return STRING_SIZE
-        }
-
-        override fun getSizeBytes(): Int {
-            return length
         }
 
         override fun equals(other: Any?): Boolean {
@@ -98,9 +84,6 @@ open class TypeIdentifier : IdentifierObject() {
             return INT_SIZE
         }
 
-        override fun getSizeBytes(): Int {
-            return INT_SIZE
-        }
     }
 
     data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) : TypeIdentifier() {
@@ -128,9 +111,6 @@ open class TypeIdentifier : IdentifierObject() {
             return ARR_SIZE
         }
 
-        override fun getSizeBytes(): Int {
-            return elemType.getSizeBytes() * size
-        }
     }
 
     // a generic pair type to capture the overall pair type. Used to represent the loss
@@ -141,10 +121,6 @@ open class TypeIdentifier : IdentifierObject() {
         }
 
         override fun getStackSize(): Int {
-            return PAIR_SIZE
-        }
-
-        override fun getSizeBytes(): Int {
             return PAIR_SIZE
         }
 
@@ -179,11 +155,6 @@ open class TypeIdentifier : IdentifierObject() {
             }
 
             return false
-        }
-
-        override fun getSizeBytes(): Int {
-            // since both fst and snd get allocated into a PAIR_SIZE byte address
-            return 2 * ADDR_SIZE
         }
 
         override fun hashCode(): Int {

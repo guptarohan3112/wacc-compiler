@@ -10,7 +10,7 @@ import wacc_05.symbol_table.identifier_objects.*
 
 class TranslatorVisitor : ASTBaseVisitor() {
 
-    private const val MAX_STACK_SIZE: Int = 1024
+    private val MAX_STACK_SIZE: Int = 1024
 
     /* UTILITY METHODS USED BY DIFFERENT VISIT METHODS IN THIS VISITOR
        ---------------------------------------------------------------
@@ -33,7 +33,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     Immediate(tmp.coerceAtMost(MAX_STACK_SIZE))
                 )
             )
-            tmp -= 1024
+            tmp -= MAX_STACK_SIZE
         }
         return stackSize
     }
@@ -139,8 +139,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val funcIdent = FunctionST.lookupAll(func.funcName)!!
         funcIdent.setStackSize(stackSize)
 
-        println("Stack size: $stackSize")
-
         if (func.paramList != null) {
             visitAndUpdateParams(stackSize, func.paramList)
         }
@@ -157,15 +155,19 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitAndUpdateParams(stackSize: Int, list: ParamListAST) {
-        var offset = stackSize
         val symbolTable: SymbolTable = list.st()
+        var offset = stackSize
+
+        // sp gets decremented once more before function call due to pre indexing
+        if (list.paramList.isNotEmpty()) {
+            offset += list.paramList[0].getType(symbolTable).getStackSize()
+        }
 
         // Store the offset of the parameter relative to the stack address of the first parameter
         for (param in list.paramList) {
-            offset += param.getType(symbolTable).getStackSize()
             val paramIdent: ParamIdentifier = symbolTable.lookup(param.name) as ParamIdentifier
             paramIdent.setOffset(offset)
-            println("param offset: ${paramIdent.getOffset()}")
+            offset += param.getType(symbolTable).getStackSize()
         }
     }
 
@@ -1170,9 +1172,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
             visit(elem)
             val dest: Register = elem.getDestReg()
             AssemblyRepresentation.addMainInstr(
-                StoreInstruction(
+                getStoreInstruction(
                     dest,
-                    AddressingMode.AddressingMode2(arrLocation, Immediate(arrIndex))
+                    AddressingMode.AddressingMode2(arrLocation, Immediate(arrIndex)),
+                    elem.getType()
                 )
             )
             arrIndex += elemsSize
@@ -1214,7 +1217,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
             val size: Int = arg.getType().getStackSize()
 
             AssemblyRepresentation.addMainInstr(
-                StoreInstruction(dest, AddressingMode.AddressingMode2(Registers.sp, Immediate(-1 * size), true))
+                getStoreInstruction(
+                    dest,
+                    AddressingMode.AddressingMode2(Registers.sp, Immediate(-1 * size), true),
+                    arg.getType()
+                )
             )
             argsSize += size
             funcIdent.getSymbolTable().setStackPtr(funcIdent.getSymbolTable().getStackPtr() - size)
@@ -1266,7 +1273,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val fstDest: Register = newPair.fst.getDestReg()
 
         // do allocation - move size of fst into param register then branch into malloc
-        val allocation: Int = newPair.fst.getType().getSizeBytes()
+        val allocation: Int = newPair.fst.getType().getStackSize()
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 Registers.r0,
@@ -1298,7 +1305,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val sndDest: Register = newPair.fst.getDestReg()
 
         // do allocation - move size of snd into param register then branch into malloc
-        val allocation2: Int = newPair.snd.getType().getSizeBytes()
+        val allocation2: Int = newPair.snd.getType().getStackSize()
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 Registers.r0, AddressingMode.AddressingLabel("$allocation2")
