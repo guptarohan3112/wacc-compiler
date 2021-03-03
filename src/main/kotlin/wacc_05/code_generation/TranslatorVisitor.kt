@@ -704,34 +704,35 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val expr2 = binop.expr2
 
         when {
-            expr1 is ExprAST.IntLiterAST -> {
-                visit(expr2)
-                val dest: Register = expr2.getDestReg()
-                AssemblyRepresentation.addMainInstr(
-                    AddInstruction(
-                        dest,
-                        dest,
-                        Immediate(expr1.getValue()),
-                        Condition.S
-                    )
-                )
-
-                binop.setDestReg(dest)
-            }
-            expr2 is ExprAST.IntLiterAST -> {
-                visit(expr1)
-                val dest: Register = expr1.getDestReg()
-                AssemblyRepresentation.addMainInstr(
-                    AddInstruction(
-                        dest,
-                        dest,
-                        Immediate(expr2.getValue()),
-                        Condition.S
-                    )
-                )
-
-                binop.setDestReg(dest)
-            }
+//            expr1 is ExprAST.IntLiterAST -> {
+//                visit(expr2)
+//                val dest: Register = expr2.getDestReg()
+//
+//                AssemblyRepresentation.addMainInstr(
+//                    AddInstruction(
+//                        dest,
+//                        dest,
+//                        Immediate(expr1.getValue()),
+//                        Condition.S
+//                    )
+//                )
+//
+//                binop.setDestReg(dest)
+//            }
+//            expr2 is ExprAST.IntLiterAST -> {
+//                visit(expr1)
+//                val dest: Register = expr1.getDestReg()
+//                AssemblyRepresentation.addMainInstr(
+//                    AddInstruction(
+//                        dest,
+//                        dest,
+//                        Immediate(expr2.getValue()),
+//                        Condition.S
+//                    )
+//                )
+//
+//                binop.setDestReg(dest)
+//            }
             else -> {
                 visit(expr1)
                 visit(expr2)
@@ -759,16 +760,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
              * SUB rd, rn, op -> rd = rn - op, so expr1 must always be placed
              * in a register */
         when (binop.expr2) {
-            is ExprAST.IntLiterAST -> {
-                AssemblyRepresentation.addMainInstr(
-                    SubtractInstruction(
-                        dest,
-                        dest,
-                        Immediate(binop.expr2.getValue()),
-                        Condition.S
-                    )
-                )
-            }
+//            is ExprAST.IntLiterAST -> {
+//                AssemblyRepresentation.addMainInstr(
+//                    SubtractInstruction(
+//                        dest,
+//                        dest,
+//                        Immediate(binop.expr2.getValue()),
+//                        Condition.S
+//                    )
+//                )
+//            }
             else -> {
                 visit(binop.expr2)
                 val dest2: Register = binop.expr2.getDestReg()
