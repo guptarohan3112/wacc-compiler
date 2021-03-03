@@ -415,24 +415,25 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val reg: Register = print.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
 
-        val type = print.expr.getType()
-        when {
-            type is TypeIdentifier.IntIdentifier -> {
+        val type = if (print.expr is ExprAST.ArrayElemAST) {
+            print.expr.getType().getType() // double call to get type to get the elems type
+        } else {
+            print.expr.getType()
+        }
+        when (type) {
+            is TypeIdentifier.IntIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
             }
-            type is TypeIdentifier.BoolIdentifier -> {
+            is TypeIdentifier.BoolIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_bool())
             }
-            type is TypeIdentifier.CharIdentifier -> {
+            is TypeIdentifier.CharIdentifier -> {
                 AssemblyRepresentation.addMainInstr(BranchInstruction("putchar", Condition.L))
             }
-            type is TypeIdentifier.StringIdentifier
-                    || type == TypeIdentifier.ArrayIdentifier(TypeIdentifier.CHAR_TYPE, 0) -> {
+            is TypeIdentifier.StringIdentifier, TypeIdentifier.ArrayIdentifier(TypeIdentifier.CHAR_TYPE, 0) -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
             }
-            type is TypeIdentifier.PairIdentifier
-                    || type is TypeIdentifier.PairLiterIdentifier
-                    || type is TypeIdentifier.ArrayIdentifier -> {
+            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier, is TypeIdentifier.ArrayIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_reference())
             }
         }
@@ -1139,10 +1140,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
         // we want to allocate (length * size of elem) + INT_SIZE
         val elemsSize: Int = if (arrayLiter.elemsLength() > 0) {
-            arrayLiter.elems[0].getType().getSizeBytes()
+            arrayLiter.elems[0].getType().getStackSize()
         } else {
             0
         }
+
         val arrAllocation: Int = arrayLiter.elemsLength() * elemsSize + TypeIdentifier.INT_SIZE
 
         // load allocation into param register for malloc and branch
