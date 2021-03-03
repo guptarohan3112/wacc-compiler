@@ -680,6 +680,9 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         )
         AssemblyRepresentation.addMainInstr(ReverseSubtractInstruction(dest, dest, Immediate(0)))
+
+        AssemblyRepresentation.addMainInstr(BranchInstruction("p_throw_overflow_error", Condition.LVS))
+        AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
@@ -1349,7 +1352,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visitPairElemFstPhase(pairElem)
         val dest: Register = pairElem.getDestReg()
 
-//        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
+        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
     }
 
     /* completes visiting pair elems to the point that the address of it is in the dest register,
