@@ -75,6 +75,23 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
+    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int{
+        val identObj: IdentifierObject = scope.st().lookupAll(ident.value)!!
+
+        var spOffset = 0
+        if (identObj is VariableIdentifier) {
+            // Calculate the stack space between the current stack pointer and the identifier
+            val identOffset: Int = identObj.getAddr()
+            val sp: Int = scope.st().getStackPtr()
+            spOffset = identOffset - sp
+        } else if (identObj is ParamIdentifier) {
+            // Obtain the offset from the param identifier field
+            spOffset = identObj.getOffset()
+        }
+
+        return spOffset
+    }
+
     /* MAIN VISIT METHODS (OVERIDDEN FROM THE BASE VISITOR CLASS)
        ---------------------------------------------------------
      */
@@ -208,24 +225,25 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val lhs: AssignLHSAST = assign.lhs
         when {
             lhs.ident != null -> {
+
+                // Find the corresponding identifier and calculate the offset relative to the current sp
+                val diff = calculateIdentSpOffset(lhs.ident, assign)
                 // Find the corresponding variable identifier
                 val varIdent = assign.st().lookupAll(lhs.ident.value)!!
 
-                // Calculate the offset relative to the current stack pointer position
-
-                var diff = 0
-                when (varIdent) {
-                    is ParamIdentifier -> {
-                        diff = varIdent.getOffset()
-                    }
-                    is VariableIdentifier -> {
-                        val offset: Int = varIdent.getAddr()
-                        val sp: Int = assign.st().getStackPtr()
-                        diff = offset - sp
-                    }
-                    else -> {
-                    }
-                }
+//                var diff = 0
+//                when (varIdent) {
+//                    is ParamIdentifier -> {
+//                        diff = varIdent.getOffset()
+//                    }
+//                    is VariableIdentifier -> {
+//                        val offset: Int = varIdent.getAddr()
+//                        val sp: Int = assign.st().getStackPtr()
+//                        diff = offset - sp
+//                    }
+//                    else -> {
+//                    }
+//                }
 
                 val mode: AddressingMode.AddressingMode2 = if (diff == 0) {
                     AddressingMode.AddressingMode2(Registers.sp)
@@ -519,52 +537,31 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitIdentForRead(ident: ExprAST.IdentAST) {
-        // Find the stack address of the identifier (relative to the top of the stack, 0 for us)
-        val identObj: IdentifierObject = ident.st().lookupAll(ident.value)!!
-
-        var spOffset = 0
-        if (identObj is VariableIdentifier) {
-            // Calculate the stack space between the current stack pointer and the identifier
-            val identOffset: Int = identObj.getAddr()
-            val sp: Int = ident.st().getStackPtr()
-            spOffset = identOffset - sp
-        } else if (identObj is ParamIdentifier) {
-            // Obtain the offset from the param identifier field
-            spOffset = identObj.getOffset()
-        }
-
-        val register: Register = Registers.allocate()
-
-        AssemblyRepresentation.addMainInstr(AddInstruction(register, Registers.sp, Immediate(spOffset)))
-
-        ident.setDestReg(register)
+        visitIdentGeneral(ident, true)
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
-        // Find the stack address of the identifier (relative to the top of the stack, 0 for us)
-        val identObj: IdentifierObject = ident.st().lookupAll(ident.value)!!
+        visitIdentGeneral(ident, false)
+    }
 
-        var spOffset = 0
-        if (identObj is VariableIdentifier) {
-            // Calculate the stack space between the current stack pointer and the identifier
-            val identOffset: Int = identObj.getAddr()
-            val sp: Int = ident.st().getStackPtr()
-            spOffset = identOffset - sp
-        } else if (identObj is ParamIdentifier) {
-            // Obtain the offset from the param identifier field
-            spOffset = identObj.getOffset()
+    private fun visitIdentGeneral(ident: ExprAST.IdentAST, read: Boolean) {
+        val spOffset: Int = calculateIdentSpOffset(ident, ident)
+
+        val register: Register = Registers.allocate()
+
+        if (read) {
+            AssemblyRepresentation.addMainInstr(AddInstruction(register, Registers.sp, Immediate(spOffset)))
+        } else {
+            val type = ident.getType()
+            // Initialise the mode to be 2 or 3 depending on the type of the identifier
+            var mode: AddressingMode = AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
+            if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
+                mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
+            }
+            // Obtain an available register and load stack value into this register
+            AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
         }
 
-        val type = ident.getType()
-        // Initialise the mode to be 2 or 3 depending on the type of the identifier
-        val register = Registers.allocate()
-        var mode: AddressingMode = AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
-        if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
-            mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
-        }
-
-        // Obtain an available register and load stack value into this register
-        AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
         ident.setDestReg(register)
     }
 
