@@ -263,13 +263,14 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
             lhs.arrElem != null -> {
                 val arrElem = lhs.arrElem!!
-                visit(arrElem)
+                visitArrayElemFstPhase(arrElem)
                 val arrDest: Register = arrElem.getDestReg()
 
                 AssemblyRepresentation.addMainInstr(
-                    StoreInstruction(
+                    getStoreInstruction(
                         dest,
-                        AddressingMode.AddressingMode2(arrDest)
+                        AddressingMode.AddressingMode2(arrDest),
+                        arrElem.getType()
                     )
                 )
 
@@ -414,7 +415,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visit(print.expr)
         val reg: Register = print.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
-        when (print.expr.getType()) {
+
+        val type = if (print.expr is ExprAST.ArrayElemAST) {
+            print.expr.getType().getType() // double call to get type to get the elems type
+        } else {
+            print.expr.getType()
+        }
+        when (type) {
             is TypeIdentifier.IntIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
             }
@@ -424,11 +431,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
             is TypeIdentifier.CharIdentifier -> {
                 AssemblyRepresentation.addMainInstr(BranchInstruction("putchar", Condition.L))
             }
-            is TypeIdentifier.StringIdentifier -> {
+            is TypeIdentifier.StringIdentifier, TypeIdentifier.ArrayIdentifier(TypeIdentifier.CHAR_TYPE, 0) -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_string())
             }
-            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier,
-            is TypeIdentifier.ArrayIdentifier -> {
+            is TypeIdentifier.PairIdentifier, is TypeIdentifier.PairLiterIdentifier, is TypeIdentifier.ArrayIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_reference())
             }
         }
@@ -568,6 +574,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
+        visitArrayElemFstPhase(arrayElem)
+        val dest: Register = arrayElem.getDestReg()
+
+        AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
+    }
+
+    private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
         val ident: VariableIdentifier =
             arrayElem.st().lookupAll(arrayElem.ident) as VariableIdentifier
         val sp = arrayElem.st().getStackPtr()
@@ -575,6 +588,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // move the start of the array into dest register
         val dest: Register = Registers.allocate()
+        arrayElem.setDestReg(dest)
         AssemblyRepresentation.addMainInstr(
             AddInstruction(
                 dest,
@@ -619,11 +633,9 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
             Registers.free(exprDest)
 
-            AssemblyRepresentation.addMainInstr(LoadInstruction(dest, AddressingMode.AddressingMode2(dest)))
         }
-
-        arrayElem.setDestReg(dest)
     }
+
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         visit(unop.expr)
@@ -1129,10 +1141,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
         // we want to allocate (length * size of elem) + INT_SIZE
         val elemsSize: Int = if (arrayLiter.elemsLength() > 0) {
-            arrayLiter.elems[0].getType().getSizeBytes()
+            arrayLiter.elems[0].getType().getStackSize()
         } else {
             0
         }
+
         val arrAllocation: Int = arrayLiter.elemsLength() * elemsSize + TypeIdentifier.INT_SIZE
 
         // load allocation into param register for malloc and branch
