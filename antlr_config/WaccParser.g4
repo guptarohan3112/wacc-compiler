@@ -27,7 +27,7 @@ stat: SKIP_STAT                   # statSkip
 | stat SEMICOLON stat             # statSequential
 ;
 
-assignLHS: IDENT
+assignLHS: ident
 | arrayElem
 | pairElem
 ;
@@ -74,7 +74,7 @@ expr: intLit
 | charLit
 | strLit
 | PAIR_LIT
-| IDENT
+| ident
 | arrayElem
 | unaryOper expr
 | <assoc=right> expr (MULT | DIV | MOD) expr
@@ -91,6 +91,8 @@ unaryOper: NOT
 | LEN
 | ORD
 | CHR;
+
+ident: IDENT ;
 
 arrayElem: IDENT (OPEN_SQUARE_BRACKET expr CLOSE_SQUARE_BRACKET)+ ;
 

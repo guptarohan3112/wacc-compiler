@@ -109,7 +109,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class IdentAST(val ctx: WaccParser.ExprContext, val value: String) : ExprAST() {
+    data class IdentAST(val ctx: WaccParser.IdentContext, val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
             return when (val type = st().lookupAll(value)) {

@@ -2,6 +2,7 @@ package wacc_05
 
 import antlr.WaccParser
 import antlr.WaccParserBaseVisitor
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.front_end.Error
@@ -268,8 +269,9 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         // we use the when statement to check which type of assignLHS we have and generate a child AST
         // node accordingly
         return when {
-            ctx.IDENT() != null -> {
-                AssignLHSAST(ctx = ctx, ident = ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), value = ctx.IDENT().text))
+            ctx.ident() != null -> {
+//                AssignLHSAST(ctx = ctx, ident = ExprAST.IdentAST(WaccParser.ExprContext(WaccParser.StatContext(), 0), value = ctx.IDENT().text))
+                AssignLHSAST(ctx = ctx, ident = visitIdent(ctx.ident()))
             }
             ctx.pairElem() != null -> {
                 AssignLHSAST(ctx = ctx, pairElem = visitPairElem(ctx.pairElem()))
@@ -280,6 +282,10 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             else -> throw Exception("Error : Cannot match context with type")
         }
 
+    }
+
+    override fun visitIdent(ctx: WaccParser.IdentContext?): ExprAST.IdentAST {
+        return ExprAST.IdentAST(ctx!!, ctx.IDENT().text)
     }
 
     /* Function: visitType()
@@ -483,8 +489,8 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             ctx.PAIR_LIT() != null -> {
                 ExprAST.PairLiterAST
             }
-            ctx.IDENT() != null -> {
-                ExprAST.IdentAST(ctx, value = ctx.IDENT().text)
+            ctx.ident() != null -> {
+                visitIdent(ctx.ident())
             }
             ctx.arrayElem() != null -> {
                 visitArrayElem(ctx.arrayElem())
