@@ -18,11 +18,14 @@ class TranslatorVisitor : ASTBaseVisitor() {
     /* UTILITY METHODS USED BY DIFFERENT VISIT METHODS IN THIS VISITOR
        ---------------------------------------------------------------
      */
+
+    // Push the linking register and calculate the space on the stack needed
     private fun startNewBody(bodyInScope: StatementAST): Int {
         AssemblyRepresentation.addMainInstr(PushInstruction(Registers.lr))
         return calculateStackSize(bodyInScope)
     }
 
+    // Uses a stackSizeVisitor to calculate the space needed on the stack
     private fun calculateStackSize(bodyInScope: StatementAST): Int {
         // Calculate stack size for scope and decrement the stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
@@ -41,6 +44,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         return stackSize
     }
 
+    // Sets up the internal representation of the stack pointer when moving into the inner scope
     private fun setUpInnerScope(stat: StatementAST, child: StatementAST): Int {
         val currSp: Int = stat.st().getStackPtr()
         child.st().setStackPtr(child.st().getStackPtr() + currSp)
@@ -50,8 +54,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         return stackSize
     }
 
-    // Restore the stack pointer and print out the relevant assembly code
-    // Made change to parameter here, change back to stat if necessary
+    // Increment and adjust the stack pointer
     private fun restoreStackPointer(node: AST, stackSize: Int) {
         var tmp: Int = stackSize
         while (tmp > 0) {
@@ -64,11 +67,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
             tmp -= MAX_STACK_SIZE
         }
-        // Not sure if this is needed
         node.st().setStackPtr(node.st().getStackPtr() + stackSize)
     }
 
-    // a helper function for adding "B" to "STR" if the given
+    // A helper function for adding "B" to "STR" if given
     private fun getStoreInstruction(
         reg: Register,
         addr: AddressingMode.AddressingMode2,
@@ -81,12 +83,12 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
+    // Calculate the stack pointer to find an identifier
     private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST, paramOffset: Int): Int {
         val identObj: IdentifierObject = scope.st().lookUpAllAndCheckAllocation(ident.value)!!
 
         var spOffset = 0
         if (identObj is VariableIdentifier) {
-            // Calculate the stack space between the current stack pointer and the identifier
             val identOffset: Int = identObj.getAddr()
             val sp: Int = scope.st().getStackPtr()
             spOffset = identOffset - sp
