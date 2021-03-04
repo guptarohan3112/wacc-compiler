@@ -90,7 +90,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             val sp: Int = scope.st().getStackPtr()
             spOffset = identOffset - sp
         } else if (identObj is ParamIdentifier) {
-            spOffset = identObj.getOffset() + scope.st().getStackSizeAllocated() - scope.st().getStackPtr()
+            spOffset = identObj.getOffset() + scope.st().getStackSizeAllocated() /*- scope.st().getStackPtr()*/
         }
 
         return spOffset
@@ -197,7 +197,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         visit(decl.assignment)
 
-        if (currOffset != 0 && scope.getStackPtrOffset() == 0) {
+        if (decl.assignment is FuncCallAST) {
             scope.updatePtrOffset(currOffset)
         }
 
@@ -674,7 +674,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 )
             )
 
-            when (expr.getType().getStackSize()) {
+            val type = arrayElem.getType().getType()
+            when (type.getStackSize()) {
                 4 -> {
                     AssemblyRepresentation.addMainInstr(
                         AddInstruction(
