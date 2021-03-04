@@ -20,14 +20,14 @@ object Registers {
     private val r7 = Register(7)
     private val r8 = Register(8)
     private val r9 = Register(9)
-    private val r10 = Register(10)
-    private val r11 = Register(11)
+    val r10 = Register(10)
+    val r11 = Register(11)
     private val r12 = Register(12)
     val sp = Register(13)
     val lr = Register(14)
     val pc = Register(15)
 
-    private val allRegisters: ArrayList<Register> = arrayListOf(r4, r5, r6, r7, r8, r9, r10, r11, r12)
+    private val allRegisters: ArrayList<Register> = arrayListOf(r4, r5, r6, r7, r8, r9, r10)
 
     private val available: ArrayList<Register> = allRegisters
 
@@ -83,5 +83,9 @@ object Registers {
         }
 
         add(i, reg)
+    }
+
+    fun full(): Boolean {
+        return available.size == 1
     }
 }
