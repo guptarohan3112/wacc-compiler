@@ -88,8 +88,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     // Calculate the stack pointer to find an identifier
-    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST, paramOffset: Int): Int {
-        val identObj: IdentifierObject = scope.st().lookUpAllAndCheckAllocation(ident.value)!!
+    private fun calculateIdentSpOffset(identValue: String, scope: AST, paramOffset: Int): Int {
+        val identObj: IdentifierObject = scope.st().lookUpAllAndCheckAllocation(identValue)!!
 
         var spOffset = 0
         if (identObj is VariableIdentifier) {
@@ -262,7 +262,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         when {
             lhs.ident != null -> {
                 // Find the corresponding identifier and calculate the offset relative to the current sp
-                val diff = calculateIdentSpOffset(lhs.ident, assign, 0)
+                val diff = calculateIdentSpOffset(lhs.ident.value, assign, 0)
 
                 // Find the corresponding variable identifier
                 val varIdent = assign.st().lookUpAllAndCheckAllocation(lhs.ident.value)!!
@@ -583,7 +583,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     private fun visitIdentGeneral(ident: ExprAST.IdentAST, read: Boolean) {
         val paramOffset = ident.st().getParamOffset()
-        val spOffset: Int = calculateIdentSpOffset(ident, ident, paramOffset)
+        val spOffset: Int = calculateIdentSpOffset(ident.value, ident, paramOffset)
         val register: Register = Registers.allocate()
 
         if (read) {
@@ -635,11 +635,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
-        val arrayElemST: SymbolTable = arrayElem.st()
-        val ident: VariableIdentifier =
-            arrayElemST.lookupAll(arrayElem.ident) as VariableIdentifier
-        val sp = arrayElemST.getStackPtr()
-        val absAddr: Int = ident.getAddr()
+        val offset: Int = calculateIdentSpOffset(arrayElem.ident, arrayElem, 0)
 
         // Move the start of the array into dest register
         val dest: Register = Registers.allocate()
@@ -648,7 +644,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AddInstruction(
                 dest,
                 Registers.sp,
-                Immediate(absAddr - sp)
+                Immediate(offset)
             )
         )
 
