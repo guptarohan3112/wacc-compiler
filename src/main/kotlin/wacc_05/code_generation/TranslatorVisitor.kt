@@ -90,7 +90,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             val sp: Int = scope.st().getStackPtr()
             spOffset = identOffset - sp
         } else if (identObj is ParamIdentifier) {
-            spOffset = identObj.getOffset() + scope.st().getStackSizeAllocated()
+            spOffset = identObj.getOffset() + scope.st().getStackSizeAllocated() - scope.st().getStackPtr()
         }
 
         return spOffset
@@ -594,7 +594,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     private fun visitIdentGeneral(ident: ExprAST.IdentAST, read: Boolean) {
         val spOffset: Int = calculateIdentSpOffset(ident, ident)
-
         val register: Register = Registers.allocate()
 
         if (read) {
@@ -1335,7 +1334,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 )
             )
             funcCall.st().setStackPtr(funcCall.st().getStackPtr() - size)
-
+//            arg.st().setStackPtr(funcCall.st().getStackPtr())
             Registers.free(dest)
 
             argsSize += size
