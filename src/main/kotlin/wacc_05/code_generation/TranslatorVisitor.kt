@@ -15,6 +15,9 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     private val MAX_STACK_SIZE: Int = 1024
     private val START_OFFSET: Int = 4
+    private val ONE_BYTE: Int = 1
+    private val FOUR_BYTES: Int = 4
+
 
     /* UTILITY METHODS USED BY DIFFERENT VISIT METHODS IN THIS VISITOR
        ---------------------------------------------------------------
@@ -593,16 +596,15 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         } else {
             val type = ident.getType()
-            // Initialise the mode to be 2 or 3 depending on the type of the identifier
             var mode: AddressingMode =
                 AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
             if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
                 mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
             }
-            // Obtain an available register and load stack value into this register
             AssemblyRepresentation.addMainInstr(LoadInstruction(register, mode))
         }
 
+        // Set the destination register to the register that was allocated
         ident.setDestReg(register)
     }
 
@@ -610,9 +612,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visitArrayElemFstPhase(arrayElem)
         val dest: Register = arrayElem.getDestReg()
 
-        val type: TypeIdentifier = arrayElem.getType().getType()
+        val arrayType: TypeIdentifier = arrayElem.getType()
+        val type: TypeIdentifier = arrayType.getType()
         when (type.getStackSize()) {
-            1 -> {
+            ONE_BYTE -> {
                 AssemblyRepresentation.addMainInstr(
                     LoadInstruction(
                         dest,
@@ -632,24 +635,25 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
+        val arrayElemST: SymbolTable = arrayElem.st()
         val ident: VariableIdentifier =
-            arrayElem.st().lookupAll(arrayElem.ident) as VariableIdentifier
-        val sp = arrayElem.st().getStackPtr()
-        val offset: Int = ident.getAddr()
+            arrayElemST.lookupAll(arrayElem.ident) as VariableIdentifier
+        val sp = arrayElemST.getStackPtr()
+        val absAddr: Int = ident.getAddr()
 
-        // move the start of the array into dest register
+        // Move the start of the array into dest register
         val dest: Register = Registers.allocate()
         arrayElem.setDestReg(dest)
         AssemblyRepresentation.addMainInstr(
             AddInstruction(
                 dest,
                 Registers.sp,
-                Immediate(offset - sp)
+                Immediate(absAddr - sp)
             )
         )
 
-        // for each element, change dest to the location of that index
-        // (this may be the address of another
+        // For each element, change dest to the location of that index
+        // (this may be the address of another element)
         for (expr in arrayElem.exprs) {
             // do LDR rX [rX] in case rX represents the address of an array
             AssemblyRepresentation.addMainInstr(
@@ -661,7 +665,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             visit(expr)
             val exprDest: Register = expr.getDestReg()
 
-            // set parameters and branch to check the index
+            // Set parameters and branch to check the index
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, exprDest))
             AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r1, dest))
             AssemblyRepresentation.addPInstr(PInstruction.p_check_array_bounds())
@@ -674,9 +678,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 )
             )
 
-            val type = arrayElem.getType().getType()
+            val arrayType: TypeIdentifier = arrayElem.getType()
+            val type = arrayType.getType() // This is the type of the array element
             when (type.getStackSize()) {
-                4 -> {
+                FOUR_BYTES -> {
                     AssemblyRepresentation.addMainInstr(
                         AddInstruction(
                             dest,
@@ -689,12 +694,14 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     AssemblyRepresentation.addMainInstr(AddInstruction(dest, dest, exprDest))
                 }
             }
+            // Free the destination register for future use
             Registers.free(exprDest)
         }
     }
 
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
+        // Evaluate the single operand and get the register holding the result
         visit(unop.expr)
         unop.setDestReg(unop.expr.getDestReg())
 
