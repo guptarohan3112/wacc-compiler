@@ -80,7 +80,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
-    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST): Int {
+    private fun calculateIdentSpOffset(ident: ExprAST.IdentAST, scope: AST, paramOffset: Int): Int {
         val identObj: IdentifierObject = scope.st().lookUpAllAndCheckAllocation(ident.value)!!
 
         var spOffset = 0
@@ -90,7 +90,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             val sp: Int = scope.st().getStackPtr()
             spOffset = identOffset - sp
         } else if (identObj is ParamIdentifier) {
-            spOffset = identObj.getOffset() + scope.st().getStackSizeAllocated() /*- scope.st().getStackPtr()*/
+            spOffset = identObj.getOffset() + scope.st().getStackSizeAllocated() + paramOffset
         }
 
         return spOffset
@@ -241,7 +241,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             lhs.ident != null -> {
 
                 // Find the corresponding identifier and calculate the offset relative to the current sp
-                val diff = calculateIdentSpOffset(lhs.ident, assign)
+                val diff = calculateIdentSpOffset(lhs.ident, assign, 0)
                 // Find the corresponding variable identifier
                 val varIdent = assign.st().lookUpAllAndCheckAllocation(lhs.ident.value)!!
 
@@ -593,7 +593,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitIdentGeneral(ident: ExprAST.IdentAST, read: Boolean) {
-        val spOffset: Int = calculateIdentSpOffset(ident, ident)
+        val paramOffset = ident.st().getParamOffset()
+        val spOffset: Int = calculateIdentSpOffset(ident, ident, paramOffset)
         val register: Register = Registers.allocate()
 
         if (read) {
@@ -1322,6 +1323,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val funcIdent = FunctionST.lookupAll(funcCall.funcName)!!
 
         for (arg in funcCall.args.reversed()) {
+            arg.st().setParamOffset(arg.st().getParamOffset() + argsSize)
             visit(arg)
             val dest: Register = arg.getDestReg()
 
@@ -1335,11 +1337,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 )
             )
             funcCall.st().setStackPtr(funcCall.st().getStackPtr() - size)
+//            funcCall.st().updatePtrOffset(size)
 //            arg.st().setStackPtr(funcCall.st().getStackPtr())
             Registers.free(dest)
 
             argsSize += size
         }
+
+        funcCall.st().setParamOffset(0)
+
+        funcCall.st().updatePtrOffset(-1 * argsSize)
 
 //        val stackForLocalVar: Int = funcIdent.getStackSize()
 
