@@ -144,7 +144,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         if (func.paramList != null) {
             val totalSize = visitAndUpdateParams(stackSize, func.paramList)
-            funcIdent.getSymbolTable().setStackPtr(funcIdent.getSymbolTable().getStackPtr() - 4 /*- totalSize*/)
+            funcIdent.getSymbolTable().updatePtrOffset(-1 * totalSize)
         }
 
         // Generate assembly code for the body statement
