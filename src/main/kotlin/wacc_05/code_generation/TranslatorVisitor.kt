@@ -767,7 +767,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitSub(binop: ExprAST.BinOpAST) {
-        visit(binop.expr1)
+//        visit(binop.expr1)
 
         val dest: Register = binop.expr1.getDestReg()
 
@@ -785,7 +785,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 )
             }
             else -> {
-                visit(binop.expr2)
+//                visit(binop.expr2)
                 val dest2: Register = binop.expr2.getDestReg()
 
                 AssemblyRepresentation.addMainInstr(SubtractInstruction(dest, dest, dest2))
@@ -799,8 +799,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitMultiply(binop: ExprAST.BinOpAST) {
-        visit(binop.expr1)
-        visit(binop.expr2)
+//        visit(binop.expr1)
+//        visit(binop.expr2)
 
         val dest1: Register = binop.expr1.getDestReg()
         val dest2: Register = binop.expr2.getDestReg()
@@ -815,8 +815,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitDivMod(binop: ExprAST.BinOpAST) {
-        visit(binop.expr1)
-        visit(binop.expr2)
+//        visit(binop.expr1)
+//        visit(binop.expr2)
 
         // get result from expr1 and move into param register 1
         val dest1: Register = binop.expr1.getDestReg()
@@ -1103,8 +1103,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitEquality(binop: ExprAST.BinOpAST) {
-        visit(binop.expr1)
-        visit(binop.expr2)
+//        visit(binop.expr1)
+//        visit(binop.expr2)
 
         val dest1: Register = binop.expr1.getDestReg()
         val dest2: Register = binop.expr2.getDestReg()
