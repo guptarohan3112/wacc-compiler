@@ -13,28 +13,17 @@ import java.util.HashMap
  *            stored in IdentifierObjects
  */
 open class SymbolTable(private val parentST: SymbolTable?) {
-    // hashmap storing mappings from a string identifier to a corresponding IdentifierObject
+    // Hashmap storing mappings from a string identifier to a corresponding IdentifierObject
     private val map: HashMap<String, IdentifierObject?> = HashMap()
-    // stack pointer for this scope
+
+    // Pair representing the bottom of the stack frame for the scope and how much space has been taken up
     private var spAndOffset: Pair<Int, Int> = Pair(0, 0)
+
+    // Integer indicating how many bytes have been allocated for the function at that point
     private var stackSizeAllocated: Int = 0
+
+    // Field to show if any space on the stack has been created spontaneously
     private var paramOffset: Int = 0
-
-    open fun getParamOffset(): Int {
-        return paramOffset
-    }
-
-    open fun setParamOffset(paramOffset: Int) {
-        this.paramOffset = paramOffset
-    }
-
-    open fun getStackSizeAllocated(): Int {
-        return stackSizeAllocated
-    }
-
-    open fun setStackSizeAllocated(stackSize: Int) {
-        this.stackSizeAllocated = stackSize
-    }
 
     /* Function: add()
      * ------------------------------
@@ -66,6 +55,10 @@ open class SymbolTable(private val parentST: SymbolTable?) {
         return lookup(name) ?: parentST?.lookupAll(name)
     }
 
+    /* Function: lookUpAndCheckAllocation()
+     * --------------------
+     * Look up of the hashmap that also checks that the identifier has been declared
+     */
     open fun lookUpAndCheckAllocation(name: String): IdentifierObject? {
         val ident: IdentifierObject? = map.getOrDefault(name, null)
         if (ident is VariableIdentifier && !ident.isAllocated()) {
@@ -74,19 +67,25 @@ open class SymbolTable(private val parentST: SymbolTable?) {
         return ident
     }
 
+    /* Function: lookUpAndCheckAllocation()
+     * --------------------
+     * Look for an identifier that has been declared in the current scope
+     * Look in parent scope if not found
+     */
     open fun lookUpAllAndCheckAllocation(name: String): IdentifierObject? {
         return lookUpAndCheckAllocation(name) ?: parentST?.lookUpAllAndCheckAllocation(name)
     }
 
+    // Getter and setter for the first element of the pair
     fun getStackPtr(): Int {
         return spAndOffset.first
     }
 
-    // When setting the boundary stack pointer, change the offset from that to be 0
     fun setStackPtr(sp: Int) {
         this.spAndOffset = Pair(sp, 0)
     }
 
+    // Getter and update method for the stack pointer offset
     fun getStackPtrOffset(): Int {
         return spAndOffset.second
     }
@@ -96,6 +95,24 @@ open class SymbolTable(private val parentST: SymbolTable?) {
         var currOffset = this.spAndOffset.second
         currOffset += update
         this.spAndOffset = Pair(ptr, currOffset)
+    }
+
+    // Getter and setter for the parameter offset
+    open fun getParamOffset(): Int {
+        return paramOffset
+    }
+
+    open fun setParamOffset(paramOffset: Int) {
+        this.paramOffset = paramOffset
+    }
+
+    // Getter and setter for the stackSizeAllocated field
+    open fun getStackSizeAllocated(): Int {
+        return stackSizeAllocated
+    }
+
+    open fun setStackSizeAllocated(stackSize: Int) {
+        this.stackSizeAllocated = stackSize
     }
 
     fun isMain(): Boolean {
