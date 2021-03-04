@@ -51,7 +51,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     // Restore the stack pointer and print out the relevant assembly code
-    private fun restoreStackPointer(stat: StatementAST, stackSize: Int) {
+    private fun restoreStackPointer(stat: AST, stackSize: Int) {
         var tmp: Int = stackSize
         while (tmp > 0) {
             AssemblyRepresentation.addMainInstr(
@@ -1252,11 +1252,14 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     arg.getType()
                 )
             )
+            funcCall.st().setStackPtr(funcCall.st().getStackPtr() - size)
+
             Registers.free(dest)
 
             argsSize += size
-            funcIdent.getSymbolTable().setStackPtr(funcIdent.getSymbolTable().getStackPtr() - size)
         }
+
+        funcCall.st().setStackPtr(funcCall.st().getStackPtr() + argsSize)
 
         // Branch to the function label in the assembly code
         AssemblyRepresentation.addMainInstr(BranchInstruction("f_${funcCall.funcName}", Condition.L))
