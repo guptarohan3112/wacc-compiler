@@ -679,6 +679,27 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
+        if (Registers.full()) {
+            visit(binop.expr2)
+            AssemblyRepresentation.addMainInstr(PushInstruction(Registers.r10))
+            Registers.free(Registers.r10)
+            visit(binop.expr1)
+            visitBinOpStack(binop)
+        }
+        else {
+            visit(binop.expr1)
+            visit(binop.expr2)
+            visitBinOp(binop)
+        }
+    }
+
+    private fun visitBinOpStack(binop: ExprAST.BinOpAST) {
+        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.r11))
+        binop.expr2.setDestReg(Registers.r11)
+        visitBinOp(binop)
+    }
+
+    private fun visitBinOp(binop: ExprAST.BinOpAST){
         when (binop.operator) {
             "+" -> visitAdd(binop)
             "-" -> visitSub(binop)
@@ -692,42 +713,44 @@ class TranslatorVisitor : ASTBaseVisitor() {
         }
     }
 
+
+
     private fun visitAdd(binop: ExprAST.BinOpAST) {
         val expr1 = binop.expr1
         val expr2 = binop.expr2
 
         when {
-            expr1 is ExprAST.IntLiterAST -> {
-                visit(expr2)
-                val dest: Register = expr2.getDestReg()
-                AssemblyRepresentation.addMainInstr(
-                    AddInstruction(
-                        dest,
-                        dest,
-                        Immediate(expr1.getValue()),
-                        Condition.S
-                    )
-                )
-
-                binop.setDestReg(dest)
-            }
-            expr2 is ExprAST.IntLiterAST -> {
-                visit(expr1)
-                val dest: Register = expr1.getDestReg()
-                AssemblyRepresentation.addMainInstr(
-                    AddInstruction(
-                        dest,
-                        dest,
-                        Immediate(expr2.getValue()),
-                        Condition.S
-                    )
-                )
-
-                binop.setDestReg(dest)
-            }
+//            expr1 is ExprAST.IntLiterAST -> {
+//                visit(expr2)
+//                val dest: Register = expr2.getDestReg()
+//                AssemblyRepresentation.addMainInstr(
+//                    AddInstruction(
+//                        dest,
+//                        dest,
+//                        Immediate(expr1.getValue()),
+//                        Condition.S
+//                    )
+//                )
+//
+//                binop.setDestReg(dest)
+//            }
+//            expr2 is ExprAST.IntLiterAST -> {
+//                visit(expr1)
+//                val dest: Register = expr1.getDestReg()
+//                AssemblyRepresentation.addMainInstr(
+//                    AddInstruction(
+//                        dest,
+//                        dest,
+//                        Immediate(expr2.getValue()),
+//                        Condition.S
+//                    )
+//                )
+//
+//                binop.setDestReg(dest)
+//            }
             else -> {
-                visit(expr1)
-                visit(expr2)
+//                visit(expr1)
+//                visit(expr2)
 
                 val dest1: Register = expr1.getDestReg()
                 val dest2: Register = expr2.getDestReg()
