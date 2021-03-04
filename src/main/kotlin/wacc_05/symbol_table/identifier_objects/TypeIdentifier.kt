@@ -113,7 +113,7 @@ open class TypeIdentifier : IdentifierObject() {
 
     }
 
-    // a generic pair type to capture the overall pair type. Used to represent the loss
+    // A generic pair type to capture the overall pair type. Used to represent the loss
     // of type with nested pairs.
     open class GenericPairType : TypeIdentifier() {
         override fun equals(other: Any?): Boolean {

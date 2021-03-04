@@ -1,12 +1,11 @@
 package wacc_05.symbol_table.identifier_objects
 
-import wacc_05.symbol_table.SymbolTable
-
 class FunctionIdentifier(
     private val returnType: TypeIdentifier,
     private val params: ArrayList<ParamIdentifier>
 ) : IdentifierObject() {
 
+    // Amount of stack space (bytes) allocated for local variables
     private var stackSize: Int = 0
 
     fun getReturnType(): TypeIdentifier {
