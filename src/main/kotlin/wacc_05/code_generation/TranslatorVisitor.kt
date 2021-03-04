@@ -890,6 +890,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                         Condition.S
                     )
                 )
+
+                Registers.free(dest2)
             }
         }
 

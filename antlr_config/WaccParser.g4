@@ -77,12 +77,12 @@ expr: intLit
 | ident
 | arrayElem
 | unaryOper expr
-| <assoc=right> expr (MULT | DIV | MOD) expr
-| <assoc=right> expr (PLUS | MINUS) expr
-| <assoc=right> expr (GT | GTE | LT | LTE) expr
-| <assoc=right> expr (EQ | NOTEQ) expr
-| <assoc=right> expr AND expr
-| <assoc=right> expr OR expr
+| expr (MULT | DIV | MOD) expr
+| expr (PLUS | MINUS) expr
+| expr (GT | GTE | LT | LTE) expr
+| expr (EQ | NOTEQ) expr
+| expr AND expr
+| expr OR expr
 | OPEN_PARENTHESES expr CLOSE_PARENTHESES
 ;
 
