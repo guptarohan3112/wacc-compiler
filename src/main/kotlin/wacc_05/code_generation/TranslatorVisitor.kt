@@ -91,7 +91,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             val sp: Int = scope.st().getStackPtr()
             spOffset = identOffset - sp
         } else if (identObj is ParamIdentifier) {
-            spOffset = identObj.getOffset() + scope.st().getStackSizeAllocated() /*- scope.st().getStackPtr()*/
+            spOffset = identObj.getOffset() + scope.st().getStackSizeAllocated() - scope.st().getStackPtr()
         }
 
         return spOffset
@@ -624,12 +624,25 @@ class TranslatorVisitor : ASTBaseVisitor() {
         visitArrayElemFstPhase(arrayElem)
         val dest: Register = arrayElem.getDestReg()
 
-        AssemblyRepresentation.addMainInstr(
-            LoadInstruction(
-                dest,
-                AddressingMode.AddressingMode2(dest)
-            )
-        )
+        val type: TypeIdentifier = arrayElem.getType().getType()
+        when (type.getStackSize()) {
+            1 -> {
+                AssemblyRepresentation.addMainInstr(
+                    LoadInstruction(
+                        dest,
+                        AddressingMode.AddressingMode3(dest, Immediate(0))
+                    )
+                )
+            }
+            else -> {
+                AssemblyRepresentation.addMainInstr(
+                    LoadInstruction(
+                        dest,
+                        AddressingMode.AddressingMode2(dest)
+                    )
+                )
+            }
+        }
     }
 
     private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
@@ -691,7 +704,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 }
             }
             Registers.free(exprDest)
-
         }
     }
 
