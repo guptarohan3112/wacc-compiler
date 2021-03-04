@@ -18,6 +18,15 @@ open class SymbolTable(private val parentST: SymbolTable?) {
     // stack pointer for this scope
     private var spAndOffset: Pair<Int, Int> = Pair(0, 0)
     private var stackSizeAllocated: Int = 0
+    private var paramOffset: Int = 0
+
+    open fun getParamOffset(): Int {
+        return paramOffset
+    }
+
+    open fun setParamOffset(paramOffset: Int) {
+        this.paramOffset = paramOffset
+    }
 
     open fun getStackSizeAllocated(): Int {
         return stackSizeAllocated
