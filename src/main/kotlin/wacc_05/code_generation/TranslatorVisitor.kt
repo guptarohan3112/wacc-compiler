@@ -1345,14 +1345,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
+        // Variable for the amount of stack space that the arguments take up
         var argsSize = 0
-        val funcIdent = FunctionST.lookupAll(funcCall.funcName)!!
+        val symTab: SymbolTable = funcCall.st()
 
         for (arg in funcCall.args.reversed()) {
+            // Account for the number of bytes that already have been allocated
             arg.st().setParamOffset(arg.st().getParamOffset() + argsSize)
             visit(arg)
             val dest: Register = arg.getDestReg()
 
+            // Get the size (in bytes) that this argument will take
             val size: Int = arg.getType().getStackSize()
 
             AssemblyRepresentation.addMainInstr(
@@ -1362,23 +1365,17 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     arg.getType()
                 )
             )
-            funcCall.st().setStackPtr(funcCall.st().getStackPtr() - size)
-//            funcCall.st().updatePtrOffset(size)
-//            arg.st().setStackPtr(funcCall.st().getStackPtr())
-            Registers.free(dest)
+            val currStkPtr: Int = symTab.getStackPtr()
+            symTab.setStackPtr(currStkPtr - size)
 
+            // Free the destination register for future use and update argsSize
+            Registers.free(dest)
             argsSize += size
         }
 
-        funcCall.st().setParamOffset(0)
-
-        funcCall.st().updatePtrOffset(-1 * argsSize)
-
-//        val stackForLocalVar: Int = funcIdent.getStackSize()
-
-//        funcCall.st().setStackPtr(funcCall.st().getStackPtr() - stackForLocalVar)
-
-//        funcCall.st().setStackPtr(funcCall.st().getStackPtr() + argsSize)
+        // Reset the parameter offset for future use of the symbol table
+        symTab.setParamOffset(0)
+        symTab.updatePtrOffset(-1 * argsSize)
 
         // Branch to the function label in the assembly code
         AssemblyRepresentation.addMainInstr(
@@ -1388,17 +1385,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         )
 
-        //Restore the stack pointer
+        // Restore the stack pointer
         restoreStackPointer(funcCall, argsSize)
-//        if (argsSize > 0) {
-//            AssemblyRepresentation.addMainInstr(
-//                AddInstruction(
-//                    Registers.sp,
-//                    Registers.sp,
-//                    Immediate(argsSize)
-//                )
-//            )
-//        }
 
         // Move the result of the function into an available register
         val reg: Register = Registers.allocate()
