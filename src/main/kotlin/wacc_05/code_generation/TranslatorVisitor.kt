@@ -64,7 +64,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
             tmp -= MAX_STACK_SIZE
         }
-        // Not sure if this is needed
+
         node.st().setStackPtr(node.st().getStackPtr() + stackSize)
     }
 
@@ -143,8 +143,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         func.body.st().setStackSizeAllocated(stackSize)
 
         if (func.paramList != null) {
-            visitAndUpdateParams(stackSize, func.paramList)
-            funcIdent.getSymbolTable().updatePtrOffset(-4)
+            val totalSize = visitAndUpdateParams(stackSize, func.paramList)
+            funcIdent.getSymbolTable().setStackPtr(funcIdent.getSymbolTable().getStackPtr() - 4 /*- totalSize*/)
         }
 
         // Generate assembly code for the body statement
@@ -158,9 +158,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
     }
 
-    private fun visitAndUpdateParams(stackSize: Int, list: ParamListAST) {
+    private fun visitAndUpdateParams(stackSize: Int, list: ParamListAST): Int {
         val symbolTable: SymbolTable = list.st()
         val offset = stackSize + 4
+        var totalSize: Int = 0
 
         // Store the offset of the parameter relative to the stack address of the first parameter
         for (param in list.paramList) {
@@ -168,8 +169,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
             val paramIdent: ParamIdentifier = symbolTable.lookup(param.name) as ParamIdentifier
             paramIdent.setAddr(symbolTable.getStackPtr() + currOffset + offset)
             paramIdent.allocatedNow()
-            symbolTable.updatePtrOffset(param.getType(symbolTable).getStackSize())
+
+            val size: Int = param.getType(symbolTable).getStackSize()
+            totalSize += size
+            symbolTable.updatePtrOffset(size)
         }
+
+        return totalSize
     }
 
     // There is no assembly code that needs to be generated for parameters.
@@ -1238,7 +1244,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
         var argsSize = 0
-        val funcIdent = FunctionST.lookupAll(funcCall.funcName)!!
 
         for (arg in funcCall.args.reversed()) {
             visit(arg)
@@ -1256,23 +1261,15 @@ class TranslatorVisitor : ASTBaseVisitor() {
             Registers.free(dest)
 
             argsSize += size
-            funcIdent.getSymbolTable().setStackPtr(funcIdent.getSymbolTable().getStackPtr() - size)
         }
+
+        funcCall.st().setStackPtr(funcCall.st().getStackPtr() - argsSize)
 
         // Branch to the function label in the assembly code
         AssemblyRepresentation.addMainInstr(BranchInstruction("f_${funcCall.funcName}", Condition.L))
 
         //Restore the stack pointer
         restoreStackPointer(funcCall, argsSize)
-//        if (argsSize > 0) {
-//            AssemblyRepresentation.addMainInstr(
-//                AddInstruction(
-//                    Registers.sp,
-//                    Registers.sp,
-//                    Immediate(argsSize)
-//                )
-//            )
-//        }
 
         // Move the result of the function into an available register
         val reg: Register = Registers.allocate()
