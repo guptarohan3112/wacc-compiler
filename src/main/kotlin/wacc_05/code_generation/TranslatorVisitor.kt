@@ -51,7 +51,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     // Restore the stack pointer and print out the relevant assembly code
-    private fun restoreStackPointer(stat: StatementAST, stackSize: Int) {
+    // Made change to parameter here, change back to stat if necessary
+    private fun restoreStackPointer(node: AST, stackSize: Int) {
         var tmp: Int = stackSize
         while (tmp > 0) {
             AssemblyRepresentation.addMainInstr(
@@ -64,7 +65,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             tmp -= MAX_STACK_SIZE
         }
         // Not sure if this is needed
-        stat.st().setStackPtr(stat.st().getStackPtr() + stackSize)
+        node.st().setStackPtr(node.st().getStackPtr() + stackSize)
     }
 
     // a helper function for adding "B" to "STR" if the given
@@ -1262,15 +1263,16 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(BranchInstruction("f_${funcCall.funcName}", Condition.L))
 
         //Restore the stack pointer
-        if (argsSize > 0) {
-            AssemblyRepresentation.addMainInstr(
-                AddInstruction(
-                    Registers.sp,
-                    Registers.sp,
-                    Immediate(argsSize)
-                )
-            )
-        }
+        restoreStackPointer(funcCall, argsSize)
+//        if (argsSize > 0) {
+//            AssemblyRepresentation.addMainInstr(
+//                AddInstruction(
+//                    Registers.sp,
+//                    Registers.sp,
+//                    Immediate(argsSize)
+//                )
+//            )
+//        }
 
         // Move the result of the function into an available register
         val reg: Register = Registers.allocate()
