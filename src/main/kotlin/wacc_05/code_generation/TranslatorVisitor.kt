@@ -106,6 +106,18 @@ class TranslatorVisitor : ASTBaseVisitor() {
         child.st().setStackSizeAllocated(currentStackSpace + stackSize)
     }
 
+    // Helper method that visits anything that requires making a new inner scope
+    private fun visitInnerScope(stat: StatementAST, innerScope: StatementAST) {
+        val stackSize = setUpInnerScope(stat, innerScope)
+
+        // Indicate how much stack space has been allocated and visit the branch
+        innerScopeStackAllocation(stat, innerScope, stackSize)
+        visit(innerScope)
+
+        // Restore the stack pointer for the 'else' branch
+        restoreStackPointer(innerScope, stackSize)
+    }
+
     /* MAIN VISIT METHODS (OVERIDDEN FROM THE BASE VISITOR CLASS)
        ---------------------------------------------------------
      */
@@ -306,17 +318,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
-        // Set the internal representation of the stack pointer before moving into the inner scope
-        val stackSize: Int = setUpInnerScope(begin, begin.stat)
-
-        // Indicate how much of the stack has already been allocated
-        innerScopeStackAllocation(begin, begin.stat, stackSize)
-
-        // Generate assembly code for the body statement
-        visit(begin.stat)
-
-        // Restore the stack pointer
-        restoreStackPointer(begin.stat, stackSize)
+        visitInnerScope(begin, begin.stat)
     }
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
@@ -361,6 +363,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Move contents of the register in r0 for calling exit
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
         AssemblyRepresentation.addMainInstr(BranchInstruction("exit", Condition.L))
+
+        // Free the destination register for future use
         Registers.free(dest)
     }
 
@@ -370,25 +374,26 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val dest: Register = free.expr.getDestReg()
 
         // Move the contents of the destination register into r0
-        // Move the contents of the destination register into r0
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
 
-        // Add the IO instruction and branch instruction corresponding to the type of the expression
+        // Add the primitive instruction corresponding to the type of the expression
         if (free.expr.getType() is TypeIdentifier.ArrayIdentifier) {
             AssemblyRepresentation.addPInstr(PInstruction.p_free_array())
         } else {
             AssemblyRepresentation.addPInstr(PInstruction.p_free_pair())
         }
 
+        // Free the destination register for future use
         Registers.free(dest)
     }
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
         // Evaluation of the condition expression
-        visit(ifStat.condExpr)
+        val condition: ExprAST = ifStat.condExpr
+        visit(condition)
 
         // Condition checking
-        val destination: Register = ifStat.condExpr.getDestReg()
+        val destination: Register = condition.getDestReg()
         AssemblyRepresentation.addMainInstr(CompareInstruction(destination, Immediate(0)))
 
         // Branch off to the 'else' body if the condition evaluated to false
@@ -398,17 +403,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Free the destination register
         Registers.free(destination)
 
-        // Update the stack pointer of the inner scope and allocate any stack space for the 'then' branch
-        val stackSizeThen = setUpInnerScope(ifStat, ifStat.thenStat)
-
-        ifStat.thenStat.st()
-            .setStackSizeAllocated(ifStat.st().getStackSizeAllocated() + stackSizeThen)
-
-        // Otherwise enter the 'then' body
-        visit(ifStat.thenStat)
-
-        // Restore the stack pointer for the 'then' branch
-        restoreStackPointer(ifStat.thenStat, stackSizeThen)
+        // Visit the 'then' branch
+        visitInnerScope(ifStat, ifStat.thenStat)
 
         // Unconditionally jump to the label of whatever follows the if statement in the program
         val nextLabel: LabelInstruction = getUniqueLabel()
@@ -416,24 +412,19 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Label and assembly for the 'else' body, starting with updating stack pointer and allocating any stack space
         AssemblyRepresentation.addMainInstr(elseLabel)
-        val stackSizeElse = setUpInnerScope(ifStat, ifStat.elseStat)
-
-        ifStat.elseStat.st()
-            .setStackSizeAllocated(ifStat.st().getStackSizeAllocated() + stackSizeElse)
-
-        visit(ifStat.elseStat)
-
-        // Restore the stack pointer for the 'else' branch
-        restoreStackPointer(ifStat.elseStat, stackSizeElse)
+        // Visit the 'else' branch
+        visitInnerScope(ifStat, ifStat.elseStat)
 
         // Make label for whatever follows the if statement
         AssemblyRepresentation.addMainInstr(nextLabel)
 
+        // Free the destination register for future use
         Registers.free(destination)
     }
 
     // Call and add IO instructions
     override fun visitPrintAST(print: StatementAST.PrintAST) {
+        // Evaluate expression to be printed and obtain the register where the result is held
         visit(print.expr)
         val reg: Register = print.expr.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
@@ -443,6 +434,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         } else {
             print.expr.getType()
         }
+
         when (type) {
             is TypeIdentifier.IntIdentifier -> {
                 AssemblyRepresentation.addPInstr(PInstruction.p_print_int())
@@ -468,6 +460,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addPInstr(PInstruction.p_print_ln())
         }
 
+        // Free the register for future use
         Registers.free(reg)
     }
 
@@ -479,9 +472,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Move the value into r0 and pop the program counter
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
 
+        // Restore the stack pointer depending on how much stack space has been allocated thus far
         restoreStackPointer(ret, ret.st().getStackSizeAllocated())
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
 
+        // Free the destination register for future use
         Registers.free(dest)
     }
 
@@ -499,20 +494,12 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val bodyLabel: LabelInstruction = getUniqueLabel()
         AssemblyRepresentation.addMainInstr(bodyLabel)
 
-        val stackSize: Int = setUpInnerScope(whileStat, whileStat.body)
-
-        whileStat.body.st()
-            .setStackSizeAllocated(whileStat.st().getStackSizeAllocated() + stackSize)
-
-        // Loop body
-        visit(whileStat.body)
-
-        // Restore the stack pointer
-        restoreStackPointer(whileStat.body, stackSize)
+        visitInnerScope(whileStat, whileStat.body)
 
         // Label for condition checking
         AssemblyRepresentation.addMainInstr(condLabel)
 
+        // Evaluate the looping conditional expression
         visit(whileStat.loopExpr)
         val reg: Register = whileStat.loopExpr.getDestReg()
 
@@ -523,6 +510,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 Immediate(1)
             )
         )
+
+        // Free the register for future use
         Registers.free(reg)
         AssemblyRepresentation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
