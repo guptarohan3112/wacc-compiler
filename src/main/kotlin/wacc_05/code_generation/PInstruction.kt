@@ -103,7 +103,7 @@ sealed class PInstruction {
         }
 
         override fun addMessageLabel() {
-            val readLabel = MessageLabelInstruction.getUniqueLabel("%c\\0")
+            val readLabel = MessageLabelInstruction.getUniqueLabel(" %c\\0")
             AssemblyRepresentation.addDataInstr(readLabel)
             this.label = readLabel.getLabel()
         }
