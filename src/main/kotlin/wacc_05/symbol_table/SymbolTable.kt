@@ -17,6 +17,15 @@ open class SymbolTable(private val parentST: SymbolTable?) {
     private val map: HashMap<String, IdentifierObject?> = HashMap()
     // stack pointer for this scope
     private var spAndOffset: Pair<Int, Int> = Pair(0, 0)
+    private var stackSizeAllocated: Int = 0
+
+    open fun getStackSizeAllocated(): Int {
+        return stackSizeAllocated
+    }
+
+    open fun setStackSizeAllocated(stackSize: Int) {
+        this.stackSizeAllocated = stackSize
+    }
 
     /* Function: add()
      * ------------------------------

@@ -58,10 +58,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 AddInstruction(
                     Registers.sp,
                     Registers.sp,
-                    Immediate(tmp.coerceAtMost(1024))
+                    Immediate(tmp.coerceAtMost(MAX_STACK_SIZE))
                 )
             )
-            tmp -= 1024
+            tmp -= MAX_STACK_SIZE
         }
         // Not sure if this is needed
         stat.st().setStackPtr(stat.st().getStackPtr() + stackSize)
@@ -139,6 +139,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val funcIdent = FunctionST.lookupAll(func.funcName)!!
         funcIdent.setStackSize(stackSize)
 
+        func.body.st().setStackSizeAllocated(stackSize)
+
         if (func.paramList != null) {
             visitAndUpdateParams(stackSize, func.paramList)
             funcIdent.getSymbolTable().updatePtrOffset(-4)
@@ -147,11 +149,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Generate assembly code for the body statement
         visit(func.body)
 
-        // Restore the stack pointer
-        restoreStackPointer(func.body, stackSize)
-
-        // Restore the program counter
-        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
+//        // Restore the stack pointer
+//        restoreStackPointer(func.body, stackSize)
+//
+//        // Restore the program counter
+//        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
     }
 
@@ -309,6 +311,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
         val stackSize: Int = setUpInnerScope(begin, begin.stat)
 
+        begin.stat.st().setStackSizeAllocated(begin.st().getStackSizeAllocated() + stackSize)
+
         // Generate assembly code for the body statement
         visit(begin.stat)
 
@@ -391,6 +395,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Update the stack pointer of the inner scope and allocate any stack space for the 'then' branch
         val stackSizeThen = setUpInnerScope(ifStat, ifStat.thenStat)
 
+        ifStat.thenStat.st().setStackSizeAllocated(ifStat.st().getStackSizeAllocated() + stackSizeThen)
+
         // Otherwise enter the 'then' body
         visit(ifStat.thenStat)
 
@@ -404,6 +410,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         // Label and assembly for the 'else' body, starting with updating stack pointer and allocating any stack space
         AssemblyRepresentation.addMainInstr(elseLabel)
         val stackSizeElse = setUpInnerScope(ifStat, ifStat.elseStat)
+
+        ifStat.elseStat.st().setStackSizeAllocated(ifStat.st().getStackSizeAllocated() + stackSizeElse)
 
         visit(ifStat.elseStat)
 
@@ -459,6 +467,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         // Move the value into r0 and pop the program counter
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
+
+        restoreStackPointer(ret, ret.st().getStackSizeAllocated())
+        AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
+
         Registers.free(dest)
     }
 
@@ -477,6 +489,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(bodyLabel)
 
         val stackSize: Int = setUpInnerScope(whileStat, whileStat.body)
+
+        whileStat.body.st().setStackSizeAllocated(whileStat.st().getStackSizeAllocated() + stackSize)
 
         // Loop body
         visit(whileStat.body)
@@ -1238,6 +1252,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     arg.getType()
                 )
             )
+            Registers.free(dest)
+
             argsSize += size
             funcIdent.getSymbolTable().setStackPtr(funcIdent.getSymbolTable().getStackPtr() - size)
         }
