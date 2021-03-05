@@ -1,6 +1,6 @@
 package wacc_05.code_generation.instructions
 
-import wacc_05.code_generation.Condition
+import wacc_05.code_generation.utilities.Condition
 
 class BranchInstruction(private val label: String, private val cond: Condition? = null) :
     Instruction {

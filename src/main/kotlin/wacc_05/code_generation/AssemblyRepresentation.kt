@@ -3,6 +3,8 @@ package wacc_05.code_generation
 import wacc_05.code_generation.instructions.BranchInstruction
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.code_generation.instructions.LabelInstruction
+import wacc_05.code_generation.instructions.PInstruction
+import wacc_05.code_generation.utilities.Condition
 import java.io.File
 
 

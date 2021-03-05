@@ -1,4 +1,4 @@
-package wacc_05.code_generation
+package wacc_05.code_generation.utilities
 
 class Register(private val number: Int) : Operand(), Comparable<Register> {
 

@@ -1,4 +1,4 @@
-package wacc_05.code_generation
+package wacc_05.code_generation.utilities
 
 class Immediate(private val value: Int) : Operand() {
     override fun toString(): String {

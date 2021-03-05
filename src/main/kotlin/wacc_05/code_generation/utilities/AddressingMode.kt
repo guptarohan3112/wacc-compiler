@@ -1,4 +1,4 @@
-package wacc_05.code_generation
+package wacc_05.code_generation.utilities
 
 sealed class AddressingMode : Operand() {
 
