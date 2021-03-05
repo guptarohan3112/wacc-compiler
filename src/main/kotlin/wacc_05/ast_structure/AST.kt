@@ -14,14 +14,15 @@ abstract class AST {
 
     abstract fun <T> accept(visitor: ASTVisitor<T>): T
 
-
     /* Functions for communicating with a node's symbol table - aimed at reducing double getters and dot chains
     * in translator visitor */
 
+    // Getter for the symbol table, dereferencing it before returning
     fun st(): SymbolTable {
         return st!!
     }
 
+    // Getter and setter for the stack pointer in the symbol table
     fun getStackPtr(): Int {
         return st().getStackPtr()
     }
@@ -30,6 +31,7 @@ abstract class AST {
         st().setStackPtr(ptr)
     }
 
+    // Getter and setter for the stackSizeAllocated field in the symbol table
     fun getStackSizeAllocated(): Int {
         return st().getStackSizeAllocated()
     }
@@ -38,6 +40,7 @@ abstract class AST {
         st().setStackSizeAllocated(allocation)
     }
 
+    // Getter and setter for the parameter offset field in symbol table
     fun getParamOffset(): Int {
         return st().getParamOffset()
     }

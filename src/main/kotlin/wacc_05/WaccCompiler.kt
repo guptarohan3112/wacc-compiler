@@ -7,7 +7,7 @@ import org.antlr.v4.runtime.CommonTokenStream
 import wacc_05.ast_structure.AST
 import wacc_05.code_generation.AssemblyRepresentation
 import wacc_05.code_generation.TranslatorVisitor
-import wacc_05.front_end.Error
+import wacc_05.front_end.ErrorCode
 import wacc_05.front_end.SemanticErrorHandler
 import wacc_05.front_end.SemanticVisitor
 import wacc_05.front_end.SyntaxErrorListener
@@ -19,7 +19,7 @@ import kotlin.system.measureTimeMillis
 fun main(args: Array<String>) {
     if (args.size <= 1) {
         println("Reason For Error : Please specify the path to a file as the argument of the program")
-        exitProcess(Error.GENERAL_ERROR)
+        exitProcess(ErrorCode.GENERAL_ERROR)
     }
 
     val filePath: String = args[0]
@@ -31,7 +31,7 @@ fun main(args: Array<String>) {
         ret = WaccCompiler.runCompiler(filePath, debug, validOnly)
     }
 
-    if (ret == Error.SUCCESS) {
+    if (ret == ErrorCode.SUCCESS) {
         println("Compilation Successful in $time milliseconds")
     } else {
         println("Compilation failed with error in $time milliseconds")
@@ -64,7 +64,7 @@ object WaccCompiler {
 
         if (parser.numberOfSyntaxErrors > 0) {
             errorListener.getSyntaxErrors().forEach(::println)
-            return Error.SYNTAX_ERROR
+            return ErrorCode.SYNTAX_ERROR
         }
 
         if (debug)
@@ -83,7 +83,7 @@ object WaccCompiler {
 
         if (seh.hasErrors()) {
             seh.printErrors()
-            return Error.SEMANTIC_ERROR
+            return ErrorCode.SEMANTIC_ERROR
         }
 
         if (!validOnly) {
@@ -99,6 +99,6 @@ object WaccCompiler {
             println("FINISHED")
         }
 
-        return Error.SUCCESS
+        return ErrorCode.SUCCESS
     }
 }

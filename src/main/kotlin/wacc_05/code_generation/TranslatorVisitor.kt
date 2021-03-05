@@ -605,7 +605,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         } else {
             val type = ident.getType()
-            var mode: AddressingMode = AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
+            var mode: AddressingMode =
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
 
             if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
                 mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))

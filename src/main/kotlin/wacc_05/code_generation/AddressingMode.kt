@@ -40,7 +40,8 @@ sealed class AddressingMode : Operand() {
     Immediate offset [<Rn>, #+/-<immed_8>]
     Register offset [<Rn>, +/- <Rm>]
      */
-    data class AddressingMode3(private val regN: Register, private val operand: Operand) : AddressingMode() {
+    data class AddressingMode3(private val regN: Register, private val operand: Operand) :
+        AddressingMode() {
 
         override fun toString(): String {
             if (operand is Immediate && operand.getValue() == 0) {

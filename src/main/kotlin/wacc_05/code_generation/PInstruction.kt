@@ -1,14 +1,13 @@
 package wacc_05.code_generation
 
 import wacc_05.code_generation.instructions.*
-import wacc_05.front_end.Error
+import wacc_05.front_end.ErrorCode
 
 sealed class PInstruction {
 
     abstract fun applyIO(): ArrayList<Instruction>
     abstract fun addMessageLabel()
     abstract fun checkRuntimeErr()
-
 
     class p_check_null_pointer : PInstruction() {
 
@@ -121,7 +120,7 @@ sealed class PInstruction {
         }
     }
 
-    class p_print_ln() : PInstruction() {
+    class p_print_ln : PInstruction() {
 
         private var label: String = ""
 
@@ -158,7 +157,7 @@ sealed class PInstruction {
 
     }
 
-    class p_throw_runtime_error() : PInstruction() {
+    class p_throw_runtime_error : PInstruction() {
 
         private var label: String = ""
 
@@ -166,7 +165,7 @@ sealed class PInstruction {
             return arrayListOf(
                 LabelInstruction("p_throw_runtime_error"),
                 BranchInstruction("p_print_string", Condition.L),
-                MoveInstruction(Registers.r0, Immediate(Error.GENERAL_ERROR)),
+                MoveInstruction(Registers.r0, Immediate(ErrorCode.GENERAL_ERROR)),
                 BranchInstruction("exit", Condition.L)
             )
         }
@@ -189,7 +188,7 @@ sealed class PInstruction {
 
     }
 
-    class p_print_bool() : PInstruction() {
+    class p_print_bool : PInstruction() {
 
         private var labelTrue: String = ""
         private var labelFalse: String = ""
@@ -199,8 +198,16 @@ sealed class PInstruction {
                 LabelInstruction("p_print_bool"),
                 PushInstruction(Registers.lr),
                 CompareInstruction(Registers.r0, Immediate(0)),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(labelTrue), Condition.NE),
-                LoadInstruction(Registers.r0, AddressingMode.AddressingLabel(labelFalse), Condition.EQ),
+                LoadInstruction(
+                    Registers.r0,
+                    AddressingMode.AddressingLabel(labelTrue),
+                    Condition.NE
+                ),
+                LoadInstruction(
+                    Registers.r0,
+                    AddressingMode.AddressingLabel(labelFalse),
+                    Condition.EQ
+                ),
                 AddInstruction(Registers.r0, Registers.r0, Immediate(4)),
                 BranchInstruction("printf", Condition.L),
                 MoveInstruction(Registers.r0, Immediate(0)),
@@ -232,7 +239,7 @@ sealed class PInstruction {
 
     }
 
-    class p_print_int() : PInstruction() {
+    class p_print_int : PInstruction() {
 
         private var label: String = ""
 
@@ -365,7 +372,8 @@ sealed class PInstruction {
         }
 
         override fun addMessageLabel() {
-            val divLabel = MessageLabelInstruction.getUniqueLabel("DivideByZeroError: divide or modulo by zero\\n\\0")
+            val divLabel =
+                MessageLabelInstruction.getUniqueLabel("DivideByZeroError: divide or modulo by zero\\n\\0")
             AssemblyRepresentation.addDataInstr(divLabel)
             label = divLabel.getLabel()
         }

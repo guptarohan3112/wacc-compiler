@@ -13,7 +13,7 @@ object FunctionST : SymbolTable(null) {
     }
 
     override fun add(name: String, obj: IdentifierObject) {
-        if(obj is FunctionIdentifier) {
+        if (obj is FunctionIdentifier) {
             super.add(name, obj)
         }
     }

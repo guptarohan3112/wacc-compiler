@@ -1,11 +1,12 @@
 package wacc_05.ast_structure.assignment_ast
 
 import antlr.WaccParser
-import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.ASTVisitor
+import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<ExprAST>) : AssignRHSAST() {
+class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<ExprAST>) :
+    AssignRHSAST() {
 
     override fun getType(): TypeIdentifier {
         return if (elems.size == 0) {

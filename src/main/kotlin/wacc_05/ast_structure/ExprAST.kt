@@ -2,13 +2,7 @@ package wacc_05.ast_structure
 
 import antlr.WaccParser
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
-import wacc_05.code_generation.Immediate
-import wacc_05.code_generation.Register
-import wacc_05.code_generation.Registers
-import wacc_05.code_generation.*
-import wacc_05.code_generation.instructions.*
-import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.*
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 sealed class ExprAST : AssignRHSAST() {
 

@@ -2,10 +2,11 @@ package wacc_05.ast_structure.assignment_ast
 
 import antlr.WaccParser
 import wacc_05.ast_structure.AST
-import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.ASTVisitor
+import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.SymbolTable
-import wacc_05.symbol_table.identifier_objects.*
+import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 // This class accounts for whether the left hand side of assignment is a identifier, array element or pair element
 class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: ExprAST.IdentAST?) : AST() {
