@@ -7,9 +7,13 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 abstract class AssignRHSAST : AST() {
 
-    var dest : Register? = null
+    private var dest : Register? = null
 
     abstract fun getType(): TypeIdentifier
+
+    fun getStackSize(): Int {
+        return getType().getStackSize()
+    }
 
     fun getDestReg(): Register {
         return dest!!
@@ -17,6 +21,10 @@ abstract class AssignRHSAST : AST() {
 
     fun setDestReg(reg: Register) {
         this.dest = reg
+    }
+
+    fun clearDestReg() {
+        this.dest = null
     }
 
 }
