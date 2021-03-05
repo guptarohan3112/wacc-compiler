@@ -792,11 +792,13 @@ class TranslatorVisitor : ASTBaseVisitor() {
             "*" -> visitMultiply(binop, dest1, dest2)
             "/", "%" -> visitDivMod(binop, dest1, dest2)
             "&&", "||" -> visitAndOr(binop, expr1, expr2, dest1, dest2)
-            ">", ">=", "<", "<=" -> visitCompare(binop, expr1, expr2, dest1, dest2)
+            ">", ">=", "<", "<=" -> visitCompare(binop.operator, expr1, expr2, dest1, dest2)
             "==", "!=" -> visitEquality(binop, dest1, dest2)
-            else -> {
-            }
         }
+
+        binop.setDestReg(dest1)
+        Registers.free(dest2)
+
     }
 
     private fun visitAdd(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
@@ -809,9 +811,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 Condition.S
             )
         )
-
-        Registers.free(dest2)
-        binop.setDestReg(dest1)
 
         checkOverflow(Condition.LVS)
 
@@ -828,9 +827,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         )
 
-        Registers.free(dest2)
-        binop.setDestReg(dest1)
-
         checkOverflow(Condition.LVS)
 
     }
@@ -845,14 +841,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         )
 
-        Registers.free(dest2)
-        binop.setDestReg(dest1)
-
         checkOverflow(Condition.LNE)
 
     }
 
-    private fun checkOverflow(cond : Condition){
+    private fun checkOverflow(cond: Condition) {
         AssemblyRepresentation.addMainInstr(
             BranchInstruction(
                 "p_throw_overflow_error",
@@ -889,9 +882,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             AssemblyRepresentation.addMainInstr(MoveInstruction(dest1, Registers.r1))
         }
 
-        Registers.free(dest2)
-        binop.setDestReg(dest1)
-
     }
 
     private fun visitAndOr(binop: ExprAST.BinOpAST, expr1: ExprAST, expr2: ExprAST, dest1: Register, dest2: Register) {
@@ -922,14 +912,12 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
         )
 
-        Registers.free(dest2)
-        binop.setDestReg(dest1)
-
     }
 
-    private fun visitCompare(binop: ExprAST.BinOpAST, expr1: ExprAST, expr2: ExprAST, dest1: Register, dest2: Register) {
-        val expr1 = binop.expr1
-        val expr2 = binop.expr2
+    private fun visitCompare(op: String, expr1: ExprAST, expr2: ExprAST, dest1: Register, dest2: Register) {
+
+        var cond1: Condition? = null
+        var cond2: Condition? = null
 
         when (expr1.getType()) {
             is TypeIdentifier.IntIdentifier -> {
@@ -946,81 +934,27 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
                     else -> {
                         AssemblyRepresentation.addMainInstr(CompareInstruction(dest1, dest2))
-                        Registers.free(dest2)
                     }
                 }
 
-                when (binop.operator) {
+                when (op) {
                     ">" -> {
-
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(1),
-                                Condition.GT
-                            )
-                        )
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(0),
-                                Condition.LE
-                            )
-                        )
+                        cond1 = Condition.GT
+                        cond2 = Condition.LE
                     }
                     ">=" -> {
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(1),
-                                Condition.GE
-                            )
-                        )
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(0),
-                                Condition.LT
-                            )
-                        )
+                        cond1 = Condition.GE
+                        cond2 = Condition.LT
                     }
                     "<" -> {
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(1),
-                                Condition.LT
-                            )
-                        )
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(0),
-                                Condition.GE
-                            )
-                        )
+                        cond1 = Condition.LT
+                        cond2 = Condition.GE
                     }
                     "<=" -> {
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(1),
-                                Condition.LE
-                            )
-                        )
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(0),
-                                Condition.GT
-                            )
-                        )
+                        cond1 = Condition.LE
+                        cond2 = Condition.GT
                     }
-
-
-
                 }
-
             }
 
             is TypeIdentifier.CharIdentifier -> {
@@ -1037,82 +971,44 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
                     else -> {
                         AssemblyRepresentation.addMainInstr(CompareInstruction(dest1, dest2))
-                        Registers.free(dest2)
                     }
                 }
 
-                when (binop.operator) {
+                when (op) {
                     ">" -> {
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(1),
-                                Condition.HI
-                            )
-                        )
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(0),
-                                Condition.LS
-                            )
-                        )
+                        cond1 = Condition.HI
+                        cond2 = Condition.LS
                     }
                     ">=" -> {
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(1),
-                                Condition.HS
-                            )
-                        )
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(0),
-                                Condition.LO
-                            )
-                        )
+                        cond1 = Condition.HS
+                        cond2 = Condition.LO
                     }
                     "<" -> {
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(1),
-                                Condition.LO
-                            )
-                        )
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(0),
-                                Condition.HS
-                            )
-                        )
+                        cond1 = Condition.LO
+                        cond2 = Condition.HS
                     }
                     "<=" -> {
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(1),
-                                Condition.LS
-                            )
-                        )
-                        AssemblyRepresentation.addMainInstr(
-                            MoveInstruction(
-                                dest1,
-                                Immediate(0),
-                                Condition.HI
-                            )
-                        )
+                        cond1 = Condition.LS
+                        cond2 = Condition.HI
                     }
                 }
-
             }
         }
 
-        binop.setDestReg(dest1)
-
+        AssemblyRepresentation.addMainInstr(
+            MoveInstruction(
+                dest1,
+                Immediate(1),
+                cond1
+            )
+        )
+        AssemblyRepresentation.addMainInstr(
+            MoveInstruction(
+                dest1,
+                Immediate(0),
+                cond2
+            )
+        )
 
     }
 
@@ -1134,6 +1030,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
             }
         }
+
         AssemblyRepresentation.addMainInstr(
             MoveInstruction(
                 dest1,
@@ -1149,8 +1046,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         )
 
-        Registers.free(dest2)
-        binop.setDestReg(dest1)
     }
 
     // types do not require any assembly code
