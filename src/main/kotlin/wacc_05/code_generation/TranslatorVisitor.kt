@@ -284,9 +284,12 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
             lhs.arrElem != null -> {
                 val arrElem = lhs.arrElem!!
+
+                // load the address of the elem into a register
                 visitArrayElemFstPhase(arrElem)
                 val arrDest: Register = arrElem.getDestReg()
 
+                // write to this address to update the value
                 AssemblyRepresentation.addMainInstr(
                     getStoreInstruction(
                         dest,
@@ -300,9 +303,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
             lhs.pairElem != null -> {
                 val pairElem: PairElemAST = lhs.pairElem!!
 
+                // load the address of the pair elem into a register
                 visitPairElemFstPhase(pairElem)
                 val pairLocation: Register = pairElem.getDestReg()
 
+                // write to this address to update the value
                 AssemblyRepresentation.addMainInstr(
                     StoreInstruction(
                         dest,
@@ -563,14 +568,18 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
+        /* a pair liter is null so will have address zero
+         * so we load the value zero into a destination register */
         val register = Registers.allocate()
-        liter.setDestReg(register)
+
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 register,
                 AddressingMode.AddressingLabel("0")
             )
         )
+
+        liter.setDestReg(register)
     }
 
     private fun visitIdentForRead(ident: ExprAST.IdentAST) {
@@ -609,9 +618,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
+        // load the address of the array elem
         visitArrayElemFstPhase(arrayElem)
         val dest: Register = arrayElem.getDestReg()
 
+        // load the value at the address into the destination register
         val arrayType: TypeIdentifier = arrayElem.getType()
         val type: TypeIdentifier = arrayType.getType()
         when (type.getStackSize()) {
