@@ -1,8 +1,12 @@
 package wacc_05.code_generation.instructions
 
-import wacc_05.code_generation.Register
+import wacc_05.code_generation.utilities.Register
 
-class MultiplyInstruction(private val dest: Register, private val regM: Register, private val regS: Register) :
+class MultiplyInstruction(
+    private val dest: Register,
+    private val regM: Register,
+    private val regS: Register
+) :
     Instruction {
 
     override fun toString(): String {

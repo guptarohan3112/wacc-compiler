@@ -1,6 +1,6 @@
 package wacc_05.front_end
 
-class Error {
+class ErrorCode {
     // define constants in companion objects
     companion object {
         const val SUCCESS = 0

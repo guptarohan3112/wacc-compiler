@@ -1,7 +1,10 @@
 package wacc_05.symbol_table
 
-import wacc_05.symbol_table.identifier_objects.*
-import java.util.HashMap
+import wacc_05.symbol_table.identifier_objects.IdentifierObject
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.symbol_table.identifier_objects.UnaryOpIdentifier
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
+import java.util.*
 
 /* Class: SymbolTable
  * -------------------

@@ -3,6 +3,8 @@ package wacc_05.code_generation
 import wacc_05.code_generation.instructions.BranchInstruction
 import wacc_05.code_generation.instructions.Instruction
 import wacc_05.code_generation.instructions.LabelInstruction
+import wacc_05.code_generation.instructions.PInstruction
+import wacc_05.code_generation.utilities.Condition
 import java.io.File
 
 
@@ -41,8 +43,16 @@ object AssemblyRepresentation {
         this.hasRuntimeError = true
     }
 
+    // Create '.s' file with file_name
 
-    // This function builds the '.s' file with the information stored in fields (after translation)
+    // Writing to the created file
+    // 1. .data directive header and info in dataIntrs
+    // 2. .text directive header
+    // 3. .global main directive header and info in mainInstrs
+    // 4. call applyIO to primitive instructions
+
+    // Close the file after writing to it
+
     fun buildAssembly(file_name: String) {
 
         File("$file_name.s").printWriter().use { out ->
@@ -83,16 +93,6 @@ object AssemblyRepresentation {
 
             out.println(sb.toString())
         }
-
-        // Create '.s' file with file_name
-
-        // Writing to the created file
-        // 1. .data directive header and info in dataIntrs
-        // 2. .text directive header
-        // 3. .global main directive header and info in mainInstrs
-        // 4. call applyIO to each instruction in ioInstrs
-
-        // Close the file after writing to it
     }
 
     private fun printInstr(instr: Instruction): String {

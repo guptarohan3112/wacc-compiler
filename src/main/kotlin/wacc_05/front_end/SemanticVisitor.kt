@@ -5,7 +5,6 @@ import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
-import java.lang.reflect.Type
 
 class SemanticVisitor(
     private val symbolTable: SymbolTable,

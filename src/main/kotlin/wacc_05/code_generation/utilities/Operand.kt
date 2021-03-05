@@ -1,10 +1,14 @@
-package wacc_05.code_generation
+package wacc_05.code_generation.utilities
 
 abstract class Operand {
     abstract override fun toString(): String
 }
 
-class ShiftOperand(private val reg: Register, private val shift: Shift, private val shiftAmount: Int) : Operand() {
+class ShiftOperand(
+    private val reg: Register,
+    private val shift: Shift,
+    private val shiftAmount: Int
+) : Operand() {
     enum class Shift {
         LSL,
         LSR,

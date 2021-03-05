@@ -19,7 +19,8 @@ class SemanticErrorHandler : SemanticErrors {
     }
 
     override fun invalidIdentifier(ctx: ParserRuleContext, name: String) {
-        val err = semanticErrStr(ctx) + "$name is an unknown identifier in the context of this scope"
+        val err =
+            semanticErrStr(ctx) + "$name is an unknown identifier in the context of this scope"
         semanticErr(err)
     }
 
@@ -34,28 +35,40 @@ class SemanticErrorHandler : SemanticErrors {
     }
 
     override fun repeatVariableDeclaration(ctx: ParserRuleContext, varName: String) {
-        val err = semanticErrStr(ctx) + "$varName has already been declared earlier on in the current scope."
+        val err =
+            semanticErrStr(ctx) + "$varName has already been declared earlier on in the current scope."
         semanticErr(err)
     }
 
-    override fun typeMismatch(ctx: ParserRuleContext, expected: TypeIdentifier, actual: TypeIdentifier) {
-        val err = semanticErrStr(ctx) + "Could not match the expected type of $expected to the actual type of $actual"
+    override fun typeMismatch(
+        ctx: ParserRuleContext,
+        expected: TypeIdentifier,
+        actual: TypeIdentifier
+    ) {
+        val err =
+            semanticErrStr(ctx) + "Could not match the expected type of $expected to the actual type of $actual"
         semanticErr(err)
     }
 
-    override fun identifierMismatch(ctx: ParserRuleContext, expected: IdentifierObject, actual: IdentifierObject) {
+    override fun identifierMismatch(
+        ctx: ParserRuleContext,
+        expected: IdentifierObject,
+        actual: IdentifierObject
+    ) {
         val err =
             semanticErrStr(ctx) + "Could not match the expected identifier of $expected to the actual identifier of $actual"
         semanticErr(err)
     }
 
     override fun argNumberError(ctx: ParserRuleContext, fName: String, expected: Int, actual: Int) {
-        val err = semanticErrStr(ctx) + "The function $fName is expecting $expected argument(s), but is given $actual"
+        val err =
+            semanticErrStr(ctx) + "The function $fName is expecting $expected argument(s), but is given $actual"
         semanticErr(err)
     }
 
     override fun invalidReturnType(ctx: ParserRuleContext) {
-        val err = semanticErrStr(ctx) + "This return statement is of the wrong return type for the function"
+        val err =
+            semanticErrStr(ctx) + "This return statement is of the wrong return type for the function"
         semanticErr(err)
     }
 
@@ -70,7 +83,8 @@ class SemanticErrorHandler : SemanticErrors {
     }
 
     override fun invalidReadType(ctx: ParserRuleContext, actual: TypeIdentifier) {
-        val err = semanticErrStr(ctx) + "Invalid read type. Could not match expected type of {int, char} to $actual"
+        val err =
+            semanticErrStr(ctx) + "Invalid read type. Could not match expected type of {int, char} to $actual"
         semanticErr(err)
     }
 
@@ -81,7 +95,8 @@ class SemanticErrorHandler : SemanticErrors {
     }
 
     override fun invalidExitType(ctx: ParserRuleContext, actual: TypeIdentifier) {
-        val err = semanticErrStr(ctx) + "Invalid exit type. Could not match expected type of int to $actual"
+        val err =
+            semanticErrStr(ctx) + "Invalid exit type. Could not match expected type of int to $actual"
         semanticErr(err)
     }
 

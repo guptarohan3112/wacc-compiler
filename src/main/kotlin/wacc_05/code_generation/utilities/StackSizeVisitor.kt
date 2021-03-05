@@ -1,4 +1,4 @@
-package wacc_05.code_generation
+package wacc_05.code_generation.utilities
 
 import wacc_05.ast_structure.StatementAST
 
@@ -11,7 +11,6 @@ class StackSizeVisitor {
         return stackSize
     }
 
-    // I think if and while cases can also be ignored
     private fun visitStat(stat: StatementAST) {
         return when (stat) {
             is StatementAST.DeclAST -> {

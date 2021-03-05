@@ -1,7 +1,5 @@
 package wacc_05.ast_structure
 
-import kotlin.collections.ArrayList
-
 class ProgramAST(
     val functionList: ArrayList<FunctionAST>,
     val stat: StatementAST
