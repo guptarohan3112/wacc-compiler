@@ -20,4 +20,8 @@ class ParamAST(
         type.st = st
         return type.getType()
     }
+
+    fun getStackSize(st: SymbolTable): Int {
+        return getType(st).getStackSize()
+    }
 }

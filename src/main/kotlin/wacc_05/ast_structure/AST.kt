@@ -16,5 +16,21 @@ abstract class AST {
         return st!!
     }
 
+    fun getStackPtr(): Int {
+        return st().getStackPtr()
+    }
+
+    fun setStackPtr(ptr: Int) {
+        st().setStackPtr(ptr)
+    }
+
+    fun getStackSizeAllocated(): Int {
+        return st().getStackSizeAllocated()
+    }
+
+    fun setStackSizeAllocated(allocation: Int) {
+        st().setStackSizeAllocated(allocation)
+    }
+
     abstract fun <T> accept(visitor: ASTVisitor<T>): T
 }

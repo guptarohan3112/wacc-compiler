@@ -8,6 +8,10 @@ sealed class TypeAST : AST() {
 
     abstract fun getType(): TypeIdentifier
 
+    fun getStackSize(): Int {
+        return getType().getStackSize()
+    }
+
     data class BaseTypeAST(val ctx: WaccParser.BaseTypeContext, val typeName: String) : TypeAST() {
 
         override fun getType(): TypeIdentifier {

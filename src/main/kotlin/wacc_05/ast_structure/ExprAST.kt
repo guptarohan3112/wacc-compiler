@@ -21,7 +21,6 @@ sealed class ExprAST : AssignRHSAST() {
             return (sign + value).toInt()
         }
 
-
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitIntLiterAST(this)
         }
@@ -115,6 +114,11 @@ sealed class ExprAST : AssignRHSAST() {
             }
         }
 
+        fun getElemType(): TypeIdentifier {
+            // get the type of the array identifier achieved from getType()
+            return getType().getType()
+        }
+
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitArrayElemAST(this)
         }
@@ -127,7 +131,6 @@ sealed class ExprAST : AssignRHSAST() {
     ) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
-            // Will need to get unaryOpIdentifier from st (can I if it an invalid operator) and get its return type
             return when (operator) {
                 "-" -> TypeIdentifier.INT_TYPE
                 "!" -> TypeIdentifier.BOOL_TYPE

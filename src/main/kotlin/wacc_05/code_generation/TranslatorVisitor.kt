@@ -50,11 +50,11 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     // Sets up the internal representation of the stack pointer when moving into the inner scope
     private fun setUpInnerScope(stat: StatementAST, child: StatementAST): Int {
-        val currSp: Int = stat.st().getStackPtr()
-        child.st().setStackPtr(child.st().getStackPtr() + currSp)
+        val currSp: Int = stat.getStackPtr()
+        child.setStackPtr(child.getStackPtr() + currSp)
 
         val stackSize: Int = calculateStackSize(child)
-        child.st().setStackPtr(child.st().getStackPtr() - stackSize)
+        child.setStackPtr(child.getStackPtr() - stackSize)
         return stackSize
     }
 
@@ -71,7 +71,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
             tmp -= MAX_STACK_SIZE
         }
-        node.st().setStackPtr(node.st().getStackPtr() + stackSize)
+        node.setStackPtr(node.getStackPtr() + stackSize)
     }
 
     // A helper method for adding "B" to "STR" if given
@@ -94,10 +94,10 @@ class TranslatorVisitor : ASTBaseVisitor() {
         var spOffset = 0
         if (identObj is VariableIdentifier) {
             val identOffset: Int = identObj.getAddr()
-            val sp: Int = scope.st().getStackPtr()
+            val sp: Int = scope.getStackPtr()
             spOffset = identOffset - sp
         } else if (identObj is ParamIdentifier) {
-            spOffset = identObj.getOffset() + scope.st().getStackSizeAllocated() + paramOffset
+            spOffset = identObj.getOffset() + scope.getStackSizeAllocated() + paramOffset
         }
 
         return spOffset
@@ -106,7 +106,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     // A method that sets the stackSizeAllocated field of an inner scope
     private fun innerScopeStackAllocation(stat: AST, child: AST, stackSize: Int) {
         val currentStackSpace: Int = stat.st().getStackSizeAllocated()
-        child.st().setStackSizeAllocated(currentStackSpace + stackSize)
+        child.setStackSizeAllocated(currentStackSpace + stackSize)
     }
 
     // Helper method that visits anything that requires making a new inner scope
@@ -136,8 +136,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val stackSize: Int = startNewBody(prog.stat)
 
         // Decrement the stack pointer value and update the symbol table with this sp
-        val currStkPtr: Int = prog.stat.st().getStackPtr()
-        prog.stat.st().setStackPtr(currStkPtr - stackSize)
+        val currStkPtr: Int = prog.stat.getStackPtr()
+        prog.stat.setStackPtr(currStkPtr - stackSize)
 
         // Generate assembly code for the body statement
         visit(prog.stat)
@@ -168,7 +168,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         funcIdent.setStackSize(stackSize)
 
         // Record the space that has been allocated on the stack for the function scope
-        func.body.st().setStackSizeAllocated(stackSize)
+        func.body.setStackSizeAllocated(stackSize)
 
         if (func.paramList != null) {
             visitAndUpdateParams(func.paramList)
@@ -188,7 +188,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         for (param in list.paramList) {
             val paramIdent: ParamIdentifier = symbolTable.lookup(param.name) as ParamIdentifier
             paramIdent.setOffset(offset)
-            offset += param.getType(symbolTable).getStackSize()
+            offset += param.getStackSize(symbolTable)
         }
     }
 
@@ -246,7 +246,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         varObj.allocatedNow()
 
         // Update the amount of space taken up on the stack relative to the boundary and the current stack frame
-        val size = decl.type.getType().getStackSize()
+        val size = decl.type.getStackSize()
         scope.updatePtrOffset(size)
 
         // Free the destination register for future use
@@ -438,7 +438,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, reg))
 
         val type = if (print.expr is ExprAST.ArrayElemAST) {
-            print.expr.getType().getType() // double call to get type to get the elems type
+            print.expr.getElemType()
         } else {
             print.expr.getType()
         }
@@ -481,7 +481,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
 
         // Restore the stack pointer depending on how much stack space has been allocated thus far
-        restoreStackPointer(ret, ret.st().getStackSizeAllocated())
+        restoreStackPointer(ret, ret.getStackSizeAllocated())
         AssemblyRepresentation.addMainInstr(PopInstruction(Registers.pc))
 
         // Free the destination register for future use
@@ -533,7 +533,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST) {
-        val intValue = if (liter.value == "true") 1 else 0
+        val intValue = liter.getValue()
         val register = Registers.allocate()
         liter.setDestReg(register)
         AssemblyRepresentation.addMainInstr(MoveInstruction(register, Immediate(intValue)))
