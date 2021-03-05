@@ -787,55 +787,20 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val expr1 = binop.expr1
         val expr2 = binop.expr2
 
-        when {
-//            expr1 is ExprAST.IntLiterAST -> {
-//                visit(expr2)
-//                val dest: Register = expr2.getDestReg()
-//                AssemblyRepresentation.addMainInstr(
-//                    AddInstruction(
-//                        dest,
-//                        dest,
-//                        Immediate(expr1.getValue()),
-//                        Condition.S
-//                    )
-//                )
-//
-//                binop.setDestReg(dest)
-//            }
-//            expr2 is ExprAST.IntLiterAST -> {
-//                visit(expr1)
-//                val dest: Register = expr1.getDestReg()
-//                AssemblyRepresentation.addMainInstr(
-//                    AddInstruction(
-//                        dest,
-//                        dest,
-//                        Immediate(expr2.getValue()),
-//                        Condition.S
-//                    )
-//                )
-//
-//                binop.setDestReg(dest)
-//            }
-            else -> {
-//                visit(expr1)
-//                visit(expr2)
+        val dest1: Register = expr1.getDestReg()
+        val dest2: Register = expr2.getDestReg()
 
-                val dest1: Register = expr1.getDestReg()
-                val dest2: Register = expr2.getDestReg()
+        AssemblyRepresentation.addMainInstr(
+            AddInstruction(
+                dest1,
+                dest1,
+                dest2,
+                Condition.S
+            )
+        )
 
-                AssemblyRepresentation.addMainInstr(
-                    AddInstruction(
-                        dest1,
-                        dest1,
-                        dest2,
-                        Condition.S
-                    )
-                )
-
-                Registers.free(dest2)
-                binop.setDestReg(dest1)
-            }
-        }
+        Registers.free(dest2)
+        binop.setDestReg(dest1)
 
         AssemblyRepresentation.addMainInstr(
             BranchInstruction(
@@ -847,40 +812,19 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitSub(binop: ExprAST.BinOpAST) {
-//        visit(binop.expr1)
-
         val dest: Register = binop.expr1.getDestReg()
+        val dest2: Register = binop.expr2.getDestReg()
 
-        /* we can only optimise for expr2 being int liter since we have
-             * SUB rd, rn, op -> rd = rn - op, so expr1 must always be placed
-             * in a register */
-        when (binop.expr2) {
-//            is ExprAST.IntLiterAST -> {
-//                AssemblyRepresentation.addMainInstr(
-//                    SubtractInstruction(
-//                        dest,
-//                        dest,
-//                        Immediate(binop.expr2.getValue()),
-//                        Condition.S
-//                    )
-//                )
-//            }
-            else -> {
-//                visit(binop.expr2)
-                val dest2: Register = binop.expr2.getDestReg()
+        AssemblyRepresentation.addMainInstr(
+            SubtractInstruction(
+                dest,
+                dest,
+                dest2,
+                Condition.S
+            )
+        )
 
-                AssemblyRepresentation.addMainInstr(
-                    SubtractInstruction(
-                        dest,
-                        dest,
-                        dest2,
-                        Condition.S
-                    )
-                )
-
-                Registers.free(dest2)
-            }
-        }
+        Registers.free(dest2)
 
         binop.setDestReg(dest)
         AssemblyRepresentation.addMainInstr(
@@ -889,39 +833,37 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 Condition.LVS
             )
         )
+
         AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
     }
 
     private fun visitMultiply(binop: ExprAST.BinOpAST) {
-//        visit(binop.expr1)
-//        visit(binop.expr2)
-
         val dest1: Register = binop.expr1.getDestReg()
         val dest2: Register = binop.expr2.getDestReg()
 
         AssemblyRepresentation.addMainInstr(SMultiplyInstruction(dest1, dest2))
         Registers.free(dest2)
 
-        binop.setDestReg(dest1)
         AssemblyRepresentation.addMainInstr(
             CompareInstruction(
                 dest2,
                 ShiftOperand(dest1, ShiftOperand.Shift.ASR, 31)
             )
         )
+
         AssemblyRepresentation.addMainInstr(
             BranchInstruction(
                 "p_throw_overflow_error",
                 Condition.LNE
             )
         )
+
         AssemblyRepresentation.addPInstr(PInstruction.p_throw_overflow_error())
+
+        binop.setDestReg(dest1)
     }
 
     private fun visitDivMod(binop: ExprAST.BinOpAST) {
-//        visit(binop.expr1)
-//        visit(binop.expr2)
-
         // get result from expr1 and move into param register 1
         val dest1: Register = binop.expr1.getDestReg()
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest1))
@@ -964,7 +906,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         when {
             expr1 is ExprAST.BoolLiterAST -> {
-//                visit(expr2)
                 val dest: Register = expr2.getDestReg()
 
                 AssemblyRepresentation.addMainInstr(
@@ -979,7 +920,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
 
             expr2 is ExprAST.BoolLiterAST -> {
-//                visit(expr1)
                 val dest: Register = expr1.getDestReg()
                 AssemblyRepresentation.addMainInstr(
                     if (binop.operator == "&&") {
@@ -993,9 +933,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
 
             else -> {
-//                visit(expr1)
-//                visit(expr2)
-
                 val dest1: Register = expr1.getDestReg()
                 val dest2: Register = expr2.getDestReg()
 
@@ -1020,7 +957,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         when (expr1.getType()) {
             is TypeIdentifier.IntIdentifier -> {
-//                visit(expr1)
                 val dest: Register = expr1.getDestReg()
 
                 when (expr2) {
@@ -1034,7 +970,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     }
 
                     else -> {
-//                        visit(expr2)
                         val dest2: Register = expr2.getDestReg()
                         AssemblyRepresentation.addMainInstr(CompareInstruction(dest, dest2))
                         Registers.free(dest2)
@@ -1112,7 +1047,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
             }
 
             is TypeIdentifier.CharIdentifier -> {
-//                visit(expr1)
                 val dest: Register = expr1.getDestReg()
 
                 when (expr2) {
@@ -1126,7 +1060,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     }
 
                     else -> {
-//                        visit(expr2)
                         val dest2: Register = expr2.getDestReg()
 
                         AssemblyRepresentation.addMainInstr(CompareInstruction(dest, dest2))
@@ -1207,9 +1140,6 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitEquality(binop: ExprAST.BinOpAST) {
-//        visit(binop.expr1)
-//        visit(binop.expr2)
-
         val dest1: Register = binop.expr1.getDestReg()
         val dest2: Register = binop.expr2.getDestReg()
 
@@ -1324,6 +1254,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 AddressingMode.AddressingLabel("${arrayLiter.elemsLength()}")
             )
         )
+
+        // store the length of the array at the front of its allocated space
         AssemblyRepresentation.addMainInstr(
             StoreInstruction(
                 sizeDest,
@@ -1459,20 +1391,24 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
+        // load the address of the pair elem into a register using the helper method
         visitPairElemFstPhase(pairElem)
         val dest: Register = pairElem.getDestReg()
 
+        // load the value at the given address into the same register
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 dest,
                 AddressingMode.AddressingMode2(dest)
             )
         )
+
+        // (we don't free the dest register here as it contains the value we want to use elsewhere)
     }
 
     /* completes visiting pair elems to the point that the address of it is in the dest register,
      * which we can load again to get the value or write to
-     * returns the destination register
+     * Sets the destination register for the given pair elem
      */
     private fun visitPairElemFstPhase(pairElem: PairElemAST) {
         visit(pairElem.elem)
@@ -1482,6 +1418,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(MoveInstruction(Registers.r0, dest))
         AssemblyRepresentation.addPInstr(PInstruction.p_check_null_pointer())
 
+        /* if the pair elem is snd then we want to add ADDR_SIZE (+4) as an offset, otherwise it is fst and we
+         * don't need an offset */
         if (!pairElem.isFst) {
             AssemblyRepresentation.addMainInstr(
                 LoadInstruction(
@@ -1498,6 +1436,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         }
 
+        // set the destination register
         pairElem.setDestReg(dest)
     }
 }
