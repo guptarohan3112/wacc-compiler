@@ -85,7 +85,7 @@ object Registers {
     }
 
     private fun ArrayList<Register>.insert(reg: Register) {
-        var i: Int = 0;
+        var i = 0;
         while (i < size && reg > get(i)) {
             i++
         }
