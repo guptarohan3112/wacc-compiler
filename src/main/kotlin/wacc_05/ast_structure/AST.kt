@@ -4,7 +4,7 @@ import wacc_05.symbol_table.SymbolTable
 
 abstract class AST {
 
-    private var set: Boolean = false
+    var set: Boolean = false
     var st: SymbolTable? = null
         set(table) {
             if (field == null && table != null) {

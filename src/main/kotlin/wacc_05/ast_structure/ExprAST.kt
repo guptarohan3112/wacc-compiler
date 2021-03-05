@@ -7,6 +7,7 @@ import wacc_05.code_generation.Register
 import wacc_05.code_generation.Registers
 import wacc_05.code_generation.*
 import wacc_05.code_generation.instructions.*
+import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
 sealed class ExprAST : AssignRHSAST() {
@@ -75,6 +76,12 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitPairLiterAST(this)
+        }
+
+        fun clear() {
+            dest = null
+            set = false
+            st = null
         }
     }
 

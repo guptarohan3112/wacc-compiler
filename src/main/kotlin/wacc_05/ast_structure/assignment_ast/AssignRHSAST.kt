@@ -7,7 +7,7 @@ import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 abstract class AssignRHSAST : AST() {
 
-    private var dest : Register? = null
+    var dest : Register? = null
 
     abstract fun getType(): TypeIdentifier
 

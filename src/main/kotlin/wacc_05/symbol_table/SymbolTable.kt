@@ -121,6 +121,9 @@ open class SymbolTable(private val parentST: SymbolTable?) {
 
     fun clear() {
         map.clear()
+        spAndOffset = Pair(0, 0)
+        stackSizeAllocated = 0
+        paramOffset = 0
     }
 
     companion object {

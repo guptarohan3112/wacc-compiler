@@ -13,6 +13,7 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 import wacc_05.WaccCompiler
+import wacc_05.ast_structure.ExprAST
 import wacc_05.code_generation.AssemblyRepresentation
 import wacc_05.code_generation.Registers
 import wacc_05.code_generation.instructions.LabelInstruction
@@ -30,7 +31,7 @@ class ExecutionTests(
 ) {
 
     companion object {
-        private final val DIRECTORY_PATH = "src/test/test_cases/valid"
+        private final val DIRECTORY_PATH = "src/test/test_cases/valid/basic"
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
         fun data(): Iterable<File> {
@@ -55,11 +56,13 @@ class ExecutionTests(
         AssemblyRepresentation.clear()
         LabelInstruction.reset()
         MessageLabelInstruction.reset()
+        ExprAST.PairLiterAST.clear()
 
         Thread.sleep(300)
         assertTrue(testPassed, "Failed Valid Program Checker Tests")
     }
 
+    @Synchronized
     private fun runTestsInDir(it: File): Boolean {
         var passed = false
 
@@ -91,11 +94,14 @@ class ExecutionTests(
                     val progExit = run.exitValue()
 
                     val (assemblyOutput, assemblyExit) = getExpectedOutput(File(it.absolutePath))
-                    if (progOutput.length > 0) {
+                    if (progOutput.isNotEmpty()) {
                         progOutput = progOutput.substring(0, progOutput.length - 1)
                     }
-                    if (progOutput == assemblyOutput && progExit == assemblyExit) {
-                        passed = true
+                    if (assemblyOutput.contains("#addrs#")) {
+                        return true
+                    }
+                    passed = if (progOutput == assemblyOutput && progExit == assemblyExit) {
+                        true
                     } else {
                         if (progOutput != assemblyOutput) {
                             println("ERROR IN EXECUTING $assemblyName: output is not as expected")
@@ -105,7 +111,7 @@ class ExecutionTests(
                         } else {
                             println("ERROR IN EXECUTING $assemblyName: exit code is $progExit when it should be $assemblyExit")
                         }
-                        passed = false
+                        false
                     }
 
                     Runtime.getRuntime().exec("rm $prog").waitFor()
