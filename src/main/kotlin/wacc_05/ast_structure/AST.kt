@@ -12,6 +12,12 @@ abstract class AST {
             }
         }
 
+    abstract fun <T> accept(visitor: ASTVisitor<T>): T
+
+
+    /* Functions for communicating with a node's symbol table - aimed at reducing double getters and dot chains
+    * in translator visitor */
+
     fun st(): SymbolTable {
         return st!!
     }
@@ -39,6 +45,4 @@ abstract class AST {
     fun setParamOffset(offset: Int) {
         st().setParamOffset(offset)
     }
-
-    abstract fun <T> accept(visitor: ASTVisitor<T>): T
 }
