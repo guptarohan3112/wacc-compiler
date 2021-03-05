@@ -32,7 +32,6 @@ class ErrorTests {
     private fun runTestsInDir(directoryPath: String, expected: Int): Boolean {
         val passedTests: ArrayList<String> = ArrayList()
         val failedTests: ArrayList<String> = ArrayList()
-
         File(directoryPath).walk().forEach {
             FunctionST.clear()
             if (it.extension == "wacc") {
@@ -49,6 +48,7 @@ class ErrorTests {
 
         println("---------------------------------------------")
         println(passedTests.size.toString() + " tests passed.")
+
         println(failedTests.size.toString() + " tests failed.")
         println("---------------------------------------------")
 

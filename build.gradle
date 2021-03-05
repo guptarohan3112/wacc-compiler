@@ -43,6 +43,9 @@ dependencies {
     testImplementation "io.mockk:mockk:1.10.5"
 
     antlr "org.antlr:antlr4:4.9.1"
+
+    testCompile("org.junit.jupiter:junit-jupiter-params:5.7.0")
+
 }
 
 sourceSets {
@@ -94,6 +97,12 @@ test {
 
     // set to true to fail on first test failure
     failFast = false
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
 }
 
 task semanticTests(type: Test) {

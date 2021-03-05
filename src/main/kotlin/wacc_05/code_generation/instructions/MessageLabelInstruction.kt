@@ -9,6 +9,10 @@ class MessageLabelInstruction(private val name: String, private val string: Stri
         public fun getUniqueLabel(string: String): MessageLabelInstruction {
             return MessageLabelInstruction("msg_${currentLabel++}", string)
         }
+
+        fun reset() {
+            currentLabel = 0
+        }
     }
 
     private var length: Int = 0

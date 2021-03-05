@@ -10,6 +10,10 @@ open class LabelInstruction(private val name: String) : Instruction {
         public fun getUniqueLabel(): LabelInstruction {
             return LabelInstruction("L${currentLabel++}")
         }
+
+        fun reset() {
+            currentLabel = 0
+        }
     }
 
     override fun toString(): String {
@@ -19,5 +23,4 @@ open class LabelInstruction(private val name: String) : Instruction {
     fun getLabel(): String {
         return name
     }
-
 }

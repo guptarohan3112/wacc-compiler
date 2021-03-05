@@ -101,5 +101,4 @@ object WaccCompiler {
 
         return Error.SUCCESS
     }
-
 }

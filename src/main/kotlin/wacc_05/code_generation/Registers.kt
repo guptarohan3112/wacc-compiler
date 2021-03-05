@@ -50,9 +50,9 @@ object Registers {
         val saved: Stack<Register> = Stack()
 
         for (reg: Register in inUse) {
-                list.add(PushInstruction(reg))
-                saved.push(reg)
-                inUse.remove(reg)
+            list.add(PushInstruction(reg))
+            saved.push(reg)
+            inUse.remove(reg)
         }
 
         return Pair(list, saved)
@@ -73,6 +73,14 @@ object Registers {
     fun free(reg: Register) {
         if (inUse.remove(reg)) {
             available.insert(reg)
+        }
+    }
+
+    fun freeAll() {
+        for (reg in allRegisters) {
+            if (inUse.remove(reg)) {
+                available.insert(reg)
+            }
         }
     }
 

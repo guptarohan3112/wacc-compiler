@@ -186,6 +186,7 @@ open class SymbolTable(private val parentST: SymbolTable?) {
                     TypeIdentifier.CHAR_TYPE
                 )
             )
+
         }
     }
 }

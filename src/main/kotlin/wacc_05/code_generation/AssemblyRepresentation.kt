@@ -10,13 +10,13 @@ import java.io.File
 object AssemblyRepresentation {
 
     // Global variables
-    private val dataInstrs: ArrayList<Instruction> = ArrayList()
+    private var dataInstrs: ArrayList<Instruction> = ArrayList()
 
     // Instructions in the program, including those in user defined functions and the main function
-    private val mainInstrs: ArrayList<Instruction> = ArrayList()
+    private var mainInstrs: ArrayList<Instruction> = ArrayList()
 
     // IO functions that are called in the user defined program
-    private val pInstrs: HashSet<PInstruction> = HashSet()
+    private var pInstrs: HashSet<PInstruction> = HashSet()
 
     private var hasRuntimeError: Boolean = false
 
@@ -101,5 +101,12 @@ object AssemblyRepresentation {
         } else {
             "\t\t$instr\n"
         }
+    }
+
+    fun clear() {
+        dataInstrs = ArrayList()
+        mainInstrs = ArrayList()
+        pInstrs = HashSet()
+        hasRuntimeError = false
     }
 }

@@ -1,87 +1,127 @@
 package wacc_05.back_end.execution_tests
 
+import junit.framework.TestCase
 import org.junit.Test
+import org.junit.jupiter.api.TestInstance
+import org.junit.jupiter.api.extension.ExtensionContext
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
+import org.junit.runner.RunWith
+import org.junit.runners.Parameterized
 
 import wacc_05.WaccCompiler
+import wacc_05.code_generation.AssemblyRepresentation
+import wacc_05.code_generation.Registers
+import wacc_05.code_generation.instructions.LabelInstruction
+import wacc_05.code_generation.instructions.MessageLabelInstruction
 import wacc_05.symbol_table.FunctionST
 import java.io.File
 import java.io.InputStream
+import java.util.stream.Stream
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class ExecutionTests {
+@RunWith(value = Parameterized::class)
+class ExecutionTests(
+    private val file: File
+) {
 
-    // Need to think about reads and other possible cases
+    companion object {
+        private final val DIRECTORY_PATH = "src/test/test_cases/valid"
+        @JvmStatic
+        @Parameterized.Parameters(name = "{0}")
+        fun data(): Iterable<File> {
+            val files: ArrayList<File> = ArrayList()
+            val testPath: File = File(DIRECTORY_PATH)
+            for (file in testPath.walk()) {
+                if (file.extension == "wacc") {
+                    files.add(file)
+                }
+            }
+            return files
+        }
+    }
+
+
     @Test
     fun runValidTests() {
-        val testPassed: Boolean = runTestsInDir("src/test/test_cases/valid")
+        val it: File = file
+        val testPassed: Boolean = runTestsInDir(it)
+        Registers.freeAll()
+        FunctionST.clear()
+        AssemblyRepresentation.clear()
+        LabelInstruction.reset()
+        MessageLabelInstruction.reset()
+
+        Thread.sleep(300)
         assertTrue(testPassed, "Failed Valid Program Checker Tests")
     }
 
+    private fun runTestsInDir(it: File): Boolean {
+        var passed = false
 
-    private fun runTestsInDir(directoryPath: String): Boolean {
-        val passedTests: ArrayList<String> = ArrayList()
-        val failedTests: ArrayList<String> = ArrayList()
+        if (it.extension == "wacc") {
+            try {
+                println(it.absolutePath)
+                // Run the compiler- this should generate the assembly file (to be executed)
+                WaccCompiler.runCompiler(it.absolutePath, debug = false, validOnly = false)
 
-        File(directoryPath).walk().forEach {
-            FunctionST.clear()
-            if (it.extension == "wacc") {
-                try {
-                    // Run the compiler- this should generate the assembly file (to be executed)
-                    val progExit: Int = WaccCompiler.runCompiler(it.absolutePath, debug=false, validOnly=false)
-                    val assemblyName = it.nameWithoutExtension + ".s"
-                    val assembly = File(assemblyName)
-                    if (!assembly.exists()) {
-                        // The file cannot be found, some sort of error, add to failedTests
-                        println("Assembly file $assemblyName was not created")
-                        failedTests.add(it.nameWithoutExtension)
+
+                val assemblyName = it.nameWithoutExtension + ".s"
+                val assembly = File(assemblyName)
+                if (!assembly.exists()) {
+                    // The file cannot be found, some sort of error, add to failedTests
+                    println("Assembly file $assemblyName was not created")
+                    passed = false
+                } else {
+                    // The output and exit code must be compared to the particular comments of the wacc file
+                    val prog: String = it.nameWithoutExtension
+                    // Compile executable file, run it on the emulator and capture program output
+                    Runtime.getRuntime()
+                        .exec("arm-linux-gnueabi-gcc -o $prog -mcpu=arm1176jzf-s -mtune=arm1176jz-s $assemblyName")
+                        .waitFor()
+                    val emulate: String = "qemu-arm -L /usr/arm-linux-gnueabi/ $prog"
+                    val run = Runtime.getRuntime().exec(emulate)
+                    val buf: InputStream = run.inputStream
+                    var progOutput = buf.bufferedReader().use { it.readText() }
+                    run.waitFor()
+                    val progExit = run.exitValue()
+
+                    val (assemblyOutput, assemblyExit) = getExpectedOutput(File(it.absolutePath))
+                    if (progOutput.length > 0) {
+                        progOutput = progOutput.substring(0, progOutput.length - 1)
+                    }
+                    if (progOutput == assemblyOutput && progExit == assemblyExit) {
+                        passed = true
                     } else {
-                        // The output and exit code must be compared to the particular comments of the wacc file
-                        val prog: String = it.nameWithoutExtension
-                        // Compile executable file, run it on the emulator and capture program output
-                        // TODO: Replace 'hello.S'. For now, create a dummy folder of created assembly files taken from output of reference compiler
-                        Runtime.getRuntime()
-                            .exec("arm-linux-gnueabi-gcc -o $prog -mcpu=arm1176jzf-s -mtune=arm1176jz-s hello.S")
-                            .waitFor()
-                        val emulate: String = "qemu-arm -L /usr/arm-linux-gnueabi/ $prog"
-                        val run = Runtime.getRuntime().exec(emulate)
-                        val buf: InputStream = run.inputStream
-                        val progOutput = buf.bufferedReader().use { it.readText() }
-                        println("OUTPUT $prog: $progOutput")
+                        if (progOutput != assemblyOutput) {
+                            println("ERROR IN EXECUTING $assemblyName: output is not as expected")
+                            println("program $prog output: *$progOutput*")
+                            println("Expected output: *$assemblyOutput*")
 
-                        // TODO: Think about corner cases where the wacc file doesn't have an output comment/exit comment
-                        val (assemblyOutput, assemblyExit) = getExpectedOutput(File(it.absolutePath))
-                        if (progOutput == assemblyOutput && progExit == assemblyExit) {
-                            passedTests.add(it.nameWithoutExtension)
                         } else {
-                            if (progOutput != assemblyOutput) {
-                                println("ERROR IN EXECUTING $assemblyName: output is not as expected")
-                            } else {
-                                println("ERROR IN EXECUTING $assemblyName: exit code is $progExit when it should be $assemblyExit")
-                            }
-                            failedTests.add(it.nameWithoutExtension)
+                            println("ERROR IN EXECUTING $assemblyName: exit code is $progExit when it should be $assemblyExit")
                         }
-
-                        Runtime.getRuntime().exec("rm $prog").waitFor()
-                        Runtime.getRuntime().exec("rm $assemblyName").waitFor()
+                        passed = false
                     }
 
-                } catch (e: Exception) {
-                    println("Test Exception")
-                    failedTests.add(it.nameWithoutExtension)
+                    Runtime.getRuntime().exec("rm $prog").waitFor()
+                    Runtime.getRuntime().exec("rm $assemblyName").waitFor()
                 }
+
+            } catch (e: Exception) {
+                println("Test Exception")
+                println(e.message)
+                return false
             }
         }
 
-        println("---------------------------------------------")
-        println(passedTests.size.toString() + " tests passed.")
-        println(failedTests.size.toString() + " tests failed.")
-        println("---------------------------------------------")
-
-        // Show the tests that return the wrong output from execution
-        println(failedTests.toString())
-
-        return failedTests.size == 0
+        return passed
     }
+
 
     private fun getExpectedOutput(assembly: File): Pair<String, Int> {
         val inputStream: InputStream = assembly.inputStream()
@@ -107,8 +147,7 @@ class ExecutionTests {
                 } else if (exitFlag) {
                     exitCode = line.toInt()
                 }
-            }
-            else {
+            } else {
                 outputFlag = false
                 exitFlag = false
             }
@@ -116,4 +155,5 @@ class ExecutionTests {
         }
         return Pair(outputLines.joinToString(separator = "\n"), exitCode)
     }
+
 }
