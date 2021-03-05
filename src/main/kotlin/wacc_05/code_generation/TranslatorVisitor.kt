@@ -591,7 +591,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     }
 
     private fun visitIdentGeneral(ident: ExprAST.IdentAST, read: Boolean) {
-        val paramOffset = ident.st().getParamOffset()
+        val paramOffset = ident.getParamOffset()
         val spOffset: Int = calculateIdentSpOffset(ident.value, ident, paramOffset)
         val register: Register = Registers.allocate()
 
@@ -605,8 +605,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
             )
         } else {
             val type = ident.getType()
-            var mode: AddressingMode =
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
+            var mode: AddressingMode = AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
+
             if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
                 mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
             }
@@ -623,8 +623,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val dest: Register = arrayElem.getDestReg()
 
         // load the value at the address into the destination register
-        val arrayType: TypeIdentifier = arrayElem.getType()
-        val type: TypeIdentifier = arrayType.getType()
+        val type: TypeIdentifier = arrayElem.getElemType()
         when (type.getStackSize()) {
             ONE_BYTE -> {
                 AssemblyRepresentation.addMainInstr(
@@ -669,6 +668,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     AddressingMode.AddressingMode2(dest)
                 )
             )
+
             visit(expr)
             val exprDest: Register = expr.getDestReg()
 
@@ -685,8 +685,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                 )
             )
 
-            val arrayType: TypeIdentifier = arrayElem.getType()
-            val type = arrayType.getType() // This is the type of the array element
+            val type: TypeIdentifier = arrayElem.getElemType()
             when (type.getStackSize()) {
                 FOUR_BYTES -> {
                     AssemblyRepresentation.addMainInstr(
@@ -721,6 +720,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     private fun visitLen(unop: ExprAST.UnOpAST) {
         val dest: Register = unop.getDestReg()
+
+        // load the value of the length into the destination register
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 dest,
@@ -1220,7 +1221,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
         // we want to allocate (length * size of elem) + INT_SIZE
         val elemsSize: Int = if (arrayLiter.elemsLength() > 0) {
-            arrayLiter.elems[0].getType().getStackSize()
+            arrayLiter.elems[0].getStackSize()
         } else {
             0
         }
@@ -1246,6 +1247,8 @@ class TranslatorVisitor : ASTBaseVisitor() {
         for (elem in arrayLiter.elems) {
             visit(elem)
             val dest: Register = elem.getDestReg()
+
+            // store the value of elem at the current index
             AssemblyRepresentation.addMainInstr(
                 getStoreInstruction(
                     dest,
@@ -1253,6 +1256,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     elem.getType()
                 )
             )
+
             arrIndex += elemsSize
             Registers.free(dest)
         }
@@ -1290,12 +1294,12 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
         for (arg in funcCall.args.reversed()) {
             // Account for the number of bytes that already have been allocated
-            arg.st().setParamOffset(arg.st().getParamOffset() + argsSize)
+            arg.setParamOffset(arg.getParamOffset() + argsSize)
             visit(arg)
             val dest: Register = arg.getDestReg()
 
             // Get the size (in bytes) that this argument will take
-            val size: Int = arg.getType().getStackSize()
+            val size: Int = arg.getStackSize()
 
             AssemblyRepresentation.addMainInstr(
                 getStoreInstruction(
@@ -1304,8 +1308,9 @@ class TranslatorVisitor : ASTBaseVisitor() {
                     arg.getType()
                 )
             )
-            val currStkPtr: Int = symTab.getStackPtr()
-            symTab.setStackPtr(currStkPtr - size)
+
+            val currStackPtr: Int = symTab.getStackPtr()
+            symTab.setStackPtr(currStackPtr - size)
 
             // Free the destination register for future use and update argsSize
             Registers.free(dest)

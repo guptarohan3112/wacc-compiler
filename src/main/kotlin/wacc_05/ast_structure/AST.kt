@@ -32,5 +32,13 @@ abstract class AST {
         st().setStackSizeAllocated(allocation)
     }
 
+    fun getParamOffset(): Int {
+        return st().getParamOffset()
+    }
+
+    fun setParamOffset(offset: Int) {
+        st().setParamOffset(offset)
+    }
+
     abstract fun <T> accept(visitor: ASTVisitor<T>): T
 }
