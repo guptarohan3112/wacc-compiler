@@ -4,6 +4,7 @@ stages:
     - build
     - testlocal
     - test
+    - testExecution
 
 build:
     stage: build
@@ -23,3 +24,11 @@ test:
         - ./gradlew errorTests
     only:
         - master
+
+testExecution:
+    script:
+        - make
+        - ./gradlew executionTests
+    only:
+        - master
+
