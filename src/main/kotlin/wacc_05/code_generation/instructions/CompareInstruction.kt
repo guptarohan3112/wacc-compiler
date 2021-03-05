@@ -1,7 +1,7 @@
 package wacc_05.code_generation.instructions
 
-import wacc_05.code_generation.Operand
-import wacc_05.code_generation.Register
+import wacc_05.code_generation.utilities.Operand
+import wacc_05.code_generation.utilities.Register
 
 class CompareInstruction(private val reg: Register, private val operand: Operand) : Instruction {
 

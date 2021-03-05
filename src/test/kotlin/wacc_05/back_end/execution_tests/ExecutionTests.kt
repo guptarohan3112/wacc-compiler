@@ -1,28 +1,18 @@
 package wacc_05.back_end.execution_tests
 
-import junit.framework.TestCase
 import org.junit.Test
-import org.junit.jupiter.api.TestInstance
-import org.junit.jupiter.api.extension.ExtensionContext
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.ArgumentsProvider
-import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
 import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 import wacc_05.WaccCompiler
 import wacc_05.ast_structure.ExprAST
 import wacc_05.code_generation.AssemblyRepresentation
-import wacc_05.code_generation.Registers
+import wacc_05.code_generation.utilities.Registers
 import wacc_05.code_generation.instructions.LabelInstruction
 import wacc_05.code_generation.instructions.MessageLabelInstruction
 import wacc_05.symbol_table.FunctionST
 import java.io.File
 import java.io.InputStream
-import java.util.stream.Stream
-import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @RunWith(value = Parameterized::class)

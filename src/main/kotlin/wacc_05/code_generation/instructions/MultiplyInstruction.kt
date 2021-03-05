@@ -1,6 +1,6 @@
 package wacc_05.code_generation.instructions
 
-import wacc_05.code_generation.Register
+import wacc_05.code_generation.utilities.Register
 
 class MultiplyInstruction(
     private val dest: Register,

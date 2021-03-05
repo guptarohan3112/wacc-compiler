@@ -1,6 +1,10 @@
-package wacc_05.code_generation
+package wacc_05.code_generation.instructions
 
-import wacc_05.code_generation.instructions.*
+import wacc_05.code_generation.*
+import wacc_05.code_generation.utilities.AddressingMode
+import wacc_05.code_generation.utilities.Condition
+import wacc_05.code_generation.utilities.Immediate
+import wacc_05.code_generation.utilities.Registers
 import wacc_05.front_end.ErrorCode
 
 sealed class PInstruction {

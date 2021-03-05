@@ -1,4 +1,4 @@
-package wacc_05.code_generation
+package wacc_05.code_generation.utilities
 
 import wacc_05.ast_structure.StatementAST
 
