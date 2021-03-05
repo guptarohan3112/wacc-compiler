@@ -4,5 +4,5 @@ package wacc_05.code_generation.instructions
                     move, load, store, push, pop, define (foo:) */
 
 interface Instruction {
-    override fun toString() : String
+    override fun toString(): String
 }

@@ -2,10 +2,9 @@ package wacc_05
 
 import antlr.WaccParser
 import antlr.WaccParserBaseVisitor
-import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
-import wacc_05.front_end.Error
+import wacc_05.front_end.ErrorCode
 import kotlin.math.pow
 import kotlin.system.exitProcess
 
@@ -37,7 +36,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
                         "Missing Return Or Exit Statement at end of function ${ctx.IDENT()} " +
                         "on line ${ctx.start.line}:${ctx.start.charPositionInLine}"
             )
-            exitProcess(Error.SYNTAX_ERROR)
+            exitProcess(ErrorCode.SYNTAX_ERROR)
         }
 
         val paramList: ParamListAST? = if (ctx.paramList() == null) {
@@ -371,7 +370,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
                         "Integer value ${ctx.INT_LIT().text} on line ${ctx.start.line} is badly formatted " +
                         "(either it has a badly defined sign or it is too large for a 32-bit signed integer)"
             )
-            exitProcess(Error.SYNTAX_ERROR)
+            exitProcess(ErrorCode.SYNTAX_ERROR)
         }
         return ExprAST.IntLiterAST(sign, ctx.INT_LIT().text)
     }
@@ -402,7 +401,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitStrLit(ctx: WaccParser.StrLitContext): ExprAST.StrLiterAST {
         val string: String = ctx.STR_LIT().text
-        return ExprAST.StrLiterAST(string.substring(1, string.length-1))
+        return ExprAST.StrLiterAST(string.substring(1, string.length - 1))
     }
 
     /* Function: visitNewPair()
@@ -505,43 +504,93 @@ class Visitor : WaccParserBaseVisitor<AST>() {
                 visitExpr(ctx.expr(0))
             }
             ctx.MULT() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MULT().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.MULT().text
+                )
             }
             ctx.DIV() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.DIV().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.DIV().text
+                )
             }
             ctx.MOD() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MOD().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.MOD().text
+                )
             }
             ctx.PLUS() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.PLUS().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.PLUS().text
+                )
             }
             ctx.MINUS() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.MINUS().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.MINUS().text
+                )
             }
             ctx.PLUS() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.PLUS().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.PLUS().text
+                )
             }
             ctx.GT() != null -> {
                 ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.GT().text)
             }
             ctx.GTE() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.GTE().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.GTE().text
+                )
             }
             ctx.LT() != null -> {
                 ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.LT().text)
             }
             ctx.LTE() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.LTE().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.LTE().text
+                )
             }
             ctx.EQ() != null -> {
                 ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.EQ().text)
             }
             ctx.NOTEQ() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.NOTEQ().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.NOTEQ().text
+                )
             }
             ctx.AND() != null -> {
-                ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.AND().text)
+                ExprAST.BinOpAST(
+                    ctx,
+                    visitExpr(ctx.expr(0)),
+                    visitExpr(ctx.expr(1)),
+                    ctx.AND().text
+                )
             }
             ctx.OR() != null -> {
                 ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.OR().text)

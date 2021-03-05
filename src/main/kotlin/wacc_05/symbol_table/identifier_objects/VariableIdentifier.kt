@@ -4,6 +4,7 @@ open class VariableIdentifier(private val type: TypeIdentifier) : IdentifierObje
 
     // Absolute stack address of a variable
     private var addr: Int = -1
+
     // Field indicating whether a variable has been allocated on the stack
     private var stackAllocated: Boolean = false
 

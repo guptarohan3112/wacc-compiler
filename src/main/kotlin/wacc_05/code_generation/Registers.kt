@@ -31,7 +31,7 @@ object Registers {
 
     private val available: ArrayList<Register> = allRegisters
 
-    // should only use registers R0 - R12 (general purpose)
+    // Only use registers R4 - R9 (general purpose)
     private val inUse: HashSet<Register> = HashSet()
 
     fun allocate(): Register {
@@ -41,7 +41,7 @@ object Registers {
             return result
         }
 
-        // use stack or accumulator machine approach
+        // Use stack or accumulator machine approach
         throw Exception()
     }
 
@@ -85,7 +85,7 @@ object Registers {
     }
 
     private fun ArrayList<Register>.insert(reg: Register) {
-        var i: Int = 0;
+        var i = 0
         while (i < size && reg > get(i)) {
             i++
         }

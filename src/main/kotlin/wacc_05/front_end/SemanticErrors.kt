@@ -20,7 +20,11 @@ interface SemanticErrors {
 
     fun typeMismatch(ctx: ParserRuleContext, expected: TypeIdentifier, actual: TypeIdentifier)
 
-    fun identifierMismatch(ctx: ParserRuleContext, expected: IdentifierObject, actual: IdentifierObject)
+    fun identifierMismatch(
+        ctx: ParserRuleContext,
+        expected: IdentifierObject,
+        actual: IdentifierObject
+    )
 
     fun argNumberError(ctx: ParserRuleContext, fName: String, expected: Int, actual: Int)
 

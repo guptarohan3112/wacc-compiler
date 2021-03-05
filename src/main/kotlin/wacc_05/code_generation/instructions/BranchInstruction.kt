@@ -2,7 +2,8 @@ package wacc_05.code_generation.instructions
 
 import wacc_05.code_generation.Condition
 
-class BranchInstruction(private val label: String, private val cond: Condition? = null) : Instruction {
+class BranchInstruction(private val label: String, private val cond: Condition? = null) :
+    Instruction {
     override fun toString(): String {
         return "B${cond ?: ""} $label"
     }

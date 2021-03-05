@@ -9,8 +9,7 @@ class AddInstruction(
     private val reg: Register,
     private val operand: Operand,
     private val cond: Condition? = null
-) :
-    Instruction {
+) : Instruction {
 
     override fun toString(): String {
         return "ADD${cond ?: ""} $dest, $reg, $operand"

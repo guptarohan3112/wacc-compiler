@@ -73,7 +73,10 @@ open class TypeIdentifier : IdentifierObject() {
         }
     }
 
-    data class IntIdentifier(private val min: Int = Int.MIN_VALUE, private val max: Int = Int.MAX_VALUE) :
+    data class IntIdentifier(
+        private val min: Int = Int.MIN_VALUE,
+        private val max: Int = Int.MAX_VALUE
+    ) :
         TypeIdentifier() {
 
         override fun toString(): String {
@@ -86,7 +89,8 @@ open class TypeIdentifier : IdentifierObject() {
 
     }
 
-    data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) : TypeIdentifier() {
+    data class ArrayIdentifier(private val elemType: TypeIdentifier, private val size: Int) :
+        TypeIdentifier() {
         override fun toString(): String {
             return "$ARRAY[$elemType]"
         }
@@ -129,7 +133,10 @@ open class TypeIdentifier : IdentifierObject() {
         }
     }
 
-    data class PairIdentifier(private val fstType: TypeIdentifier, private val sndType: TypeIdentifier) :
+    data class PairIdentifier(
+        private val fstType: TypeIdentifier,
+        private val sndType: TypeIdentifier
+    ) :
         GenericPairType() {
         override fun toString(): String {
             return "PAIR(${fstType}, ${sndType})"
