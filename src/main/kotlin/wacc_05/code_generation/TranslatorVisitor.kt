@@ -105,7 +105,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
 
     // A method that sets the stackSizeAllocated field of an inner scope
     private fun innerScopeStackAllocation(stat: AST, child: AST, stackSize: Int) {
-        val currentStackSpace: Int = stat.st().getStackSizeAllocated()
+        val currentStackSpace: Int = stat.getStackSizeAllocated()
         child.setStackSizeAllocated(currentStackSpace + stackSize)
     }
 
