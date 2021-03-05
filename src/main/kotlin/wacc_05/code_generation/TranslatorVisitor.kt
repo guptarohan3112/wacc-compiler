@@ -1398,7 +1398,7 @@ class TranslatorVisitor : ASTBaseVisitor() {
         AssemblyRepresentation.addMainInstr(
             LoadInstruction(
                 Registers.r0,
-                AddressingMode.AddressingLabel("${2 * TypeIdentifier.PAIR_SIZE}")
+                AddressingMode.AddressingLabel("${2 * TypeIdentifier.ADDR_SIZE}")
             )
         )
 
@@ -1411,70 +1411,51 @@ class TranslatorVisitor : ASTBaseVisitor() {
         val pairLocation = Registers.allocate()
         AssemblyRepresentation.addMainInstr(MoveInstruction(pairLocation, Registers.r0))
 
-        // allocate fstSize bytes on heap for fst element, store in register somewhere
-        visit(newPair.fst)
-        val fstDest: Register = newPair.fst.getDestReg()
+        // visit & allocate the pair's children using the helper function
+        allocatePairElem(newPair.fst, pairLocation, 0)
+        allocatePairElem(newPair.snd, pairLocation, TypeIdentifier.ADDR_SIZE)
 
-        // do allocation - move size of fst into param register then branch into malloc
-        val allocation: Int = newPair.fst.getType().getStackSize()
-        AssemblyRepresentation.addMainInstr(
-            LoadInstruction(
-                Registers.r0,
-                AddressingMode.AddressingLabel("$allocation")
-            )
-        )
-
-        AssemblyRepresentation.addMainInstr(BranchInstruction("malloc", Condition.L))
-
-        // move the value for fst into the address given by malloc
-        AssemblyRepresentation.addMainInstr(
-            getStoreInstruction(
-                fstDest,
-                AddressingMode.AddressingMode2(Registers.r0),
-                newPair.fst.getType()
-            )
-        )
-        Registers.free(fstDest)
-        // store value in r0 at pairLocation (+0)
-        AssemblyRepresentation.addMainInstr(
-            StoreInstruction(
-                Registers.r0,
-                AddressingMode.AddressingMode2(pairLocation)
-            )
-        )
-
-        // allocate sndSize bytes on heap for snd element, store in register somewhere
-        visit(newPair.snd)
-        val sndDest: Register = newPair.fst.getDestReg()
-
-        // do allocation - move size of snd into param register then branch into malloc
-        val allocation2: Int = newPair.snd.getType().getStackSize()
-        AssemblyRepresentation.addMainInstr(
-            LoadInstruction(
-                Registers.r0, AddressingMode.AddressingLabel("$allocation2")
-            )
-        )
-
-        AssemblyRepresentation.addMainInstr(BranchInstruction("malloc", Condition.L))
-
-        // move value for snd into the address given by malloc
-        AssemblyRepresentation.addMainInstr(
-            getStoreInstruction(
-                sndDest,
-                AddressingMode.AddressingMode2(Registers.r0),
-                newPair.snd.getType()
-            )
-        )
-        Registers.free(sndDest)
-        // store value in r0 at pairLocation + allocation
-        AssemblyRepresentation.addMainInstr(
-            StoreInstruction(
-                Registers.r0,
-                AddressingMode.AddressingMode2(pairLocation, Immediate(TypeIdentifier.ADDR_SIZE))
-            )
-        )
-
+        // set destination register
         newPair.setDestReg(pairLocation)
+    }
+
+    /* a helper function which will allocate a pair's element and move it into the register where the pair has
+     * been allocated, at the given offset. For an element that is first in a pair, offset should be 0, and for
+     * an element that is second in a pair, it should be ADDR_SIZE (4).
+     */
+    private fun allocatePairElem(elem: ExprAST, pairLocation: Register, offset: Int) {
+        // visit elem and get its destination register
+        visit(elem)
+        val dest: Register = elem.getDestReg()
+
+        // do allocation - move size of elem into param register then branch into malloc
+        val allocation: Int = elem.getType().getStackSize()
+        AssemblyRepresentation.addMainInstr(
+            LoadInstruction(
+                Registers.r0, AddressingMode.AddressingLabel("$allocation")
+            )
+        )
+
+        AssemblyRepresentation.addMainInstr(BranchInstruction("malloc", Condition.L))
+
+        // move value for dest into the address given by malloc
+        AssemblyRepresentation.addMainInstr(
+            getStoreInstruction(
+                dest,
+                AddressingMode.AddressingMode2(Registers.r0),
+                elem.getType()
+            )
+        )
+
+        Registers.free(dest)
+
+        // store value in r0 at pairLocation (+ offset)
+        AssemblyRepresentation.addMainInstr(
+            StoreInstruction(
+                Registers.r0,
+                AddressingMode.AddressingMode2(pairLocation, Immediate(offset))
+            )
+        )
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
