@@ -15,20 +15,14 @@ testlocal:
     script:
         - make
         - ./gradlew semanticTests
-    only:
-        - master
 
 test:
     script:
         - make
         - ./gradlew errorTests
-    only:
-        - master
 
 testExecution:
     script:
         - make
         - ./gradlew executionTests
-    only:
-        - master
 
