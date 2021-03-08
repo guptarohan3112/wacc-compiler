@@ -258,7 +258,7 @@ class AssignASTTests : StatSemanticTests() {
         // create a generic function identifier of int return type
         // test should succeed since function has same return type as variable x
         val identifier = FunctionIdentifier(intType, ArrayList(), st)
-        FunctionST.add("foo", identifier)
+        functionST.add("foo", identifier)
 
         st.add("int", intType)
         st.add("x", VariableIdentifier(intType))
@@ -279,6 +279,7 @@ class AssignASTTests : StatSemanticTests() {
         )
 
         assign.st = st
+        assign.functionST = functionST
         visitor.visitAssignAST(assign)
     }
 
@@ -381,7 +382,7 @@ class AssignASTTests : StatSemanticTests() {
     @Test
     fun assignASTRHSFuncCallIncorrectTypeCheck() {
         val identifier = FunctionIdentifier(charType, ArrayList(), st)
-        FunctionST.add("foo", identifier)
+        functionST.add("foo", identifier)
 
         st.add("int", intType)
         st.add("char", charType)
@@ -405,6 +406,7 @@ class AssignASTTests : StatSemanticTests() {
         )
 
         assign.st = st
+        assign.functionST = functionST
         visitor.visitAssignAST(assign)
 
         verify(exactly = 1) { seh.typeMismatch(any(), intType, charType) }

@@ -78,8 +78,6 @@ jar {
 
     dependsOn(configurations.runtimeClasspath)
     from { configurations.compileClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
-//
-//    from(sourceSets.main.get().output)
 }
 
 application {
@@ -164,8 +162,7 @@ task executionTests(type: Test) {
         }
     }
 
-    exclude 'wacc_05/front_end/error_tests/'
-    exclude 'wacc_05/front_end/semantic_tests/'
+    exclude 'wacc_05/front_end/'
 }
 
 /* THE BELOW CODE WAS TAKEN FROM

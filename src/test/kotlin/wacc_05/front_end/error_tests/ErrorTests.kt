@@ -33,7 +33,6 @@ class ErrorTests {
         val passedTests: ArrayList<String> = ArrayList()
         val failedTests: ArrayList<String> = ArrayList()
         File(directoryPath).walk().forEach {
-            FunctionST.clear()
             if (it.extension == "wacc") {
                 try {
                     if (WaccCompiler.runCompiler(it.absolutePath, debug=false, validOnly=true) == expected)

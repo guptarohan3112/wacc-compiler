@@ -10,6 +10,7 @@ import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.ASTVisitor
 import wacc_05.front_end.SemanticVisitor
+import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
@@ -22,9 +23,10 @@ open class StatSemanticTests {
 
     var st: SymbolTable = SymbolTable(null)
     var childSt: SymbolTable = SymbolTable(st)
+    var functionST: FunctionST = FunctionST()
     var seh: SemanticErrors = mockk()
 
-    var visitor: ASTVisitor<Unit> = SemanticVisitor(st, seh)
+    var visitor: ASTVisitor<Unit> = SemanticVisitor(st, functionST, seh)
 
     @Test
     fun skipASTCheck() {
