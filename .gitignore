@@ -19,5 +19,8 @@ src/main/java/antlr
 # Ignore all generated .s files
 *.s
 
+# Ignore shell scripts for running tests
+*.sh
+
 # Ignore Gradle build output directory
 build

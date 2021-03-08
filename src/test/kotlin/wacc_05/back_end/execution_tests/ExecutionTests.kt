@@ -21,7 +21,7 @@ class ExecutionTests(
 ) {
 
     companion object {
-        private final val DIRECTORY_PATH = "src/test/test_cases/valid"
+        private final val DIRECTORY_PATH = "src/test/test_cases/valid/basic"
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
         fun data(): Iterable<File> {
