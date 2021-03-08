@@ -21,7 +21,7 @@ class ExecutionTests(
 ) {
 
     companion object {
-        private val DIRECTORY_PATH = "src/test/test_cases/valid"
+        private val DIRECTORY_PATH = "src/test/test_cases/valid/runtimeErr/integerOverflow/"
 
         // we have to ignore these tests as our test program cannot run command line inputs
         private val READ_TESTS = hashSetOf(
@@ -144,7 +144,7 @@ class ExecutionTests(
         inputStream.bufferedReader().forEachLine { lines.add(it) }
         lines.forEach {
             if (it.isNotEmpty() && it[0] == '#') {
-                val line: String = it.substring(2).removeSurrounding(" ")
+                val line: String = it.substring(2)
                 if (line == "Output:") {
                     outputFlag = true
                 } else if (outputFlag) {
@@ -155,7 +155,7 @@ class ExecutionTests(
                 if (line == "Exit:") {
                     exitFlag = true
                 } else if (exitFlag) {
-                    exitCode = line.toInt()
+                    exitCode = line.removeSuffix(" ").toInt()
                 }
             } else {
                 outputFlag = false
