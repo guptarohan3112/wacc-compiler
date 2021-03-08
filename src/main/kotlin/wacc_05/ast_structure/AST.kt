@@ -1,6 +1,8 @@
 package wacc_05.ast_structure
 
+import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
+import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 
 abstract class AST {
 
@@ -12,10 +14,25 @@ abstract class AST {
             }
         }
 
+    var functionST: FunctionST? = null
+        set(table) {
+            if (field == null && table != null) {
+                field = table
+            }
+        }
+
     abstract fun <T> accept(visitor: ASTVisitor<T>): T
 
     /* Functions for communicating with a node's symbol table - aimed at reducing double getters and dot chains
     * in translator visitor */
+
+    fun lookupFunction(name: String): FunctionIdentifier? {
+        return functionST?.lookup(name)
+    }
+
+    fun addFunction(name: String, func: FunctionIdentifier) {
+        functionST?.add(name, func)
+    }
 
     // Getter for the symbol table, dereferencing it before returning
     fun st(): SymbolTable {

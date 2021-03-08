@@ -9,7 +9,7 @@ import java.io.File
 
 
 // This class stores all of the information that we need in order to write to an assembly file
-object AssemblyRepresentation {
+class AssemblyRepresentation {
 
     // Global variables
     private var dataInstrs: ArrayList<Instruction> = ArrayList()
@@ -33,7 +33,7 @@ object AssemblyRepresentation {
     fun addPInstr(p_instr: PInstruction) {
         pInstrs.add(p_instr)
         if (p_instr !is PInstruction.p_throw_overflow_error) {
-            AssemblyRepresentation.addMainInstr(
+            addMainInstr(
                 BranchInstruction(p_instr::class.java.simpleName, Condition.L)
             )
         }
@@ -64,8 +64,8 @@ object AssemblyRepresentation {
             }
 
             if (hasRuntimeError) {
-                pInstrs.add(PInstruction.p_throw_runtime_error())
-                pInstrs.add(PInstruction.p_print_string())
+                pInstrs.add(PInstruction.p_throw_runtime_error(this))
+                pInstrs.add(PInstruction.p_print_string(this))
             }
 
             // Add msg_labels to dataInstrs
@@ -101,12 +101,5 @@ object AssemblyRepresentation {
         } else {
             "\t\t$instr\n"
         }
-    }
-
-    fun clear() {
-        dataInstrs = ArrayList()
-        mainInstrs = ArrayList()
-        pInstrs = HashSet()
-        hasRuntimeError = false
     }
 }

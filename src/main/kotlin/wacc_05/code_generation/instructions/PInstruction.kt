@@ -7,13 +7,13 @@ import wacc_05.code_generation.utilities.Immediate
 import wacc_05.code_generation.utilities.Registers
 import wacc_05.front_end.ErrorCode
 
-sealed class PInstruction {
+sealed class PInstruction(private val representation: AssemblyRepresentation) {
 
     abstract fun applyIO(): ArrayList<Instruction>
     abstract fun addMessageLabel()
     abstract fun checkRuntimeErr()
 
-    class p_check_null_pointer : PInstruction() {
+    class p_check_null_pointer(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -36,12 +36,12 @@ sealed class PInstruction {
             val nullLabel = MessageLabelInstruction.getUniqueLabel(
                 "NullReferenceError: dereference a null reference\\n\\0"
             )
-            AssemblyRepresentation.addDataInstr(nullLabel)
+            representation.addDataInstr(nullLabel)
             this.label = nullLabel.getLabel()
         }
 
         override fun checkRuntimeErr() {
-            AssemblyRepresentation.runtimeErr()
+            representation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -54,7 +54,7 @@ sealed class PInstruction {
 
     }
 
-    class p_read_int : PInstruction() {
+    class p_read_int(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -72,7 +72,7 @@ sealed class PInstruction {
 
         override fun addMessageLabel() {
             val readLabel = MessageLabelInstruction.getUniqueLabel("%d\\0")
-            AssemblyRepresentation.addDataInstr(readLabel)
+            representation.addDataInstr(readLabel)
             this.label = readLabel.getLabel()
         }
 
@@ -89,7 +89,7 @@ sealed class PInstruction {
         }
     }
 
-    class p_read_char : PInstruction() {
+    class p_read_char(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -107,7 +107,7 @@ sealed class PInstruction {
 
         override fun addMessageLabel() {
             val readLabel = MessageLabelInstruction.getUniqueLabel(" %c\\0")
-            AssemblyRepresentation.addDataInstr(readLabel)
+            representation.addDataInstr(readLabel)
             this.label = readLabel.getLabel()
         }
 
@@ -124,7 +124,7 @@ sealed class PInstruction {
         }
     }
 
-    class p_print_ln : PInstruction() {
+    class p_print_ln(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -143,7 +143,7 @@ sealed class PInstruction {
 
         override fun addMessageLabel() {
             val terminalLabel = MessageLabelInstruction.getUniqueLabel("\\0")
-            AssemblyRepresentation.addDataInstr(terminalLabel)
+            representation.addDataInstr(terminalLabel)
             label = terminalLabel.getLabel()
         }
 
@@ -161,7 +161,7 @@ sealed class PInstruction {
 
     }
 
-    class p_throw_runtime_error : PInstruction() {
+    class p_throw_runtime_error(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -179,7 +179,7 @@ sealed class PInstruction {
         }
 
         override fun checkRuntimeErr() {
-            AssemblyRepresentation.runtimeErr()
+            representation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -192,7 +192,7 @@ sealed class PInstruction {
 
     }
 
-    class p_print_bool : PInstruction() {
+    class p_print_bool(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var labelTrue: String = ""
         private var labelFalse: String = ""
@@ -223,8 +223,8 @@ sealed class PInstruction {
         override fun addMessageLabel() {
             val trueLabel = MessageLabelInstruction.getUniqueLabel("true\\0")
             val falseLabel = MessageLabelInstruction.getUniqueLabel("false\\0")
-            AssemblyRepresentation.addDataInstr(trueLabel)
-            AssemblyRepresentation.addDataInstr(falseLabel)
+            representation.addDataInstr(trueLabel)
+            representation.addDataInstr(falseLabel)
             labelTrue = trueLabel.getLabel()
             labelFalse = falseLabel.getLabel()
         }
@@ -243,7 +243,7 @@ sealed class PInstruction {
 
     }
 
-    class p_print_int : PInstruction() {
+    class p_print_int(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -263,7 +263,7 @@ sealed class PInstruction {
 
         override fun addMessageLabel() {
             val printLabel = MessageLabelInstruction.getUniqueLabel("%d\\0")
-            AssemblyRepresentation.addDataInstr(printLabel)
+            representation.addDataInstr(printLabel)
             label = printLabel.getLabel()
         }
 
@@ -281,7 +281,7 @@ sealed class PInstruction {
 
     }
 
-    class p_print_string : PInstruction() {
+    class p_print_string(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -302,7 +302,7 @@ sealed class PInstruction {
 
         override fun addMessageLabel() {
             val printLabel = MessageLabelInstruction.getUniqueLabel("%.*s\\0")
-            AssemblyRepresentation.addDataInstr(printLabel)
+            representation.addDataInstr(printLabel)
             label = printLabel.getLabel()
         }
 
@@ -320,7 +320,7 @@ sealed class PInstruction {
 
     }
 
-    class p_print_reference : PInstruction() {
+    class p_print_reference(private val representation: AssemblyRepresentation) : PInstruction(representation) {
         private var label: String = ""
 
         override fun applyIO(): ArrayList<Instruction> {
@@ -339,7 +339,7 @@ sealed class PInstruction {
 
         override fun addMessageLabel() {
             val printLabel = MessageLabelInstruction.getUniqueLabel("%p\\0")
-            AssemblyRepresentation.addDataInstr(printLabel)
+            representation.addDataInstr(printLabel)
             label = printLabel.getLabel()
         }
 
@@ -356,7 +356,7 @@ sealed class PInstruction {
         }
     }
 
-    class p_check_divide_by_zero : PInstruction() {
+    class p_check_divide_by_zero(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -378,12 +378,12 @@ sealed class PInstruction {
         override fun addMessageLabel() {
             val divLabel =
                 MessageLabelInstruction.getUniqueLabel("DivideByZeroError: divide or modulo by zero\\n\\0")
-            AssemblyRepresentation.addDataInstr(divLabel)
+            representation.addDataInstr(divLabel)
             label = divLabel.getLabel()
         }
 
         override fun checkRuntimeErr() {
-            AssemblyRepresentation.runtimeErr()
+            representation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -396,7 +396,7 @@ sealed class PInstruction {
 
     }
 
-    class p_throw_overflow_error : PInstruction() {
+    class p_throw_overflow_error(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -412,12 +412,12 @@ sealed class PInstruction {
             val overflowLabel = MessageLabelInstruction.getUniqueLabel(
                 "OverflowError: the result is too small/large to store in a 4-byte signed-integer.\\n\\0"
             )
-            AssemblyRepresentation.addDataInstr(overflowLabel)
+            representation.addDataInstr(overflowLabel)
             label = overflowLabel.getLabel()
         }
 
         override fun checkRuntimeErr() {
-            AssemblyRepresentation.runtimeErr()
+            representation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -430,7 +430,7 @@ sealed class PInstruction {
 
     }
 
-    class p_check_array_bounds : PInstruction() {
+    class p_check_array_bounds(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var labelNeg: String = ""
         private var labelLarge: String = ""
@@ -463,15 +463,15 @@ sealed class PInstruction {
                 MessageLabelInstruction.getUniqueLabel("ArrayIndexOutOfBoundsError: negative index\\n\\0")
             val labelTooLargeIndex =
                 MessageLabelInstruction.getUniqueLabel("ArrayIndexOutOfBoundsError: index too large\\n\\0")
-            AssemblyRepresentation.addDataInstr(labelNegIndex)
-            AssemblyRepresentation.addDataInstr(labelTooLargeIndex)
+            representation.addDataInstr(labelNegIndex)
+            representation.addDataInstr(labelTooLargeIndex)
             labelNeg = labelNegIndex.getLabel()
             labelLarge = labelTooLargeIndex.getLabel()
 
         }
 
         override fun checkRuntimeErr() {
-            AssemblyRepresentation.runtimeErr()
+            representation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -484,7 +484,7 @@ sealed class PInstruction {
 
     }
 
-    class p_free_pair : PInstruction() {
+    class p_free_pair(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
@@ -512,12 +512,12 @@ sealed class PInstruction {
             val freeLabel = MessageLabelInstruction.getUniqueLabel(
                 "NullReferenceError: dereference a null reference\\n\\0"
             )
-            AssemblyRepresentation.addDataInstr(freeLabel)
+            representation.addDataInstr(freeLabel)
             label = freeLabel.getLabel()
         }
 
         override fun checkRuntimeErr() {
-            AssemblyRepresentation.runtimeErr()
+            representation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {
@@ -530,13 +530,12 @@ sealed class PInstruction {
 
     }
 
-    //TODO: Remove possible duplication of null reference message
-    class p_free_array : PInstruction() {
+    class p_free_array(private val representation: AssemblyRepresentation) : PInstruction(representation) {
 
         private var label: String = ""
 
         override fun applyIO(): ArrayList<Instruction> {
-            AssemblyRepresentation.runtimeErr()
+            representation.runtimeErr()
             return arrayListOf(
                 LabelInstruction("p_free_array"),
                 PushInstruction(Registers.lr),
@@ -551,12 +550,12 @@ sealed class PInstruction {
         override fun addMessageLabel() {
             val freeLabel =
                 MessageLabelInstruction.getUniqueLabel("NullReferenceError: dereference a null reference\\n\\0")
-            AssemblyRepresentation.addDataInstr(freeLabel)
+            representation.addDataInstr(freeLabel)
             label = freeLabel.getLabel()
         }
 
         override fun checkRuntimeErr() {
-            AssemblyRepresentation.runtimeErr()
+            representation.runtimeErr()
         }
 
         override fun equals(other: Any?): Boolean {

@@ -8,15 +8,18 @@ import wacc_05.symbol_table.identifier_objects.*
 
 class SemanticVisitor(
     private val symbolTable: SymbolTable,
+    private val functionST: FunctionST,
     private val errorHandler: SemanticErrors
 ) : ASTVisitor<Unit> {
 
     override fun visitProgramAST(prog: ProgramAST) {
         prog.st = symbolTable
+        prog.functionST = functionST
 
         // preliminary pass through the function list to add all function
         // identifiers to the symbol table
         for (func in prog.functionList) {
+            func.functionST = prog.functionST
             preliminaryCheck(prog.st(), func)
         }
 
@@ -34,7 +37,7 @@ class SemanticVisitor(
         visitChild(symTab, func.returnType)
 
         // Check to make sure function has not already been defined
-        val funcIdent: FunctionIdentifier? = FunctionST.lookup(func.funcName)
+        val funcIdent: FunctionIdentifier? = func.lookupFunction(func.funcName)
         // Create function identifier and add to symbol table
         val funcST = SymbolTable(symTab)
         func.st = funcST
@@ -54,12 +57,12 @@ class SemanticVisitor(
             funcST.add("returnType", returnTypeIdent)
 
             // add self to higher level symbol table
-            FunctionST.add(func.funcName, newFuncIdent)
+            func.addFunction(func.funcName, newFuncIdent)
         }
     }
 
     override fun visitFunctionAST(func: FunctionAST) {
-        val funcIdentifier = FunctionST.lookupAll(func.funcName)
+        val funcIdentifier = func.lookupFunction(func.funcName)
 
         // we don't give another semantic error if this is not null as it will be a semantic error
         // caused by the inner specifics of the compiler
@@ -456,7 +459,7 @@ class SemanticVisitor(
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
         val symTab: SymbolTable = funcCall.st()
-        when (val funcIdentifier: FunctionIdentifier? = FunctionST.lookupAll(funcCall.funcName)) {
+        when (val funcIdentifier: FunctionIdentifier? = functionST.lookupAll(funcCall.funcName)) {
             null -> {
                 errorHandler.invalidIdentifier(funcCall.ctx, funcCall.funcName)
             }
@@ -508,6 +511,7 @@ class SemanticVisitor(
     // A helper method that sets the symbol table field of the child node before carrying out semantic checks on it
     private fun visitChild(symTab: SymbolTable, child: AST) {
         child.st = symTab
+        child.functionST = functionST
         visit(child)
     }
 }

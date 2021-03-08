@@ -3,7 +3,7 @@ package wacc_05.symbol_table
 import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 
-object FunctionST : SymbolTable(null) {
+class FunctionST : SymbolTable(null) {
     override fun lookup(name: String): FunctionIdentifier? {
         return super.lookup(name) as FunctionIdentifier?
     }

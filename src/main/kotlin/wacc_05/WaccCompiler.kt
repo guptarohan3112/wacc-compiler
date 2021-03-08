@@ -11,6 +11,7 @@ import wacc_05.front_end.ErrorCode
 import wacc_05.front_end.SemanticErrorHandler
 import wacc_05.front_end.SemanticVisitor
 import wacc_05.front_end.SyntaxErrorListener
+import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import java.io.File
 import kotlin.system.exitProcess
@@ -74,10 +75,11 @@ object WaccCompiler {
         val ast: AST = visitor.visit(tree)
 
         val symTab = SymbolTable(null)
+        val funcTab = FunctionST()
         SymbolTable.makeTopLevel(symTab)
         val seh = SemanticErrorHandler()
 
-        val semanticChecker = SemanticVisitor(symTab, seh)
+        val semanticChecker = SemanticVisitor(symTab, funcTab, seh)
 
         semanticChecker.visit(ast)
 
@@ -87,11 +89,12 @@ object WaccCompiler {
         }
 
         if (!validOnly) {
-            val translatorVisitor = TranslatorVisitor()
+            val representation = AssemblyRepresentation()
+            val translatorVisitor = TranslatorVisitor(representation)
             translatorVisitor.visit(ast)
             val fileName = File(filePath).nameWithoutExtension
             println("Generating assembly file : $fileName.s")
-            AssemblyRepresentation.buildAssembly(fileName)
+            representation.buildAssembly(fileName)
             println("Generation of assembly file complete")
         }
 
