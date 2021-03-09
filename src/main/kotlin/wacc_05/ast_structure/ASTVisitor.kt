@@ -40,6 +40,8 @@ interface ASTVisitor<T> {
 
     fun visitWhileAST(whileStat: StatementAST.WhileAST): T
 
+    fun visitForAST(forLoop: StatementAST.ForAST): T
+
     fun visitIntLiterAST(liter: ExprAST.IntLiterAST): T
 
     fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST): T

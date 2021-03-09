@@ -127,7 +127,7 @@ sealed class StatementAST : AST() {
     ) : StatementAST() {
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
-            TODO("Not yet implemented")
+            return visitor.visitForAST(this)
         }
 
     }
