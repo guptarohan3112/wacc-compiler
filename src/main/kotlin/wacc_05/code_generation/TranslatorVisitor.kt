@@ -110,7 +110,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     }
 
     // Helper method that visits anything that requires making a new inner scope
-    private fun visitInnerScope(stat: StatementAST, innerScope: StatementAST) {
+    protected fun visitInnerScope(stat: StatementAST, innerScope: StatementAST) {
         val stackSize = setUpInnerScope(stat, innerScope)
 
         // Indicate how much stack space has been allocated and visit the branch
