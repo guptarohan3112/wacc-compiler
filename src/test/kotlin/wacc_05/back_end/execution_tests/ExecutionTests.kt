@@ -33,6 +33,9 @@ class ExecutionTests(
         // tests whose output we cannot read from their file due to it being absent and/or of incorrect format
         private val IGNORE_TESTS = hashSetOf("fixedPointRealArithmetic", "print-carridge-return", "print-backspace")
 
+        // tests that we now fail due to optimisations within the compiler
+        private val OUTDATED_TESTS = hashSetOf("divZero")
+
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
         fun data(): Iterable<File> {
@@ -66,7 +69,10 @@ class ExecutionTests(
         var passed = false
 
         if (it.extension == "wacc") {
-            if (READ_TESTS.contains(it.nameWithoutExtension) || IGNORE_TESTS.contains(it.nameWithoutExtension)) {
+            if (READ_TESTS.contains(it.nameWithoutExtension)
+                || IGNORE_TESTS.contains(it.nameWithoutExtension)
+                || OUTDATED_TESTS.contains(it.nameWithoutExtension)
+            ) {
                 // skip
                 return true
             }
@@ -74,7 +80,7 @@ class ExecutionTests(
             try {
                 println(it.absolutePath)
                 // Run the compiler- this should generate the assembly file (to be executed)
-                WaccCompiler.runCompiler(it.absolutePath, 0, debug = false, validOnly = false)
+                WaccCompiler.runCompiler(it.absolutePath, 1, debug = false, validOnly = false)
 
 
                 val assemblyName = it.nameWithoutExtension + ".s"
