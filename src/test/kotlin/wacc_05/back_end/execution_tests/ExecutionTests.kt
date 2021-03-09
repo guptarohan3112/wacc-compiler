@@ -6,11 +6,9 @@ import org.junit.runners.Parameterized
 
 import wacc_05.WaccCompiler
 import wacc_05.ast_structure.ExprAST
-import wacc_05.code_generation.AssemblyRepresentation
 import wacc_05.code_generation.utilities.Registers
 import wacc_05.code_generation.instructions.LabelInstruction
 import wacc_05.code_generation.instructions.MessageLabelInstruction
-import wacc_05.symbol_table.FunctionST
 import java.io.File
 import java.io.InputStream
 import kotlin.test.assertTrue
