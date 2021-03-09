@@ -3,10 +3,14 @@
 
 DEBUG_MODE='false'
 VALID_MODE='false'
+OPTIMISATION=0
 
 # get optional flags
 while getopts "dv" arg; do
     case $arg in
+  O1) echo "OPTIMISATION LEVEL 1 SELECTED"
+      OPTIMISATION=1
+     ;;
 	d)
 	    echo "DEBUG MODE SELECTED"
 	    DEBUG_MODE='true'
