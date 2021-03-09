@@ -1,0 +1,15 @@
+# do typo
+
+# Output:
+# #syntax_error#
+
+# Exit:
+# 100
+
+# Program:
+
+begin
+  for (int i = 0, i < 8) doo
+    println "This is a very silly typo"
+  done
+end

@@ -1,0 +1,15 @@
+# No looping expression present
+
+# Output:
+# #syntax_error#
+
+# Exit:
+# 100
+
+# Program:
+
+begin
+  for (int i = 0) do
+    println "Are you trying to make this for loop go on forever?"
+  done
+end

@@ -1,0 +1,15 @@
+# looping variable is a boolean and not an integer
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+
+begin
+  for (bool cond = false, cond) do
+    skip
+  done
+end

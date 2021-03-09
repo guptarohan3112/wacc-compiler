@@ -1,0 +1,15 @@
+# The condition for the for loop evaluates to an integer, not a boolean
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+
+begin
+  for (int i = 0; i + 7) do
+    skip
+  done
+end
