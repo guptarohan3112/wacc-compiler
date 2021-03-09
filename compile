@@ -3,10 +3,14 @@
 
 DEBUG_MODE='false'
 VALID_MODE='false'
+OPTIMISATION='0'
 
 # get optional flags
-while getopts "dv" arg; do
+while getopts "1dv" arg; do
     case $arg in
+	1) echo "OPTIMISATION LEVEL 1 SELECTED"
+	  OPTIMISATION='1'
+	  ;;
 	d)
 	    echo "DEBUG MODE SELECTED"
 	    DEBUG_MODE='true'
@@ -32,7 +36,7 @@ fi
 
 FILE_NAME=$1
 
-java -jar build/libs/wacc_05.jar $FILE_NAME $DEBUG_MODE $VALID_MODE
+java -jar build/libs/wacc_05.jar $FILE_NAME $OPTIMISATION $DEBUG_MODE $VALID_MODE
 exit $?
 
 # with some arguments
