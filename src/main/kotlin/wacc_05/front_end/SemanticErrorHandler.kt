@@ -106,6 +106,11 @@ class SemanticErrorHandler : SemanticErrors {
         semanticErr(err)
     }
 
+    override fun divideByZero(ctx: ParserRuleContext) {
+        val err = semanticErrStr(ctx) + "Detected division by zero."
+        semanticErr(err)
+    }
+
     private fun semanticErrStr(ctx: ParserRuleContext): String {
         return "Semantic error at (${ctx.getStart().line}:${ctx.getStart().charPositionInLine})" +
                 "-(${ctx.getStop().line}:${ctx.getStop().charPositionInLine}): "
