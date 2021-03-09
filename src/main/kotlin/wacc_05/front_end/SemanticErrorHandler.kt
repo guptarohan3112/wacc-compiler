@@ -106,6 +106,17 @@ class SemanticErrorHandler : SemanticErrors {
         semanticErr(err)
     }
 
+    override fun integerOverflow(ctx: ParserRuleContext, value: Long) {
+        val err =
+            semanticErrStr(ctx) + "Possible Integer Overflow Detected. Value $value will cause a runtime exception."
+        semanticErr(err)
+    }
+
+    override fun divideByZero(ctx: ParserRuleContext) {
+        val err = semanticErrStr(ctx) + "Detected division by zero."
+        semanticErr(err)
+    }
+
     private fun semanticErrStr(ctx: ParserRuleContext): String {
         return "Semantic error at (${ctx.getStart().line}:${ctx.getStart().charPositionInLine})" +
                 "-(${ctx.getStop().line}:${ctx.getStop().charPositionInLine}): "

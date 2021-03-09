@@ -19,7 +19,7 @@ class ExecutionTests(
 ) {
 
     companion object {
-        private val DIRECTORY_PATH = "src/test/test_cases/valid/runtimeErr/integerOverflow/"
+        private val DIRECTORY_PATH = "src/test/test_cases/valid"
 
         // we have to ignore these tests as our test program cannot run command line inputs
         private val READ_TESTS = hashSetOf(
@@ -30,6 +30,9 @@ class ExecutionTests(
 
         // tests whose output we cannot read from their file due to it being absent and/or of incorrect format
         private val IGNORE_TESTS = hashSetOf("fixedPointRealArithmetic", "print-carridge-return", "print-backspace")
+
+        // tests that we now fail due to optimisations within the compiler
+        private val OUTDATED_TESTS = hashSetOf("divZero")
 
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
@@ -64,7 +67,10 @@ class ExecutionTests(
         var passed = false
 
         if (it.extension == "wacc") {
-            if (READ_TESTS.contains(it.nameWithoutExtension) || IGNORE_TESTS.contains(it.nameWithoutExtension)) {
+            if (READ_TESTS.contains(it.nameWithoutExtension)
+                || IGNORE_TESTS.contains(it.nameWithoutExtension)
+                || OUTDATED_TESTS.contains(it.nameWithoutExtension)
+            ) {
                 // skip
                 return true
             }
@@ -72,7 +78,7 @@ class ExecutionTests(
             try {
                 println(it.absolutePath)
                 // Run the compiler- this should generate the assembly file (to be executed)
-                WaccCompiler.runCompiler(it.absolutePath, debug = false, validOnly = false)
+                WaccCompiler.runCompiler(it.absolutePath, 1, debug = false, validOnly = false)
 
 
                 val assemblyName = it.nameWithoutExtension + ".s"

@@ -6,11 +6,9 @@ import org.antlr.v4.runtime.CharStreams
 import org.antlr.v4.runtime.CommonTokenStream
 import wacc_05.ast_structure.AST
 import wacc_05.code_generation.AssemblyRepresentation
+import wacc_05.code_generation.O1TranslatorVisitor
 import wacc_05.code_generation.TranslatorVisitor
-import wacc_05.front_end.ErrorCode
-import wacc_05.front_end.SemanticErrorHandler
-import wacc_05.front_end.SemanticVisitor
-import wacc_05.front_end.SyntaxErrorListener
+import wacc_05.front_end.*
 import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import java.io.File
@@ -24,12 +22,13 @@ fun main(args: Array<String>) {
     }
 
     val filePath: String = args[0]
-    val debug: Boolean = args[1] == "true"
-    val validOnly: Boolean = args[2] == "true"
+    val optimisation: Int = args[1].toInt()
+    val debug: Boolean = args[2] == "true"
+    val validOnly: Boolean = args[3] == "true"
 
     val ret: Int
     val time = measureTimeMillis {
-        ret = WaccCompiler.runCompiler(filePath, debug, validOnly)
+        ret = WaccCompiler.runCompiler(filePath, optimisation, debug, validOnly)
     }
 
     if (ret == ErrorCode.SUCCESS) {
@@ -46,7 +45,7 @@ fun main(args: Array<String>) {
 object WaccCompiler {
 
     @JvmStatic
-    fun runCompiler(filePath: String, debug: Boolean, validOnly: Boolean): Int {
+    fun runCompiler(filePath: String, optimisation: Int, debug: Boolean, validOnly: Boolean): Int {
         val inputStream = File(filePath).inputStream()
         val input = CharStreams.fromStream(inputStream)
         val lexer = WaccLexer(input)
@@ -79,7 +78,11 @@ object WaccCompiler {
         SymbolTable.makeTopLevel(symTab)
         val seh = SemanticErrorHandler()
 
-        val semanticChecker = SemanticVisitor(symTab, funcTab, seh)
+        val semanticChecker = if (optimisation == 1) {
+            O1SemanticVisitor(symTab, funcTab, seh)
+        } else {
+            SemanticVisitor(symTab, funcTab, seh)
+        }
 
         semanticChecker.visit(ast)
 
@@ -90,7 +93,13 @@ object WaccCompiler {
 
         if (!validOnly) {
             val representation = AssemblyRepresentation()
-            val translatorVisitor = TranslatorVisitor(representation)
+
+            val translatorVisitor = if (optimisation == 1) {
+                O1TranslatorVisitor(representation)
+            } else {
+                TranslatorVisitor(representation)
+            }
+
             translatorVisitor.visit(ast)
             val fileName = File(filePath).nameWithoutExtension
             println("Generating assembly file : $fileName.s")
