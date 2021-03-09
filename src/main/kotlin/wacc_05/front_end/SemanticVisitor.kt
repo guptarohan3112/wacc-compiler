@@ -6,7 +6,7 @@ import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.*
 
-class SemanticVisitor(
+open class SemanticVisitor(
     private val symbolTable: SymbolTable,
     private val functionST: FunctionST,
     private val errorHandler: SemanticErrors
@@ -348,63 +348,72 @@ class SemanticVisitor(
 
         when {
             ExprAST.BinOpAST.intIntFunctions.contains(binop.operator) -> {
-                if (expr1Type !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr1Type)
-                }
-
-                if (expr2Type !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr2Type)
-                }
-
-                if(binop.expr1 is ExprAST.IntLiterAST && binop.expr2 is ExprAST.IntLiterAST) {
-                    val result: Long = when(binop.operator) {
-                        "+" -> binop.expr1.getValue() + binop.expr2.getValue()
-                        "-" -> binop.expr1.getValue() - binop.expr2.getValue()
-                        "*" -> binop.expr1.getValue() - binop.expr2.getValue()
-                        "/" -> binop.expr1.getValue() / binop.expr2.getValue()
-                        "%" -> binop.expr1.getValue() % binop.expr2.getValue()
-                        else -> 0
-                    }.toLong()
-
-                    if(result > Int.MAX_VALUE) {
-                        errorHandler.integerOverflow(binop.ctx, result)
-                    }
-                }
+                visitIntIntFunction(binop, expr1Type, expr2Type)
             }
             ExprAST.BinOpAST.intCharFunctions.contains(binop.operator) -> {
-                // if type1 is valid, check against type 2 and type1 dominates if not equal
-                // if type2 is valid and type1 is not, type mismatch on type2
-                // else type mismatch on both
-
-                if (expr1Type is TypeIdentifier.IntIdentifier || expr1Type is TypeIdentifier.CharIdentifier) {
-                    if (expr1Type != expr2Type) {
-                        errorHandler.typeMismatch(binop.ctx, expr1Type, expr2Type)
-                    }
-                    return
-                }
-
-                if (expr2Type is TypeIdentifier.IntIdentifier || expr2Type is TypeIdentifier.CharIdentifier) {
-                    // we already know type 1 isn't valid
-                    errorHandler.typeMismatch(binop.ctx, expr2Type, expr1Type)
-                    return
-                }
-
-                // both aren't valid
-                errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr1Type)
-                errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr2Type)
+                visitIntCharFunction(binop, expr1Type, expr2Type)
             }
             ExprAST.BinOpAST.boolBoolFunctions.contains(binop.operator) -> {
-                if (expr1Type !is TypeIdentifier.BoolIdentifier) {
-                    errorHandler.typeMismatch(binop.ctx, TypeIdentifier.BOOL_TYPE, expr1Type)
-                }
-
-                if (expr2Type !is TypeIdentifier.BoolIdentifier) {
-                    errorHandler.typeMismatch(binop.ctx, TypeIdentifier.BOOL_TYPE, expr2Type)
-                }
+                visitBoolBoolFunction(binop, expr1Type, expr2Type)
             }
             else -> {
                 // do nothing
             }
+        }
+    }
+
+    protected open fun visitIntIntFunction(
+        binop: ExprAST.BinOpAST,
+        expr1Type: TypeIdentifier,
+        expr2Type: TypeIdentifier
+    ) {
+        if (expr1Type !is TypeIdentifier.IntIdentifier) {
+            errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr1Type)
+        }
+
+        if (expr2Type !is TypeIdentifier.IntIdentifier) {
+            errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr2Type)
+        }
+    }
+
+    protected open fun visitIntCharFunction(
+        binop: ExprAST.BinOpAST,
+        expr1Type: TypeIdentifier,
+        expr2Type: TypeIdentifier
+    ) {
+        // if type1 is valid, check against type 2 and type1 dominates if not equal
+        // if type2 is valid and type1 is not, type mismatch on type2
+        // else type mismatch on both
+
+        if (expr1Type is TypeIdentifier.IntIdentifier || expr1Type is TypeIdentifier.CharIdentifier) {
+            if (expr1Type != expr2Type) {
+                errorHandler.typeMismatch(binop.ctx, expr1Type, expr2Type)
+            }
+            return
+        }
+
+        if (expr2Type is TypeIdentifier.IntIdentifier || expr2Type is TypeIdentifier.CharIdentifier) {
+            // we already know type 1 isn't valid
+            errorHandler.typeMismatch(binop.ctx, expr2Type, expr1Type)
+            return
+        }
+
+        // both aren't valid
+        errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr1Type)
+        errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr2Type)
+    }
+
+    protected open fun visitBoolBoolFunction(
+        binop: ExprAST.BinOpAST,
+        expr1Type: TypeIdentifier,
+        expr2Type: TypeIdentifier
+    ) {
+        if (expr1Type !is TypeIdentifier.BoolIdentifier) {
+            errorHandler.typeMismatch(binop.ctx, TypeIdentifier.BOOL_TYPE, expr1Type)
+        }
+
+        if (expr2Type !is TypeIdentifier.BoolIdentifier) {
+            errorHandler.typeMismatch(binop.ctx, TypeIdentifier.BOOL_TYPE, expr2Type)
         }
     }
 
@@ -524,7 +533,7 @@ class SemanticVisitor(
     }
 
     // A helper method that sets the symbol table field of the child node before carrying out semantic checks on it
-    private fun visitChild(symTab: SymbolTable, child: AST) {
+    protected fun visitChild(symTab: SymbolTable, child: AST) {
         child.st = symTab
         child.functionST = functionST
         visit(child)
