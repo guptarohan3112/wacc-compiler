@@ -10,6 +10,8 @@ interface SemanticErrors {
 
     fun printErrors()
 
+    fun invalidDeclaration(ctx: ParserRuleContext)
+
     fun invalidIdentifier(ctx: ParserRuleContext, name: String)
 
     fun invalidType(ctx: ParserRuleContext, typeName: String)
@@ -39,4 +41,5 @@ interface SemanticErrors {
     fun invalidFreeType(ctx: ParserRuleContext, actual: TypeIdentifier)
 
     fun invalidExitType(ctx: ParserRuleContext, actual: TypeIdentifier)
+
 }

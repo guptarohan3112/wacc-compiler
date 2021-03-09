@@ -18,6 +18,12 @@ class SemanticErrorHandler : SemanticErrors {
         }
     }
 
+    override fun invalidDeclaration(ctx: ParserRuleContext) {
+        val err =
+            semanticErrStr(ctx) + "The statement is not a valid declaration of a variable, which is expected here"
+        semanticErr(err)
+    }
+
     override fun invalidIdentifier(ctx: ParserRuleContext, name: String) {
         val err =
             semanticErrStr(ctx) + "$name is an unknown identifier in the context of this scope"
