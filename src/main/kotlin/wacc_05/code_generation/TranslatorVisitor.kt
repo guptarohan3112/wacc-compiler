@@ -11,7 +11,7 @@ import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-class TranslatorVisitor(private val representation: AssemblyRepresentation) : ASTBaseVisitor() {
+open class TranslatorVisitor(private val representation: AssemblyRepresentation) : ASTBaseVisitor() {
 
     private val MAX_STACK_SIZE: Int = 1024
     private val START_OFFSET: Int = 4

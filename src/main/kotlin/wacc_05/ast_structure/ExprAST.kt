@@ -190,7 +190,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun canEvaluate(): Boolean {
-            return expr.canEvaluate()
+            return operator == "len" || expr.canEvaluate()
         }
 
         override fun evaluate(): Long {
