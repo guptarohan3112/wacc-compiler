@@ -1,0 +1,15 @@
+# no brackets to enclose declaration and looping condition
+
+# Output:
+# #syntax_error#
+
+# Exit:
+# 100
+
+# Program:
+
+begin
+  for int i = 1, i < 4 do
+    skip
+  done
+end

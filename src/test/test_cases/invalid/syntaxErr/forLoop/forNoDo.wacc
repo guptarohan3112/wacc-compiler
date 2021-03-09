@@ -1,0 +1,16 @@
+# missing 'do' in for loop
+
+# Output:
+# #syntax_error#
+
+# Exit:
+# 100
+
+# Program:
+
+begin
+  for (int x = 8; x < 7 + 9)
+    println "This test has no 'do' in the for loop"
+  done
+end
+  

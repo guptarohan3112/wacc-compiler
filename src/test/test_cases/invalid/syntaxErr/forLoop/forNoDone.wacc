@@ -1,0 +1,14 @@
+# No concluding 'done' at the end of the for loop
+
+# Output:
+# #syntax_error#
+
+# Exit:
+# 100
+
+# Program:
+
+begin
+  for (int i = 0; i < 5) do
+    println "There is no 'done' at the end of this for loop"
+end
