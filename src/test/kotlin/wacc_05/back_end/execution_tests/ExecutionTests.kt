@@ -21,7 +21,7 @@ class ExecutionTests(
 ) {
 
     companion object {
-        private val DIRECTORY_PATH = "src/test/test_cases/valid/runtimeErr/integerOverflow/"
+        private val DIRECTORY_PATH = "src/test/test_cases/valid"
 
         // we have to ignore these tests as our test program cannot run command line inputs
         private val READ_TESTS = hashSetOf(
