@@ -11,7 +11,8 @@ import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-open class TranslatorVisitor(private val representation: AssemblyRepresentation) : ASTBaseVisitor() {
+open class TranslatorVisitor(private val representation: AssemblyRepresentation) :
+    ASTBaseVisitor() {
 
     private val MAX_STACK_SIZE: Int = 1024
     private val START_OFFSET: Int = 4
@@ -524,6 +525,64 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         representation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
 
+    override fun visitForAST(forLoop: StatementAST.ForAST) {
+        val body: StatementAST = forLoop.body
+
+        // Ensure that the stack pointer for the loop body is in the right place initially
+        val currSp: Int = forLoop.getStackPtr()
+        body.setStackPtr(body.getStackPtr() + currSp)
+
+        // Allocate stack space for all of the local variables and looping variable. Update stack pointer accordingly
+        val stackSizeCalculator = StackSizeVisitor()
+        val stackSize: Int = stackSizeCalculator.getStackSize(body)
+        var tmp: Int = stackSize + FOUR_BYTES
+        while (tmp > 0) {
+            representation.addMainInstr(
+                SubtractInstruction(
+                    Registers.sp,
+                    Registers.sp,
+                    Immediate(tmp.coerceAtMost(MAX_STACK_SIZE))
+                )
+            )
+            tmp -= MAX_STACK_SIZE
+        }
+        body.setStackPtr(body.getStackPtr() - stackSize - FOUR_BYTES)
+
+        // Update how much stack space has been allocated so far
+        innerScopeStackAllocation(forLoop, body, stackSize + FOUR_BYTES)
+
+        // Generate assembly code for the declaration of the looping variable
+        visit(forLoop.decl)
+
+        // Testing of loop expression, branch off to whatever is next if there is failure
+        val condLabel: LabelInstruction = getUniqueLabel()
+        representation.addMainInstr(condLabel)
+
+        visit(forLoop.loopExpr)
+        val reg: Register = forLoop.loopExpr.getDestReg()
+
+        representation.addMainInstr(
+            CompareInstruction(
+                reg,
+                Immediate(0)
+            )
+        )
+
+        val nextLabel: LabelInstruction = getUniqueLabel()
+        representation.addMainInstr(BranchInstruction(nextLabel.getLabel(), Condition.EQ))
+
+        // Generate assembly code for the body of the loop and branch to the condition
+        visit(body)
+        representation.addMainInstr(BranchInstruction(condLabel.getLabel()))
+
+        // Update the looping variable, incrementing it by 1
+
+        representation.addMainInstr(nextLabel)
+
+        restoreStackPointer(forLoop.body, stackSize + FOUR_BYTES)
+
+    }
+
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
         val intValue = Integer.parseInt(liter.sign + liter.value)
         val register = Registers.allocate()
@@ -885,7 +944,13 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     }
 
-    private fun visitAndOr(binop: ExprAST.BinOpAST, expr1: ExprAST, expr2: ExprAST, dest1: Register, dest2: Register) {
+    private fun visitAndOr(
+        binop: ExprAST.BinOpAST,
+        expr1: ExprAST,
+        expr2: ExprAST,
+        dest1: Register,
+        dest2: Register
+    ) {
 
         val dest: Register
         val operand: Operand
@@ -915,7 +980,13 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     }
 
-    private fun visitCompare(op: String, expr1: ExprAST, expr2: ExprAST, dest1: Register, dest2: Register) {
+    private fun visitCompare(
+        op: String,
+        expr1: ExprAST,
+        expr2: ExprAST,
+        dest1: Register,
+        dest2: Register
+    ) {
 
         var cond1: Condition? = null
         var cond2: Condition? = null
