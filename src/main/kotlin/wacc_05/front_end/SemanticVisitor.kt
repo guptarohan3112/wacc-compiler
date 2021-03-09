@@ -104,7 +104,6 @@ class SemanticVisitor(
             errorHandler.repeatVariableDeclaration(decl.ctx, decl.varName)
         } else {
             // Check that right hand side and type of identifier match
-            decl.type.st = decl.st()
             val typeIdent: TypeIdentifier = decl.type.getType()
             visitChild(decl.st(), decl.assignment)
             val assignmentType: TypeIdentifier = decl.assignment.getType()
@@ -243,6 +242,36 @@ class SemanticVisitor(
 
             visitChild(bodySt, whileStat.body)
         }
+    }
+
+    override fun visitForAST(forLoop: StatementAST.ForAST) {
+        // Make sure that the first statement is a declaration
+        val forLoopST = SymbolTable(forLoop.st())
+        if (forLoop.decl !is StatementAST.DeclAST) {
+            errorHandler.invalidDeclaration(forLoop.ctx)
+        } else {
+            // Perform semantic checks on the declaration and ensure that the variable is of int type
+            visitChild(forLoopST, forLoop.decl)
+            if (forLoop.decl.type.getType() != TypeIdentifier.INT_TYPE) {
+                errorHandler.typeMismatch(forLoop.ctx, TypeIdentifier.INT_TYPE, forLoop.decl.type.getType())
+            }
+            // Does error recovery need to be done here?
+        }
+
+        // The looping expression must evaluate to a boolean
+        val loopingExpr: ExprAST = forLoop.loopExpr
+        visitChild(forLoopST, forLoop.loopExpr)
+        if (loopingExpr.getType() != TypeIdentifier.BOOL_TYPE) {
+            errorHandler.typeMismatch(
+                forLoop.ctx,
+                TypeIdentifier.BOOL_TYPE,
+                loopingExpr.getType()
+            )
+        } else {
+            // Perform semantic checks on the for loop body
+            visitChild(forLoopST, forLoop.body)
+        }
+
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
