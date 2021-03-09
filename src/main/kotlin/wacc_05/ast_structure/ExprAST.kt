@@ -190,7 +190,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
 
         override fun canEvaluate(): Boolean {
-            return operator == "len" || expr.canEvaluate()
+            return operator != "len" && expr.canEvaluate()
         }
 
         override fun evaluate(): Long {
@@ -201,7 +201,6 @@ sealed class ExprAST : AssignRHSAST() {
                 } else {
                     1
                 }
-                "len" -> (expr.getType() as TypeIdentifier.ArrayIdentifier).size().toLong()
                 "ord" -> expr.evaluate()
                 "chr" -> expr.evaluate()
                 else -> super.evaluate()

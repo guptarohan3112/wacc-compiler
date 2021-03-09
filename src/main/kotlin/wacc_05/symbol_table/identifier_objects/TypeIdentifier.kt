@@ -99,10 +99,6 @@ open class TypeIdentifier : IdentifierObject() {
             return elemType
         }
 
-        fun size(): Int {
-            return size
-        }
-
         // we override equality for array types to capture that only the element types need
         // to match for two array types to be equal, regardless of length.
         override fun equals(other: Any?): Boolean {
