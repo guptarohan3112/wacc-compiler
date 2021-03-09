@@ -100,9 +100,9 @@ class SemanticErrorHandler : SemanticErrors {
         semanticErr(err)
     }
 
-    override fun integerOverflow(ctx: ParserRuleContext, value: Int) {
+    override fun integerOverflow(ctx: ParserRuleContext, value: Long) {
         val err =
-            semanticErrStr(ctx) + "Possible Integer Overflow Detected. Integer $value will cause a runtime exception."
+            semanticErrStr(ctx) + "Possible Integer Overflow Detected. Value $value will cause a runtime exception."
         semanticErr(err)
     }
 

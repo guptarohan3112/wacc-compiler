@@ -40,5 +40,5 @@ interface SemanticErrors {
 
     fun invalidExitType(ctx: ParserRuleContext, actual: TypeIdentifier)
 
-    fun integerOverflow(ctx: ParserRuleContext, value: Int)
+    fun integerOverflow(ctx: ParserRuleContext, value: Long)
 }

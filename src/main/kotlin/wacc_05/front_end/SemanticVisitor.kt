@@ -355,6 +355,21 @@ class SemanticVisitor(
                 if (expr2Type !is TypeIdentifier.IntIdentifier) {
                     errorHandler.typeMismatch(binop.ctx, TypeIdentifier.INT_TYPE, expr2Type)
                 }
+
+                if(binop.expr1 is ExprAST.IntLiterAST && binop.expr2 is ExprAST.IntLiterAST) {
+                    val result: Long = when(binop.operator) {
+                        "+" -> binop.expr1.getValue() + binop.expr2.getValue()
+                        "-" -> binop.expr1.getValue() - binop.expr2.getValue()
+                        "*" -> binop.expr1.getValue() - binop.expr2.getValue()
+                        "/" -> binop.expr1.getValue() / binop.expr2.getValue()
+                        "%" -> binop.expr1.getValue() % binop.expr2.getValue()
+                        else -> 0
+                    }.toLong()
+
+                    if(result > Int.MAX_VALUE) {
+                        errorHandler.integerOverflow(binop.ctx, result)
+                    }
+                }
             }
             ExprAST.BinOpAST.intCharFunctions.contains(binop.operator) -> {
                 // if type1 is valid, check against type 2 and type1 dominates if not equal
