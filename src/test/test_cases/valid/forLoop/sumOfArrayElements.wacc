@@ -1,0 +1,23 @@
+# Function that calculates the sum of an array of integers
+
+# Output
+# Whatever the total is
+
+# Exit:
+# The sum of the elements in the array is 65
+
+# Program
+
+begin
+  int sumOfArray(int[] array) is
+    int total = 0;
+    for (int i = 0, i < len array, i = i + 1) do
+      total = total + i
+    done;
+    return total
+  end
+  int[] arr = [1, 5, 7, 9, 15, 28]
+  int result = call sumOfArray(arr)
+  print "The sum of the elements in the array is "
+  print result
+end
