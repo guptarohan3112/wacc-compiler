@@ -91,6 +91,7 @@ abstract class ASTBaseVisitor : ASTVisitor<Unit> {
     override fun visitForAST(forLoop: StatementAST.ForAST) {
         visit(forLoop.decl)
         visit(forLoop.loopExpr)
+        visit(forLoop.update)
         visit(forLoop.body)
     }
 
