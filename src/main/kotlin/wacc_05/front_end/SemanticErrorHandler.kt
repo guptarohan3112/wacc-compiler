@@ -24,6 +24,11 @@ class SemanticErrorHandler : SemanticErrors {
         semanticErr(err)
     }
 
+    override fun noAssignmentFound(ctx: ParserRuleContext) {
+        val err = semanticErrStr(ctx) + "The update of the looping variable is not valid"
+        semanticErr(err)
+    }
+
     override fun invalidIdentifier(ctx: ParserRuleContext, name: String) {
         val err =
             semanticErrStr(ctx) + "$name is an unknown identifier in the context of this scope"
