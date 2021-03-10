@@ -10,6 +10,10 @@ interface SemanticErrors {
 
     fun printErrors()
 
+    fun invalidDeclaration(ctx: ParserRuleContext)
+
+    fun noAssignmentFound(ctx: ParserRuleContext)
+
     fun invalidIdentifier(ctx: ParserRuleContext, name: String)
 
     fun invalidType(ctx: ParserRuleContext, typeName: String)

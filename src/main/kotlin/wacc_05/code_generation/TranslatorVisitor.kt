@@ -11,13 +11,13 @@ import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-open class TranslatorVisitor(private val representation: AssemblyRepresentation) : ASTBaseVisitor() {
+open class TranslatorVisitor(private val representation: AssemblyRepresentation) :
+    ASTBaseVisitor() {
 
     private val MAX_STACK_SIZE: Int = 1024
     private val START_OFFSET: Int = 4
     private val ONE_BYTE: Int = 1
     private val FOUR_BYTES: Int = 4
-
 
     /* UTILITY METHODS USED BY DIFFERENT VISIT METHODS IN THIS VISITOR
        ---------------------------------------------------------------
@@ -34,6 +34,11 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         // Calculate stack size for scope and decrement the stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
         val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope)
+        decrementAssemblySP(stackSize)
+        return stackSize
+    }
+
+    private fun decrementAssemblySP(stackSize: Int) {
         var tmp: Int = stackSize
         while (tmp > 0) {
             representation.addMainInstr(
@@ -45,7 +50,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
             )
             tmp -= MAX_STACK_SIZE
         }
-        return stackSize
     }
 
     // Sets up the internal representation of the stack pointer when moving into the inner scope
@@ -524,6 +528,54 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         representation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
 
+    override fun visitForAST(forLoop: StatementAST.ForAST) {
+        val body: StatementAST = forLoop.body
+
+        // Ensure that the stack pointer for the loop body is in the right place initially
+        val currSp: Int = forLoop.getStackPtr()
+        body.setStackPtr(body.getStackPtr() + currSp)
+
+        // Allocate stack space for all of the local variables and looping variable. Update stack pointer accordingly
+        val stackSizeCalculator = StackSizeVisitor()
+        val stackSize: Int = stackSizeCalculator.getStackSize(body)
+        val updatedStackSize: Int = stackSize + FOUR_BYTES
+        decrementAssemblySP(updatedStackSize)
+        body.setStackPtr(body.getStackPtr() - updatedStackSize)
+
+        // Update how much stack space has been allocated so far
+        innerScopeStackAllocation(forLoop, body, updatedStackSize)
+
+        // Generate assembly code for the declaration of the looping variable
+        visit(forLoop.decl)
+
+        // Testing of loop expression, branch off to whatever is next if there is failure
+        val condLabel: LabelInstruction = getUniqueLabel()
+        representation.addMainInstr(condLabel)
+
+        visit(forLoop.loopExpr)
+        val reg: Register = forLoop.loopExpr.getDestReg()
+        representation.addMainInstr(
+            CompareInstruction(
+                reg,
+                Immediate(0)
+            )
+        )
+
+        val nextLabel: LabelInstruction = getUniqueLabel()
+        representation.addMainInstr(BranchInstruction(nextLabel.getLabel(), Condition.EQ))
+
+        // Generate assembly code for the body. Update looping variable
+        visit(body)
+        visit(forLoop.update)
+
+        // Update looping variable
+        representation.addMainInstr(BranchInstruction(condLabel.getLabel()))
+
+        representation.addMainInstr(nextLabel)
+
+        restoreStackPointer(body, updatedStackSize)
+    }
+
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
         val intValue = Integer.parseInt(liter.sign + liter.value)
         val register = Registers.allocate()
@@ -885,7 +937,13 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     }
 
-    private fun visitAndOr(binop: ExprAST.BinOpAST, expr1: ExprAST, expr2: ExprAST, dest1: Register, dest2: Register) {
+    private fun visitAndOr(
+        binop: ExprAST.BinOpAST,
+        expr1: ExprAST,
+        expr2: ExprAST,
+        dest1: Register,
+        dest2: Register
+    ) {
 
         val dest: Register
         val operand: Operand
@@ -915,7 +973,13 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     }
 
-    private fun visitCompare(op: String, expr1: ExprAST, expr2: ExprAST, dest1: Register, dest2: Register) {
+    private fun visitCompare(
+        op: String,
+        expr1: ExprAST,
+        expr2: ExprAST,
+        dest1: Register,
+        dest2: Register
+    ) {
 
         var cond1: Condition? = null
         var cond2: Condition? = null

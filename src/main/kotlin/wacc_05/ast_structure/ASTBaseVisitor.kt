@@ -88,6 +88,13 @@ abstract class ASTBaseVisitor : ASTVisitor<Unit> {
         visit(whileStat.body)
     }
 
+    override fun visitForAST(forLoop: StatementAST.ForAST) {
+        visit(forLoop.decl)
+        visit(forLoop.loopExpr)
+        visit(forLoop.update)
+        visit(forLoop.body)
+    }
+
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
         // do nothing
     }

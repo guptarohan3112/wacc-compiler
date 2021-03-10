@@ -118,4 +118,18 @@ sealed class StatementAST : AST() {
             return visitor.visitWhileAST(this)
         }
     }
+
+    data class ForAST(
+        val ctx: WaccParser.StatForContext,
+        val decl: StatementAST,
+        val loopExpr: ExprAST,
+        val update: StatementAST,
+        val body: StatementAST
+    ) : StatementAST() {
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitForAST(this)
+        }
+
+    }
 }
