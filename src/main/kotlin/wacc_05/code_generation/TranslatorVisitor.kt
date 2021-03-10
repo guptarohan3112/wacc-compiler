@@ -19,7 +19,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     private val ONE_BYTE: Int = 1
     private val FOUR_BYTES: Int = 4
 
-
     /* UTILITY METHODS USED BY DIFFERENT VISIT METHODS IN THIS VISITOR
        ---------------------------------------------------------------
      */
@@ -35,6 +34,11 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         // Calculate stack size for scope and decrement the stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
         val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope)
+        decrementAssemblySP(stackSize)
+        return stackSize
+    }
+
+    private fun decrementAssemblySP(stackSize: Int) {
         var tmp: Int = stackSize
         while (tmp > 0) {
             representation.addMainInstr(
@@ -46,7 +50,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
             )
             tmp -= MAX_STACK_SIZE
         }
-        return stackSize
     }
 
     // Sets up the internal representation of the stack pointer when moving into the inner scope
@@ -535,21 +538,12 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         // Allocate stack space for all of the local variables and looping variable. Update stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
         val stackSize: Int = stackSizeCalculator.getStackSize(body)
-        var tmp: Int = stackSize + FOUR_BYTES
-        while (tmp > 0) {
-            representation.addMainInstr(
-                SubtractInstruction(
-                    Registers.sp,
-                    Registers.sp,
-                    Immediate(tmp.coerceAtMost(MAX_STACK_SIZE))
-                )
-            )
-            tmp -= MAX_STACK_SIZE
-        }
-        body.setStackPtr(body.getStackPtr() - stackSize - FOUR_BYTES)
+        val updatedStackSize: Int = stackSize + FOUR_BYTES
+        decrementAssemblySP(updatedStackSize)
+        body.setStackPtr(body.getStackPtr() - updatedStackSize)
 
         // Update how much stack space has been allocated so far
-        innerScopeStackAllocation(forLoop, body, stackSize + FOUR_BYTES)
+        innerScopeStackAllocation(forLoop, body, updatedStackSize)
 
         // Generate assembly code for the declaration of the looping variable
         visit(forLoop.decl)
@@ -560,7 +554,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
         visit(forLoop.loopExpr)
         val reg: Register = forLoop.loopExpr.getDestReg()
-
         representation.addMainInstr(
             CompareInstruction(
                 reg,
@@ -571,16 +564,16 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         val nextLabel: LabelInstruction = getUniqueLabel()
         representation.addMainInstr(BranchInstruction(nextLabel.getLabel(), Condition.EQ))
 
-        // Generate assembly code for the body of the loop and branch to the condition
+        // Generate assembly code for the body. Update looping variable
         visit(body)
-        representation.addMainInstr(BranchInstruction(condLabel.getLabel()))
-
         visit(forLoop.update)
+
+        // Update looping variable
+        representation.addMainInstr(BranchInstruction(condLabel.getLabel()))
 
         representation.addMainInstr(nextLabel)
 
-        restoreStackPointer(body, stackSize + FOUR_BYTES)
-
+        restoreStackPointer(body, updatedStackSize)
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
