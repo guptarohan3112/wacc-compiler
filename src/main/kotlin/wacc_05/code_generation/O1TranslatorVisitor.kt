@@ -1,12 +1,34 @@
 package wacc_05.code_generation
 
 import wacc_05.ast_structure.ExprAST
+import wacc_05.ast_structure.StatementAST
+import wacc_05.code_generation.instructions.BranchInstruction
+import wacc_05.code_generation.instructions.CompareInstruction
+import wacc_05.code_generation.instructions.LabelInstruction
 import wacc_05.code_generation.instructions.LoadInstruction
-import wacc_05.code_generation.utilities.AddressingMode
-import wacc_05.code_generation.utilities.Register
-import wacc_05.code_generation.utilities.Registers
+import wacc_05.code_generation.utilities.*
 
 class O1TranslatorVisitor(private val representation: AssemblyRepresentation) : TranslatorVisitor(representation) {
+
+    override fun visitIfAST(ifStat: StatementAST.IfAST) {
+        // Evaluation of the condition expression
+        val condition: ExprAST = ifStat.condExpr
+
+        if (condition.canEvaluate()){
+
+            val eval = condition.evaluate()
+            if (eval == 1.toLong()){
+                visit(ifStat.thenStat)
+            }
+            else{
+                visit(ifStat.elseStat)
+            }
+
+        }else {
+            super.visitIfAST(ifStat)
+        }
+
+    }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         if (unop.canEvaluate()) {
