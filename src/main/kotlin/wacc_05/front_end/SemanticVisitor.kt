@@ -253,7 +253,11 @@ open class SemanticVisitor(
             // Perform semantic checks on the declaration and ensure that the variable is of int type
             visitChild(forLoopST, forLoop.decl)
             if (forLoop.decl.type.getType() != TypeIdentifier.INT_TYPE) {
-                errorHandler.typeMismatch(forLoop.ctx, TypeIdentifier.INT_TYPE, forLoop.decl.type.getType())
+                errorHandler.typeMismatch(
+                    forLoop.ctx,
+                    TypeIdentifier.INT_TYPE,
+                    forLoop.decl.type.getType()
+                )
             }
             // Does error recovery need to be done here?
         }
@@ -268,8 +272,12 @@ open class SemanticVisitor(
                 loopingExpr.getType()
             )
         } else {
-            // Perform semantic checks on the for loop body
-            visitChild(forLoopST, forLoop.body)
+            // Check that the update is an assignment
+            if (forLoop.update !is StatementAST.AssignAST) {
+                errorHandler.noAssignmentFound(forLoop.ctx)
+            } else {
+                visitChild(forLoopST, forLoop.body)
+            }
         }
 
     }
