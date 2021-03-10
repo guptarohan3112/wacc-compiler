@@ -9,7 +9,7 @@
 # Program:
 
 begin
-  for (int x = 8; x < 7 + 9)
+  for (int x = 8, x < 7 + 9, x = x + 1)
     println "This test has no 'do' in the for loop"
   done
 end

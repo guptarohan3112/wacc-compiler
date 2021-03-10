@@ -9,7 +9,7 @@
 # Program:
 
 begin
-  four (int i = 0, i < 4) do
+  four (int i = 0, i < 4, i = i + 1) do
     skip
   done
 end

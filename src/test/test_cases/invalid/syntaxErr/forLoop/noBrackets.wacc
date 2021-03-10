@@ -9,7 +9,7 @@
 # Program:
 
 begin
-  for int i = 1, i < 4 do
+  for int i = 1, i < 4, i = i + 3 do
     skip
   done
 end

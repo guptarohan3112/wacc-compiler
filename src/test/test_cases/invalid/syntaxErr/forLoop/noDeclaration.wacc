@@ -9,7 +9,7 @@
 # Program:
 
 begin
-  for (i < 7) do
+  for (i < 7, i = i + 2) do
     println "This looks a bit more like a while loop"
   done
 end
