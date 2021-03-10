@@ -6,7 +6,7 @@
 # Program:
 
 begin
- for (int i = 0, i < 5) do
+ for (int i = 0, i < 5, i = i + 2) do
    skip
  done
 end
