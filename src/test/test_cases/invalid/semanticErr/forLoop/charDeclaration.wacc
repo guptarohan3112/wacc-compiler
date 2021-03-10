@@ -9,7 +9,7 @@
 # Program:
 
 begin
-  for (char c = 'a', c <= 'b') do
+  for (char c = 'a', c <= 'b', c = 'z') do
     println "No integer declaration here"
   done
 end
