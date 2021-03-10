@@ -575,11 +575,11 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         visit(body)
         representation.addMainInstr(BranchInstruction(condLabel.getLabel()))
 
-        // Update the looping variable, incrementing it by 1
+        visit(forLoop.update)
 
         representation.addMainInstr(nextLabel)
 
-        restoreStackPointer(forLoop.body, stackSize + FOUR_BYTES)
+        restoreStackPointer(body, stackSize + FOUR_BYTES)
 
     }
 
