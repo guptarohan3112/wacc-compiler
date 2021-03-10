@@ -12,20 +12,20 @@ paramList: param (COMMA param)* ;
 
 param: type IDENT ;
 
-stat: SKIP_STAT                                                        # statSkip
-| type IDENT EQUALS assignRHS                                          # statDeclaration
-| assignLHS EQUALS assignRHS                                           # statAssign
-| READ assignLHS                                                       # statRead
-| FREE expr                                                            # statFree
-| RETURN expr                                                          # statReturn
-| EXIT expr                                                            # statExit
-| PRINT expr                                                           # statPrint
-| PRINTLN expr                                                         # statPrintln
-| IF expr THEN stat ELSE stat FI                                       # statIf
-| WHILE expr DO stat DONE                                              # statWhile
-| FOR OPEN_PARENTHESES stat COMMA expr CLOSE_PARENTHESES DO stat DONE  # statFor
-| BEGIN stat END                                                       # statBeginEnd
-| stat SEMICOLON stat                                                  # statSequential
+stat: SKIP_STAT                                                                   # statSkip
+| type IDENT EQUALS assignRHS                                                     # statDeclaration
+| assignLHS EQUALS assignRHS                                                      # statAssign
+| READ assignLHS                                                                  # statRead
+| FREE expr                                                                       # statFree
+| RETURN expr                                                                     # statReturn
+| EXIT expr                                                                       # statExit
+| PRINT expr                                                                      # statPrint
+| PRINTLN expr                                                                    # statPrintln
+| IF expr THEN stat ELSE stat FI                                                  # statIf
+| WHILE expr DO stat DONE                                                         # statWhile
+| FOR OPEN_PARENTHESES stat COMMA expr COMMA stat CLOSE_PARENTHESES DO stat DONE  # statFor
+| BEGIN stat END                                                                  # statBeginEnd
+| stat SEMICOLON stat                                                             # statSequential
 ;
 
 assignLHS: ident
