@@ -11,7 +11,7 @@ import wacc_05.code_generation.utilities.*
 class O1TranslatorVisitor(private val representation: AssemblyRepresentation) : TranslatorVisitor(representation) {
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
-        // Evaluation of the condition expression
+
         val condition: ExprAST = ifStat.condExpr
 
         if (condition.canEvaluate()){
@@ -28,6 +28,22 @@ class O1TranslatorVisitor(private val representation: AssemblyRepresentation) : 
             super.visitIfAST(ifStat)
         }
 
+    }
+
+    override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
+
+        val condition: ExprAST = whileStat.loopExpr
+
+        if (condition.canEvaluate()){
+
+            val eval = condition.evaluate()
+            if (eval == 0.toLong()) {
+                println("nothing to do")
+            }
+
+        }else {
+            super.visitWhileAST(whileStat)
+        }
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
