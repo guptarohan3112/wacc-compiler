@@ -214,6 +214,10 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         return StatementAST.WhileAST(ctx, visitExpr(ctx.expr()), visitStat(ctx.stat()))
     }
 
+    /* Function: visitStatFor()
+       ------------------------
+       Returns a ForAST node with children corresponding to calls to visitExpr() and visitStat().
+     */
     override fun visitStatFor(ctx: WaccParser.StatForContext): AST {
         val decl: WaccParser.StatContext = ctx.stat(0)
         val update: WaccParser.StatContext = ctx.stat(1)

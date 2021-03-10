@@ -259,7 +259,6 @@ open class SemanticVisitor(
                     forLoop.decl.type.getType()
                 )
             }
-            // Does error recovery need to be done here?
         }
 
         // The looping expression must evaluate to a boolean
