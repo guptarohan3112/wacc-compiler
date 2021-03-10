@@ -276,6 +276,7 @@ open class SemanticVisitor(
             if (forLoop.update !is StatementAST.AssignAST) {
                 errorHandler.noAssignmentFound(forLoop.ctx)
             } else {
+                visitChild(forLoopST, forLoop.update)
                 visitChild(forLoopST, forLoop.body)
             }
         }
