@@ -123,6 +123,7 @@ sealed class StatementAST : AST() {
         val ctx: WaccParser.StatForContext,
         val decl: StatementAST,
         val loopExpr: ExprAST,
+        val update: StatementAST,
         val body: StatementAST
     ) : StatementAST() {
 

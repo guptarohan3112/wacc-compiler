@@ -216,11 +216,13 @@ class Visitor : WaccParserBaseVisitor<AST>() {
 
     override fun visitStatFor(ctx: WaccParser.StatForContext): AST {
         val decl: WaccParser.StatContext = ctx.stat(0)
-        val body: WaccParser.StatContext = ctx.stat(1)
+        val update: WaccParser.StatContext = ctx.stat(1)
+        val body: WaccParser.StatContext = ctx.stat(2)
         return StatementAST.ForAST(
             ctx,
             visitStat(decl),
             visitExpr(ctx.expr()),
+            visitStat(update),
             visitStat(body)
         )
     }
