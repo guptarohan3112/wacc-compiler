@@ -9,6 +9,8 @@ import wacc_05.code_generation.AssemblyRepresentation
 import wacc_05.code_generation.O1TranslatorVisitor
 import wacc_05.code_generation.TranslatorVisitor
 import wacc_05.front_end.*
+import wacc_05.graph_colouring.GraphFormationVisitor
+import wacc_05.graph_colouring.InterferenceGraph
 import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import java.io.File
@@ -92,6 +94,13 @@ object WaccCompiler {
         }
 
         if (!validOnly) {
+            // interference graph formation and colouring
+            val graph = InterferenceGraph()
+            val gfVisitor = GraphFormationVisitor(graph)
+            gfVisitor.visit(ast)
+            graph.formGraph()
+            // colour graph
+
             val representation = AssemblyRepresentation()
 
             val translatorVisitor = if (optimisation == 1) {
