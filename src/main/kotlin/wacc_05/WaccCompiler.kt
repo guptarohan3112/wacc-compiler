@@ -99,7 +99,7 @@ object WaccCompiler {
             val gfVisitor = GraphFormationVisitor(graph)
             gfVisitor.visit(ast)
             graph.formGraph()
-            // colour graph
+            graph.colourgraph()
 
             val representation = AssemblyRepresentation()
 
