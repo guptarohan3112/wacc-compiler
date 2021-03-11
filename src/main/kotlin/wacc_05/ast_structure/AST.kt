@@ -6,6 +6,9 @@ import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 
 abstract class AST {
 
+    private var startIndex: Int = 0
+    private var endIndex: Int = 0
+
     private var set: Boolean = false
     var st: SymbolTable? = null
         set(table) {
