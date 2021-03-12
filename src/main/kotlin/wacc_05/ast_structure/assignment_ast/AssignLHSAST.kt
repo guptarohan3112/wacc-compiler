@@ -30,7 +30,6 @@ class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: ExprAST.Iden
                 arrElem!!.getType()
             }
             pairElem != null -> {
-
                 pairElem!!.getType()
             }
             st.lookupAll(ident?.value!!) is FunctionIdentifier -> {
@@ -38,6 +37,20 @@ class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: ExprAST.Iden
             }
             else -> {
                 st.lookupAll(ident.value)!!.getType()
+            }
+        }
+    }
+
+    fun getStringValue(): String {
+        return when {
+            arrElem != null -> {
+                arrElem!!.ident
+            }
+            pairElem != null -> {
+                (pairElem!!.elem as ExprAST.IdentAST).value
+            }
+            else -> {
+                ident!!.value
             }
         }
     }
