@@ -76,6 +76,7 @@ expr: intLit
 | ident
 | arrayElem
 | unaryOper expr
+| MAP unaryOper arrayLit // add function as well as unary operator
 | expr (MULT | DIV | MOD) expr
 | expr (PLUS | MINUS) expr
 | expr (GT | GTE | LT | LTE) expr

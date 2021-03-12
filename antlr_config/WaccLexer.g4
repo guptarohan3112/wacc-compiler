@@ -50,6 +50,7 @@ BOOL:   'bool' ;
 CHAR:   'char' ;
 STRING: 'string' ;
 
+
 // Unary operators
 NOT: '!' ;
 LEN: 'len' ;
@@ -73,6 +74,9 @@ EQ: '==' ;
 NOTEQ: '!=' ;
 AND: '&&';
 OR: '||' ;
+
+// Higher Order Functions
+MAP: 'map' ;
 
 // Integer sign
 INT_SIGN: '+' | '-' ;
