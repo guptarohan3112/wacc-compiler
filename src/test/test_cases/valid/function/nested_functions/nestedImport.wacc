@@ -1,7 +1,7 @@
 # nested imports
 
 # Output:
-# 5
+# 7
 
 import nestedImported
 
