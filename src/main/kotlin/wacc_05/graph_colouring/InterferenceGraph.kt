@@ -11,9 +11,17 @@ class InterferenceGraph {
 
     fun formGraph() {
         // set the neighbours of the nodes to form the interference graph
+        for (node in listOfNodes) {
+            for (other in listOfNodes) {
+                if (node != other && node.overlapsWith(other)) {
+                    node.addNeighbour(other)
+                    other.addNeighbour(node)
+                }
+            }
+        }
     }
 
-    fun findNode(name: String) : GraphNode? {
+    fun findNode(name: String): GraphNode? {
         for (node in this.listOfNodes) {
             if (node.getIdent() == name) {
                 return node
@@ -26,7 +34,7 @@ class InterferenceGraph {
         listOfNodes.add(graphNode)
     }
 
-    fun colourgraph() {
+    fun colourGraph() {
         // TODO: Colours the graph by assigning registers/addressing modes using a greedy approach
     }
 
