@@ -1,10 +1,9 @@
 package wacc_05.graph_colouring
 
-import wacc_05.ast_structure.AST
 import wacc_05.code_generation.utilities.Operand
 //import wacc_05.code_generation.utilities.Register
 
-class GraphNode(private val ast: AST, private var startIndex: Int) {
+class GraphNode(private var startIndex: Int) {
     // the register that will be allocated to this node during graph colouring
     // Make an operand to deal with variables that end up going on the stack?
     private var operand: Operand? = null
@@ -24,5 +23,9 @@ class GraphNode(private val ast: AST, private var startIndex: Int) {
 
     fun getOperand(): Operand {
         return operand!!
+    }
+
+    fun updateEndIndex(endIndex: Int) {
+        this.endIndex = endIndex
     }
 }
