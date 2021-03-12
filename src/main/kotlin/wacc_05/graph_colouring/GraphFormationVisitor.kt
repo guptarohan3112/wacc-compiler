@@ -4,6 +4,7 @@ import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ASTBaseVisitor
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
+import wacc_05.ast_structure.assignment_ast.ArrayLiterAST
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 
@@ -60,6 +61,31 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
 
     override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST) {
         createAndSetGraphNode(liter)
+    }
+
+    override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
+        //TODO
+    }
+
+    override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
+        //TODO
+    }
+
+    override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
+        visit(binop.expr1)
+        visit(binop.expr2)
+
+        // these registers have to be used at the same time so we manually add the conflict
+        binop.expr1.getGraphNode().addNeighbour(binop.expr2.getGraphNode())
+        binop.expr2.getGraphNode().addNeighbour(binop.expr1.getGraphNode())
+
+        // without optimisations taking place we know that the result of the binop is always put in expr1 dest reg
+        binop.setGraphNode(binop.expr1.getGraphNode())
+    }
+
+    override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
+        visit(unop.expr)
+        unop.setGraphNode(unop.expr.getGraphNode())
     }
 
     private fun createAndSetGraphNode(node: AssignRHSAST) {
