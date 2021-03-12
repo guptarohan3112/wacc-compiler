@@ -29,4 +29,12 @@ abstract class AssignRHSAST : AST() {
         this.dest = null
     }
 
+    fun getGraphNode(): GraphNode {
+        return graphNode!!
+    }
+
+    fun setGraphNode(graphNode: GraphNode) {
+        this.graphNode = graphNode
+    }
+
 }
