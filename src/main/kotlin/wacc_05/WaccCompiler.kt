@@ -95,12 +95,12 @@ object WaccCompiler {
 
         if (!validOnly) {
             // interference graph formation and colouring
-            val graph = InterferenceGraph()
+            /*val graph = InterferenceGraph()
             val gfVisitor = GraphFormationVisitor(graph)
             gfVisitor.visit(ast)
             graph.formGraph()
             graph.colourGraph()
-
+*/
             val representation = AssemblyRepresentation()
 
             val translatorVisitor = if (optimisation == 1) {
