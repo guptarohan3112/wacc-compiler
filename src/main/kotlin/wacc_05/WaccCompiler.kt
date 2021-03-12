@@ -160,8 +160,6 @@ object WaccCompiler {
             header += inputString
         }
         val waccString = header + split[1]
-        println(waccString)
-        println("--------------------------")
 
         var chainedImport = false
         val afterLines = waccString.split("\n").toTypedArray()
