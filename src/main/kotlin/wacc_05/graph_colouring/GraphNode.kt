@@ -28,4 +28,8 @@ class GraphNode(private var startIndex: Int, private val ident: String) {
     fun updateEndIndex(endIndex: Int) {
         this.endIndex = endIndex
     }
+
+    fun getIdent(): String {
+        return ident
+    }
 }

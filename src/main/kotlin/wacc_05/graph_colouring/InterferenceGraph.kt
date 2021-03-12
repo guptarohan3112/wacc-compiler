@@ -14,7 +14,11 @@ class InterferenceGraph {
     }
 
     fun findNode(name: String) : GraphNode? {
-        // TODO: To be implemented
+        for (node in this.listOfNodes) {
+            if (node.getIdent() == name) {
+                return node
+            }
+        }
         return null
     }
 
