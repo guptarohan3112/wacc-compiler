@@ -17,6 +17,9 @@ class InterferenceGraph {
 
     private val listOfNodes: ArrayList<GraphNode> = ArrayList()
 
+    fun getNodes(): ArrayList<GraphNode> {
+        return listOfNodes
+    }
 
     fun formGraph() {
         // set the neighbours of the nodes to form the interference graph
@@ -44,30 +47,27 @@ class InterferenceGraph {
     }
 
     fun colourGraph() {
-        // TODO: Colours the graph by assigning registers/addressing modes using a greedy approach
         val allRegisters: ArrayList<Register> = Registers.allRegisters()
 
-        for(node in listOfNodes) {
+        for (node in listOfNodes) {
             node.setRegister(defaultReg)
         }
 
-        for(node in listOfNodes) {
+        for (node in listOfNodes) {
             colourNode(node, HashSet(), allRegisters)
         }
     }
 
     private fun colourNode(node: GraphNode, opsInUse: HashSet<Register>, allRegisters: ArrayList<Register>) {
-        for(neighbour in node.getNeighbours()) {
-            if(neighbour.getRegister() == defaultReg) {
-                colourNode(neighbour, opsInUse, allRegisters)
-            } else {
+        for (neighbour in node.getNeighbours()) {
+            if (neighbour.getRegister() != defaultReg) {
                 opsInUse.add(neighbour.getRegister())
             }
         }
 
         val notInUse = allRegisters.subtract(opsInUse)
 
-        if(notInUse.isNotEmpty()) {
+        if (notInUse.isNotEmpty()) {
             node.setRegister(notInUse.elementAt(0))
         }
     }
