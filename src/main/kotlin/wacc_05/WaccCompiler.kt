@@ -12,6 +12,9 @@ import wacc_05.front_end.*
 import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import java.io.File
+import java.io.InputStream
+import java.lang.StringBuilder
+import java.nio.file.Paths
 import kotlin.system.exitProcess
 import kotlin.system.measureTimeMillis
 
@@ -46,8 +49,11 @@ object WaccCompiler {
 
     @JvmStatic
     fun runCompiler(filePath: String, optimisation: Int, debug: Boolean, validOnly: Boolean): Int {
-        val inputStream = File(filePath).inputStream()
-        val input = CharStreams.fromStream(inputStream)
+        val file = File(filePath)
+        val inputStream = file.inputStream()
+        val dir = file.parentFile.path
+        val waccString: String = addImports(inputStream, dir)
+        val input = CharStreams.fromString(waccString)
         val lexer = WaccLexer(input)
         val errorListener = SyntaxErrorListener()
 
@@ -101,7 +107,7 @@ object WaccCompiler {
             }
 
             translatorVisitor.visit(ast)
-            val fileName = File(filePath).nameWithoutExtension
+            val fileName = file.nameWithoutExtension
             println("Generating assembly file : $fileName.s")
             representation.buildAssembly(fileName)
             println("Generation of assembly file complete")
@@ -112,5 +118,59 @@ object WaccCompiler {
         }
 
         return ErrorCode.SUCCESS
+    }
+
+
+    private fun addImports(inputStream: InputStream, dir: String): String {
+
+        // Find all imports inside file
+        val lineList = mutableListOf<String>()
+        inputStream.bufferedReader().forEachLine { lineList.add(it) }
+        var lineNum = 0
+        val imports: ArrayList<String> = ArrayList()
+        val outputString = StringBuilder()
+
+        while (lineNum < lineList.size) {
+            val line = lineList[lineNum].trimStart()
+            val words = line.split(" ")
+
+            if (words.size >= 2 && words[0] == "import") {
+                // Duplicate imports
+                if (imports.contains(words[1])) {
+                    println("Syntax Error 100:\n Duplicate import Of file ${words[1]}.h" +
+                                " on line $lineNum")
+                    exitProcess(ErrorCode.SYNTAX_ERROR)
+                }
+                imports.add(words[1])
+            } else {
+                outputString.append("$line\n")
+            }
+            lineNum += 1
+        }
+
+        // split parent file around main "begin" and add imported code in between
+        val split = outputString.split("begin", limit = 2)
+        var header = split[0] + "\nbegin\n"
+
+        for (import in imports) {
+            val path: String = Paths.get(dir, "$import.h").toString()
+            val file = File(path)
+            val importInputStream = file.inputStream()
+            val inputString = importInputStream.bufferedReader().use { it.readText() }
+            header += inputString
+        }
+        val waccString = header + split[1]
+        println(waccString)
+        println("--------------------------")
+
+        var chainedImport = false
+        val afterLines = waccString.split("\n").toTypedArray()
+        for (line in afterLines) {
+            if (line.trimStart().split(" ")[0] == "import") {
+                chainedImport = true
+            }
+        }
+
+        return if (!chainedImport) waccString else addImports(waccString.byteInputStream(), dir)
     }
 }

@@ -1,0 +1,21 @@
+# incFunction over two files, importing two functions
+
+# Output:
+# 1
+# 6
+
+# Program:
+import importedFunction
+import doubleImportedFunction
+
+begin
+  int x = 0 ;
+  x = call inc(x) ;
+  println x ;
+  x = call inc(x) ;
+  x = call inc(x) ;
+  x = call inc(x) ;
+  x = call dec(x) ;
+  x = call multByTwo(x) ;
+  println x
+end

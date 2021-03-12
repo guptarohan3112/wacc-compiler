@@ -1,0 +1,11 @@
+# nested imports
+
+# Output:
+# 5
+
+import nestedImported
+
+begin
+    int x = call f(3);
+    println x
+end

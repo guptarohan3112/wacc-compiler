@@ -105,6 +105,8 @@ class ExecutionTests(
                     if (progOutput.isNotEmpty()) {
                         progOutput = progOutput.substring(0, progOutput.length - 1)
                     }
+                    Runtime.getRuntime().exec("rm $prog").waitFor()
+                    Runtime.getRuntime().exec("rm $assemblyName").waitFor()
                     if (assemblyOutput.contains("#addrs#") || assemblyOutput.contains("#runtime_error#")) {
                         return true
                     }
@@ -121,9 +123,6 @@ class ExecutionTests(
                         }
                         false
                     }
-
-                    Runtime.getRuntime().exec("rm $prog").waitFor()
-                    Runtime.getRuntime().exec("rm $assemblyName").waitFor()
                 }
 
             } catch (e: Exception) {
