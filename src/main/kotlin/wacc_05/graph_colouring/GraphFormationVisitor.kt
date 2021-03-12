@@ -63,12 +63,19 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         createAndSetGraphNode(liter)
     }
 
+    // result of a malloc - 1 register
+    // another register - take values from literal and store at malloc address
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
-        //TODO
+        for(elem in arrayLiter.elems) {
+            visit(elem)
+            graph.incrementIndex()
+        }
+
+        createAndSetGraphNode(arrayLiter)
     }
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
-        //TODO
+        createAndSetGraphNode(liter)
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
