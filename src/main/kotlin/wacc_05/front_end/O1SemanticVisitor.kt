@@ -33,7 +33,7 @@ class O1SemanticVisitor(
         visitChild(symTab, unop.expr)
         val exprType = unop.expr.getType()
 
-        when (unop.operator) {
+        when (unop.operator.operator) {
             "len" -> {
                 if (exprType !is TypeIdentifier.ArrayIdentifier) {
                     errorHandler.typeMismatch(

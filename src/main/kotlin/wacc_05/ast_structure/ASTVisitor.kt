@@ -79,4 +79,6 @@ interface ASTVisitor<T> {
     fun visitPairElemAST(pairElem: PairElemAST): T
 
     fun visitMapAST(mapAST: ExprAST.MapAST): T
+
+    fun visitOperatorAST(operatorAST: ExprAST.OperatorAST): T
 }

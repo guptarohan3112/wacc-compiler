@@ -173,11 +173,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class UnOpAST(
-        val ctx: WaccParser.UnaryOperContext,
-        val expr: ExprAST,
-        val operator: String
-    ) : ExprAST() {
+    data class OperatorAST(val operator: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
             return when (operator) {
@@ -188,14 +184,38 @@ sealed class ExprAST : AssignRHSAST() {
                 "chr" -> TypeIdentifier.CHAR_TYPE
                 else -> TypeIdentifier()
             }
+
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitOperatorAST(this)
+        }
+
+    }
+
+    data class UnOpAST(
+        val ctx: WaccParser.UnaryOperContext,
+        val expr: ExprAST,
+        val operator: OperatorAST
+    ) : ExprAST() {
+
+        override fun getType(): TypeIdentifier {
+            return when (operator.operator) {
+                "-" -> TypeIdentifier.INT_TYPE
+                "!" -> TypeIdentifier.BOOL_TYPE
+                "len" -> TypeIdentifier.INT_TYPE
+                "ord" -> TypeIdentifier.INT_TYPE
+                "chr" -> TypeIdentifier.CHAR_TYPE
+                else -> TypeIdentifier()
+            }
         }
 
         override fun canEvaluate(): Boolean {
-            return operator != "len" && expr.canEvaluate()
+            return operator.operator != "len" && expr.canEvaluate()
         }
 
         override fun evaluate(): Long {
-            return when (operator) {
+            return when (operator.operator) {
                 "-" -> -1 * expr.evaluate()
                 "!" -> if (expr.evaluate() == 1.toLong()) {
                     0
@@ -271,11 +291,12 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class MapAST(
         val ctx: WaccParser.ExprContext,
-        val unaryOps: ArrayList<UnOpAST>,
-        val arrayLit: ArrayLiterAST
+        val operator: OperatorAST,
+        val assignRHS: AssignRHSAST
     ) : ExprAST() {
+
         override fun getType(): TypeIdentifier {
-            return TypeIdentifier.ArrayIdentifier(arrayLit.getType(), arrayLit.elemsLength())
+            return TypeIdentifier.ArrayIdentifier(assignRHS.getType(), 0)
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {

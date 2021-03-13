@@ -1,8 +1,9 @@
 # Output:
-# Semantic error ;
+# Semantic error
 
 # Program:
 
 begin
-    println map - [true, false]
+    bool[] a = [true, false];
+    println map - a
 end

@@ -764,7 +764,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         visit(unop.expr)
         unop.setDestReg(unop.expr.getDestReg())
 
-        when (unop.operator) {
+        when (unop.operator.operator) {
             "-" -> visitNeg(unop)
             "!" -> visitNot(unop)
             "len" -> visitLen(unop)
@@ -1338,6 +1338,10 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     }
 
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
+        TODO("Not yet implemented")
+    }
+
+    override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {
         TODO("Not yet implemented")
     }
 

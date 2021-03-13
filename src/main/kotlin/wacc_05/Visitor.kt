@@ -515,18 +515,18 @@ class Visitor : WaccParserBaseVisitor<AST>() {
                 visitArrayElem(ctx.arrayElem())
             }
             ctx.MAP() != null -> {
-                val unOps: ArrayList<ExprAST.UnOpAST> = ArrayList()
-                val arrAST: ArrayLiterAST = visitArrayLit(ctx.arrayLit())
-                val unOp = ctx.unaryOper()
+//                val unOps: ArrayList<ExprAST.UnOpAST> = ArrayList()
+//                val arrAST: ArrayLiterAST = visitArrayLit(ctx.arrayLit())
+//                val unOp = ctx.unaryOper()
+//
+//                for (expr in arrAST.elems){
+//                    unOps.add(ExprAST.UnOpAST(unOp, expr, unOp.text))
+//                }
 
-                for (expr in arrAST.elems){
-                    unOps.add(ExprAST.UnOpAST(unOp, expr, unOp.text))
-                }
-
-                ExprAST.MapAST(ctx, unOps, arrAST)
+                ExprAST.MapAST(ctx, ExprAST.OperatorAST(ctx.unaryOper().text), visitAssignRHS(ctx.assignRHS()))
             }
             ctx.unaryOper() != null -> {
-                ExprAST.UnOpAST(ctx.unaryOper(), visitExpr(ctx.expr(0)), ctx.unaryOper().text)
+                ExprAST.UnOpAST(ctx.unaryOper(), visitExpr(ctx.expr(0)), ExprAST.OperatorAST(ctx.unaryOper().text))
             }
             ctx.OPEN_PARENTHESES() != null -> {
                 visitExpr(ctx.expr(0))

@@ -339,7 +339,7 @@ open class SemanticVisitor(
         visitChild(symTab, unop.expr)
         val exprType = unop.expr.getType()
 
-        when (unop.operator) {
+        when (unop.operator.operator) {
             "len" -> {
                 if (exprType !is TypeIdentifier.ArrayIdentifier) {
                     errorHandler.typeMismatch(
@@ -577,9 +577,51 @@ open class SemanticVisitor(
     }
 
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
-        visitChild(mapAST.st(), mapAST.arrayLit)
-        for (unOp in mapAST.unaryOps) {
-            visitChild(mapAST.st(), unOp)
+        visitChild(mapAST.st(), mapAST.assignRHS)
+        val exprType = mapAST.assignRHS.getType().getType()
+        print(exprType.toString())
+
+        when (mapAST.operator.operator) {
+            "len" -> {
+                if (exprType !is TypeIdentifier.ArrayIdentifier) {
+                    errorHandler.typeMismatch(
+                        mapAST.ctx,
+                        TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0),
+                        exprType
+                    )
+                }
+            }
+            "ord" -> {
+                if (exprType !is TypeIdentifier.CharIdentifier) {
+                    errorHandler.typeMismatch(mapAST.ctx, TypeIdentifier.CHAR_TYPE, exprType)
+                }
+            }
+            "chr" -> {
+                if (exprType !is TypeIdentifier.IntIdentifier) {
+                    errorHandler.typeMismatch(mapAST.ctx, TypeIdentifier.INT_TYPE, exprType)
+                }
+            }
+            "!" -> {
+                if (exprType !is TypeIdentifier.BoolIdentifier) {
+                    errorHandler.typeMismatch(mapAST.ctx, TypeIdentifier.BOOL_TYPE, exprType)
+                }
+            }
+            "-" -> {
+                if (exprType !is TypeIdentifier.IntIdentifier) {
+                    errorHandler.typeMismatch(mapAST.ctx, TypeIdentifier.INT_TYPE, exprType)
+                }
+            }
+            else -> {
+                //do nothing
+            }
         }
+//        visitChild(mapAST.st(), mapAST.arrayLit)
+//        for (unOp in mapAST.unaryOps) {
+//            visitChild(mapAST.st(), unOp)
+//        }
+    }
+
+    override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {
+        return
     }
 }
