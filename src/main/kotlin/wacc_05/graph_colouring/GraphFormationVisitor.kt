@@ -7,6 +7,8 @@ import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.ArrayLiterAST
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.ast_structure.assignment_ast.PairElemAST
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisitor() {
     // Visitor class which will make the interference graph (make all necessary nodes and put them
@@ -43,6 +45,11 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         lhs.setGraphNode(graphNode!!)
     }
 
+    override fun visitPairElemAST(pairElem: PairElemAST) {
+        visit(pairElem.elem)
+        pairElem.setGraphNode(pairElem.elem.getGraphNode())
+    }
+
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
         val graphNode: GraphNode? = graph.findNode(ident.value)
         graphNode?.updateEndIndex(graph.getIndex())
@@ -63,10 +70,14 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         createAndSetGraphNode(liter)
     }
 
+    override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
+        createAndSetGraphNode(liter)
+    }
+
     // result of a malloc - 1 register
     // another register - take values from literal and store at malloc address
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
-        for(elem in arrayLiter.elems) {
+        for (elem in arrayLiter.elems) {
             visit(elem)
             graph.incrementIndex()
         }
