@@ -103,12 +103,30 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         binop.expr2.getGraphNode().addNeighbour(binop.expr1.getGraphNode())
 
         // without optimisations taking place we know that the result of the binop is always put in expr1 dest reg
-        binop.setGraphNode(binop.expr1.getGraphNode())
+        if (binop.expr1.getGraphNode().getIdent() != "") {
+            if (binop.expr2.getGraphNode().getIdent() != "") {
+                createAndSetGraphNode(binop)
+                binop.getGraphNode().addNeighbour(binop.expr1.getGraphNode())
+                binop.expr1.getGraphNode().addNeighbour(binop.getGraphNode())
+
+                binop.getGraphNode().addNeighbour(binop.expr2.getGraphNode())
+                binop.expr2.getGraphNode().addNeighbour(binop.getGraphNode())
+            } else {
+                binop.setGraphNode(binop.expr2.getGraphNode())
+            }
+        } else {
+            binop.setGraphNode(binop.expr1.getGraphNode())
+        }
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         visit(unop.expr)
-        unop.setGraphNode(unop.expr.getGraphNode())
+
+        if (unop.expr.getGraphNode().getIdent() != "") {
+            createAndSetGraphNode(unop)
+        } else {
+            unop.setGraphNode(unop.expr.getGraphNode())
+        }
     }
 
     private fun createAndSetGraphNode(node: AssignRHSAST) {
