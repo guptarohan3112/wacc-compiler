@@ -13,6 +13,7 @@ import wacc_05.graph_colouring.GraphFormationVisitor
 import wacc_05.graph_colouring.InterferenceGraph
 import java.io.File
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class GraphColouring {
@@ -60,6 +61,41 @@ class GraphColouring {
 
         assertTrue(x.getNeighbours().contains(y))
         assertTrue(y.getNeighbours().contains(x))
+    }
+
+    @Test
+    fun graphTest3() {
+        runTest("src/test/test_cases/optimisation/graph_colouring/graphtest3.wacc")
+        assertEquals(2, graph.getNodes().size)
+
+        val x = graph.findNode("x")!!
+        val c = graph.findNode("c")!!
+
+        assertFalse(x.getNeighbours().contains(c))
+        assertFalse(c.getNeighbours().contains(x))
+
+        graph.colourGraph()
+
+        assertEquals(x.getRegister(), c.getRegister())
+    }
+
+    @Test
+    fun graphTestBinop1() {
+        runTest("src/test/test_cases/optimisation/graph_colouring/graphtestbinop1.wacc")
+        assertEquals(2, graph.getNodes().size)
+
+        val x = graph.findNode("x")!!
+        val y = graph.findNode("y")!!
+
+        assertTrue(x.getNeighbours().contains(y))
+        assertTrue(y.getNeighbours().contains(x))
+    }
+
+    @Test
+    fun graphTestBinop2() {
+        runTest("src/test/test_cases/optimisation/graph_colouring/graphtestbinop2.wacc")
+        assertEquals(3, graph.getNodes().size)
+
     }
 
     @Test

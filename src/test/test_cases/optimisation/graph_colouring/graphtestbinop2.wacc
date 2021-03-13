@@ -1,0 +1,8 @@
+begin
+int x = 4;
+int y = 7;
+int z = x + y;
+println z;
+println x;
+println y
+end
