@@ -814,29 +814,24 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     }
 
     private fun visitBinOp(binop: ExprAST.BinOpAST) {
-        val expr1 = binop.expr1
-        val expr2 = binop.expr2
-        val dest1: Register = expr1.getDestReg()
-        val dest2: Register = expr2.getDestReg()
-
         when (binop.operator) {
-            "+" -> visitAdd(binop, dest1, dest2)
-            "-" -> visitSub(binop, dest1, dest2)
-            "*" -> visitMultiply(binop, dest1, dest2)
-            "/", "%" -> visitDivMod(binop, dest1, dest2)
-            "&&", "||" -> visitAndOr(binop, expr1, expr2, dest1, dest2)
-            ">", ">=", "<", "<=" -> visitCompare(binop.operator, expr1, expr2, dest1, dest2)
-            "==", "!=" -> visitEquality(binop, dest1, dest2)
+            "+" -> visitAdd(binop)
+            "-" -> visitSub(binop)
+            "*" -> visitMultiply(binop)
+            "/", "%" -> visitDivMod(binop)
+            "&&", "||" -> visitAndOr(binop)
+            ">", ">=", "<", "<=" -> visitCompare(binop)
+            "==", "!=" -> visitEquality(binop)
         }
     }
 
-    private fun visitAdd(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
+    private fun visitAdd(binop: ExprAST.BinOpAST) {
 
         representation.addMainInstr(
             AddInstruction(
-                dest1,
-                dest1,
-                dest2,
+                binop.getDestReg(),
+                binop.expr1.getDestReg(),
+                binop.expr2.getDestReg(),
                 Condition.S
             )
         )
@@ -845,30 +840,35 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     }
 
-    private fun visitSub(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
+    private fun visitSub(binop: ExprAST.BinOpAST) {
 
         representation.addMainInstr(
             SubtractInstruction(
-                dest1,
-                dest1,
-                dest2,
+                binop.getDestReg(),
+                binop.expr1.getDestReg(),
+                binop.expr2.getDestReg(),
                 Condition.S
             )
         )
 
         checkOverflow(Condition.LVS)
-
     }
 
-    private fun visitMultiply(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
+    private fun visitMultiply(binop: ExprAST.BinOpAST) {
 
-        representation.addMainInstr(SMultiplyInstruction(dest1, dest2))
         representation.addMainInstr(
-            CompareInstruction(
-                dest2,
-                ShiftOperand(dest1, ShiftOperand.Shift.ASR, 31)
+            SMultiplyInstruction(
+                binop.getDestReg(),
+                binop.expr1.getDestReg(),
+                binop.expr2.getDestReg()
             )
         )
+//        representation.addMainInstr(
+//            CompareInstruction(
+//                binop.expr1,
+//                ShiftOperand(dest1, ShiftOperand.Shift.ASR, 31)
+//            )
+//        )
 
         checkOverflow(Condition.LNE)
 
@@ -884,13 +884,13 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         representation.addPInstr(PInstruction.p_throw_overflow_error(representation))
     }
 
-    private fun visitDivMod(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
+    private fun visitDivMod(binop: ExprAST.BinOpAST) {
 
         // get result from expr1 and move into param register 1
-        representation.addMainInstr(MoveInstruction(Registers.r0, dest1))
+        representation.addMainInstr(MoveInstruction(Registers.r0, binop.expr1.getDestReg()))
 
         // get result from expr2 and move into param register 2
-        representation.addMainInstr(MoveInstruction(Registers.r1, dest2))
+        representation.addMainInstr(MoveInstruction(Registers.r1, binop.expr2.getDestReg()))
 
         representation.addPInstr(PInstruction.p_check_divide_by_zero(representation))
         representation.addMainInstr(
@@ -906,79 +906,71 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
         // allocate a register to move the result into
         if (binop.operator == "/") {
-            representation.addMainInstr(MoveInstruction(dest1, Registers.r0))
+            representation.addMainInstr(MoveInstruction(binop.getDestReg(), Registers.r0))
         } else {
-            representation.addMainInstr(MoveInstruction(dest1, Registers.r1))
+            representation.addMainInstr(MoveInstruction(binop.getDestReg(), Registers.r1))
         }
-
     }
 
-    private fun visitAndOr(
-        binop: ExprAST.BinOpAST,
-        expr1: ExprAST,
-        expr2: ExprAST,
-        dest1: Register,
-        dest2: Register
-    ) {
+    private fun visitAndOr(binop: ExprAST.BinOpAST) {
 
         val dest: Register
         val operand: Operand
 
         when {
-            expr1 is ExprAST.BoolLiterAST -> {
-                dest = dest2
-                operand = Immediate(expr1.getValue())
+            binop.expr1 is ExprAST.BoolLiterAST -> {
+                dest = binop.expr2.getDestReg()
+                operand = Immediate(binop.expr1.getValue())
             }
-            expr2 is ExprAST.BoolLiterAST -> {
-                dest = dest1
-                operand = Immediate(expr2.getValue())
+            binop.expr2 is ExprAST.BoolLiterAST -> {
+                dest = binop.expr1.getDestReg()
+                operand = Immediate(binop.expr2.getValue())
             }
             else -> {
-                dest = dest1
-                operand = dest2
+                dest = binop.expr1.getDestReg()
+                operand = binop.expr2.getDestReg()
             }
         }
 
         representation.addMainInstr(
             if (binop.operator == "&&") {
-                AndInstruction(dest1, dest, operand)
+                AndInstruction(binop.getDestReg(), dest, operand)
             } else {
-                OrInstruction(dest1, dest, operand)
+                OrInstruction(binop.getDestReg(), dest, operand)
             }
         )
 
     }
 
-    private fun visitCompare(
-        op: String,
-        expr1: ExprAST,
-        expr2: ExprAST,
-        dest1: Register,
-        dest2: Register
-    ) {
+    private fun visitCompare(binop: ExprAST.BinOpAST) {
 
         var cond1: Condition? = null
         var cond2: Condition? = null
 
-        when (expr1.getType()) {
+        when (binop.expr1.getType()) {
             is TypeIdentifier.IntIdentifier -> {
 
-                when (expr2) {
+                when (binop.expr2) {
                     is ExprAST.IntLiterAST -> {
                         representation.addMainInstr(
                             CompareInstruction(
-                                dest1,
-                                Immediate(expr2.getValue())
+                                binop.expr1.getDestReg(),
+                                Immediate(binop.expr2.getValue())
                             )
                         )
                     }
 
                     else -> {
-                        representation.addMainInstr(CompareInstruction(dest1, dest2))
+                        representation.addMainInstr(
+                            CompareInstruction(
+                                binop.expr1.getDestReg(),
+                                binop.expr2.getDestReg()
+                            )
+                        )
                     }
                 }
 
-                when (op) {
+                when (binop.operator) {
                     ">" -> {
                         cond1 = Condition.GT
                         cond2 = Condition.LE
@@ -1000,22 +992,27 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
             is TypeIdentifier.CharIdentifier -> {
 
-                when (expr2) {
+                when (binop.expr2) {
                     is ExprAST.CharLiterAST -> {
                         representation.addMainInstr(
                             CompareInstruction(
-                                dest1,
-                                ImmediateChar(expr2.value)
+                                binop.expr1.getDestReg(),
+                                ImmediateChar(binop.expr2.value)
                             )
                         )
                     }
 
                     else -> {
-                        representation.addMainInstr(CompareInstruction(dest1, dest2))
+                        representation.addMainInstr(
+                            CompareInstruction(
+                                binop.expr1.getDestReg(),
+                                binop.expr2.getDestReg()
+                            )
+                        )
                     }
                 }
 
-                when (op) {
+                when (binop.operator) {
                     ">" -> {
                         cond1 = Condition.HI
                         cond2 = Condition.LS
@@ -1038,27 +1035,26 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
         representation.addMainInstr(
             MoveInstruction(
-                dest1,
+                binop.getDestReg(),
                 Immediate(1),
                 cond1
             )
         )
         representation.addMainInstr(
             MoveInstruction(
-                dest1,
+                binop.getDestReg(),
                 Immediate(0),
                 cond2
             )
         )
-
     }
 
-    private fun visitEquality(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
+    private fun visitEquality(binop: ExprAST.BinOpAST) {
 
         val cond1: Condition
         val cond2: Condition
 
-        representation.addMainInstr(CompareInstruction(dest1, dest2))
+        representation.addMainInstr(CompareInstruction(binop.expr1.getDestReg(), binop.expr2.getDestReg()))
 
         when (binop.operator) {
             "==" -> {
@@ -1074,19 +1070,18 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
         representation.addMainInstr(
             MoveInstruction(
-                dest1,
+                binop.getDestReg(),
                 Immediate(1),
                 cond1
             )
         )
         representation.addMainInstr(
             MoveInstruction(
-                dest1,
+                binop.getDestReg(),
                 Immediate(0),
                 cond2
             )
         )
-
     }
 
     // types do not require any assembly code
