@@ -18,7 +18,7 @@ abstract class AssignRHSAST : AST() {
     }
 
     fun getDestReg(): Register {
-        return dest!!
+        return graphNode!!.getRegister()
     }
 
     fun setDestReg(reg: Register) {

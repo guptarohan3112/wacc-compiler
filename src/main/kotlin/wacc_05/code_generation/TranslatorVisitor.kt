@@ -578,28 +578,22 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
         val intValue = Integer.parseInt(liter.sign + liter.value)
-        val register = Registers.allocate()
         val mode: AddressingMode = AddressingMode.AddressingLabel("$intValue")
-        liter.setDestReg(register)
-        representation.addMainInstr(LoadInstruction(register, mode))
+        representation.addMainInstr(LoadInstruction(liter.getDestReg(), mode))
     }
 
     override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST) {
         val intValue = liter.getValue()
-        val register = Registers.allocate()
-        liter.setDestReg(register)
-        representation.addMainInstr(MoveInstruction(register, Immediate(intValue)))
+        representation.addMainInstr(MoveInstruction(liter.getDestReg(), Immediate(intValue)))
     }
 
     override fun visitCharLiterAST(liter: ExprAST.CharLiterAST) {
-        val register = Registers.allocate()
-        liter.setDestReg(register)
         if (liter.value == "'\\0'") {
-            representation.addMainInstr(MoveInstruction(register, Immediate(0)))
+            representation.addMainInstr(MoveInstruction(liter.getDestReg(), Immediate(0)))
         } else {
             representation.addMainInstr(
                 MoveInstruction(
-                    register,
+                    liter.getDestReg(),
                     ImmediateChar(liter.value)
                 )
             )
@@ -607,13 +601,11 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     }
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
-        val register = Registers.allocate()
-        liter.setDestReg(register)
         val label = MessageLabelInstruction.getUniqueLabel(liter.value)
         representation.addDataInstr(label)
         representation.addMainInstr(
             LoadInstruction(
-                register,
+                liter.getDestReg(),
                 AddressingMode.AddressingLabel(label.getLabel())
             )
         )
@@ -622,16 +614,13 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
         /* a pair liter is null so will have address zero
          * so we load the value zero into a destination register */
-        val register = Registers.allocate()
 
         representation.addMainInstr(
             LoadInstruction(
-                register,
+                liter.getDestReg(),
                 AddressingMode.AddressingLabel("0")
             )
         )
-
-        liter.setDestReg(register)
     }
 
     private fun visitIdentForRead(ident: ExprAST.IdentAST) {
@@ -645,12 +634,11 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     private fun visitIdentGeneral(ident: ExprAST.IdentAST, read: Boolean) {
         val paramOffset = ident.getParamOffset()
         val spOffset: Int = calculateIdentSpOffset(ident.value, ident, paramOffset)
-        val register: Register = Registers.allocate()
 
         if (read) {
             representation.addMainInstr(
                 AddInstruction(
-                    register,
+                    ident.getDestReg(),
                     Registers.sp,
                     Immediate(spOffset)
                 )
@@ -663,11 +651,8 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
             if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
                 mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
             }
-            representation.addMainInstr(LoadInstruction(register, mode))
+            representation.addMainInstr(LoadInstruction(ident.getDestReg(), mode))
         }
-
-        // Set the destination register to the register that was allocated
-        ident.setDestReg(register)
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
@@ -701,8 +686,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         val offset: Int = calculateIdentSpOffset(arrayElem.ident, arrayElem, 0)
 
         // Move the start of the array into dest register
-        val dest: Register = Registers.allocate()
-        arrayElem.setDestReg(dest)
+        val dest: Register = arrayElem.getDestReg()
         representation.addMainInstr(
             AddInstruction(
                 dest,
@@ -753,8 +737,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
                     representation.addMainInstr(AddInstruction(dest, dest, exprDest))
                 }
             }
-            // Free the destination register for future use
-            Registers.free(exprDest)
         }
     }
 
@@ -762,7 +744,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         // Evaluate the single operand and get the register holding the result
         visit(unop.expr)
-        unop.setDestReg(unop.expr.getDestReg())
 
         when (unop.operator) {
             "-" -> visitNeg(unop)
@@ -829,7 +810,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     private fun visitBinOpStack(binop: ExprAST.BinOpAST) {
         representation.addMainInstr(PopInstruction(Registers.r11))
-        binop.expr2.setDestReg(Registers.r11)
         visitBinOp(binop)
     }
 
@@ -848,10 +828,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
             ">", ">=", "<", "<=" -> visitCompare(binop.operator, expr1, expr2, dest1, dest2)
             "==", "!=" -> visitEquality(binop, dest1, dest2)
         }
-
-        binop.setDestReg(dest1)
-        Registers.free(dest2)
-
     }
 
     private fun visitAdd(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
@@ -1154,7 +1130,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         representation.addMainInstr(BranchInstruction("malloc", Condition.L))
 
         // store the array address in an allocated register
-        val arrLocation: Register = Registers.allocate()
+        val arrLocation: Register = arrayLiter.getDestReg()
         representation.addMainInstr(MoveInstruction(arrLocation, Registers.r0))
 
         // we start the index at +4 so we can store the size of the array at +0
@@ -1173,10 +1149,10 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
             )
 
             arrIndex += elemsSize
-            Registers.free(dest)
         }
 
         // store the length of the array at arrLocation +0
+        // TODO: change implementation so we can get this register using colouring
         val sizeDest: Register = Registers.allocate()
         representation.addMainInstr(
             LoadInstruction(
@@ -1192,9 +1168,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
                 AddressingMode.AddressingMode2(arrLocation)
             )
         )
-        Registers.free(sizeDest)
-
-        arrayLiter.setDestReg(arrLocation)
     }
 
     // handled by visitAssignAST
@@ -1248,11 +1221,8 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         restoreStackPointer(funcCall, argsSize)
 
         // Move the result of the function into an available register
-        val reg: Register = Registers.allocate()
+        val reg: Register = funcCall.getDestReg()
         representation.addMainInstr(MoveInstruction(reg, Registers.r0))
-
-        // Set the destination register for future use
-        funcCall.setDestReg(reg)
     }
 
     override fun visitNewPairAST(newPair: NewPairAST) {
@@ -1271,15 +1241,12 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         )
 
         // move malloc result into allocated register
-        val pairLocation = Registers.allocate()
+        val pairLocation = newPair.getDestReg()
         representation.addMainInstr(MoveInstruction(pairLocation, Registers.r0))
 
         // visit & allocate the pair's children using the helper function
         allocatePairElem(newPair.fst, pairLocation, 0)
         allocatePairElem(newPair.snd, pairLocation, TypeIdentifier.ADDR_SIZE)
-
-        // set destination register
-        newPair.setDestReg(pairLocation)
     }
 
     /* a helper function which will allocate a pair's element and move it into the register where the pair has
@@ -1366,8 +1333,5 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
                 )
             )
         }
-
-        // set the destination register
-        pairElem.setDestReg(dest)
     }
 }
