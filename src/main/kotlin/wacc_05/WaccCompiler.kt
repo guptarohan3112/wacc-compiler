@@ -79,6 +79,8 @@ object WaccCompiler {
         val visitor = Visitor()
         val ast: AST = visitor.visit(tree)
 
+        println(ast)
+
         val symTab = SymbolTable(null)
         val funcTab = FunctionST()
         SymbolTable.makeTopLevel(symTab)

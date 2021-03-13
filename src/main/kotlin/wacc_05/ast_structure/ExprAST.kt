@@ -271,11 +271,11 @@ sealed class ExprAST : AssignRHSAST() {
 
     data class MapAST(
         val ctx: WaccParser.ExprContext,
-        val unaryOps: ArrayList<UnOpAST>
+        val unaryOps: ArrayList<UnOpAST>,
+        val arrayLit: ArrayLiterAST
     ) : ExprAST() {
-
         override fun getType(): TypeIdentifier {
-            return TypeIdentifier.ArrayIdentifier(unaryOps[0].getType(), unaryOps.size)
+            return TypeIdentifier.ArrayIdentifier(arrayLit.getType(), arrayLit.elemsLength())
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {

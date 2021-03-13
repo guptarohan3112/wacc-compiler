@@ -1,0 +1,8 @@
+# Output:
+# Semantic error ;
+
+# Program:
+
+begin
+    println map - [true, false]
+end

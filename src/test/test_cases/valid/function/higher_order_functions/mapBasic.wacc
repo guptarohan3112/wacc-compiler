@@ -1,9 +1,0 @@
-# Output:
-# [false, true] ;
-
-# Program:
-
-begin
-    bool[] a = [true, false] ;
-    println map ! a
-end
