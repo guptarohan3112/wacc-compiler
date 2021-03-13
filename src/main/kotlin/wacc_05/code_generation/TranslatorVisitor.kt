@@ -762,17 +762,17 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         // Evaluate the single operand and get the register holding the result
         visit(unop.expr)
-        unop.setDestReg(unop.expr.getDestReg())
+        val dest: Register = unop.expr.getDestReg()
+        unop.setDestReg(dest)
 
         when (unop.operator.operator) {
-            "-" -> visitNeg(unop)
-            "!" -> visitNot(unop)
-            "len" -> visitLen(unop)
+            "-" -> visitNeg(dest)
+            "!" -> visitNot(dest)
+            "len" -> visitLen(dest)
         }
     }
 
-    private fun visitLen(unop: ExprAST.UnOpAST) {
-        val dest: Register = unop.getDestReg()
+    private fun visitLen(dest: Register) {
 
         // load the value of the length into the destination register
         representation.addMainInstr(
@@ -783,8 +783,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         )
     }
 
-    private fun visitNot(unop: ExprAST.UnOpAST) {
-        val dest: Register = unop.getDestReg()
+    private fun visitNot(dest: Register) {
         representation.addMainInstr(
             EorInstruction(
                 dest,
@@ -794,14 +793,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         )
     }
 
-    private fun visitNeg(unop: ExprAST.UnOpAST) {
-        val dest: Register = unop.expr.getDestReg()
-        representation.addMainInstr(
-            LoadInstruction(
-                dest,
-                AddressingMode.AddressingMode2(Registers.sp)
-            )
-        )
+    private fun visitNeg(dest: Register) {
         representation.addMainInstr(ReverseSubtractInstruction(dest, dest, Immediate(0)))
 
         representation.addMainInstr(
@@ -840,9 +832,9 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         val dest2: Register = expr2.getDestReg()
 
         when (binop.operator) {
-            "+" -> visitAdd(binop, dest1, dest2)
-            "-" -> visitSub(binop, dest1, dest2)
-            "*" -> visitMultiply(binop, dest1, dest2)
+            "+" -> visitAdd(dest1, dest2)
+            "-" -> visitSub(dest1, dest2)
+            "*" -> visitMultiply(dest1, dest2)
             "/", "%" -> visitDivMod(binop, dest1, dest2)
             "&&", "||" -> visitAndOr(binop, expr1, expr2, dest1, dest2)
             ">", ">=", "<", "<=" -> visitCompare(binop.operator, expr1, expr2, dest1, dest2)
@@ -854,7 +846,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     }
 
-    private fun visitAdd(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
+    private fun visitAdd(dest1: Register, dest2: Register) {
 
         representation.addMainInstr(
             AddInstruction(
@@ -869,7 +861,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     }
 
-    private fun visitSub(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
+    private fun visitSub(dest1: Register, dest2: Register) {
 
         representation.addMainInstr(
             SubtractInstruction(
@@ -884,7 +876,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
     }
 
-    private fun visitMultiply(binop: ExprAST.BinOpAST, dest1: Register, dest2: Register) {
+    private fun visitMultiply(dest1: Register, dest2: Register) {
 
         representation.addMainInstr(SMultiplyInstruction(dest1, dest2))
         representation.addMainInstr(
@@ -1338,7 +1330,78 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     }
 
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
-        TODO("Not yet implemented")
+
+        visit(mapAST.assignRHS)
+        val arrayLiter = mapAST.assignRHS as ArrayLiterAST
+
+        // we want to allocate (length * size of elem) + INT_SIZE
+        val elemsSize: Int = if (arrayLiter.elemsLength() > 0) {
+            arrayLiter.elems[0].getStackSize()
+        } else {
+            0
+        }
+
+        val arrAllocation: Int = arrayLiter.elemsLength() * elemsSize + TypeIdentifier.INT_SIZE
+
+        // load allocation into param register for malloc and branch
+        representation.addMainInstr(
+            LoadInstruction(
+                Registers.r0,
+                AddressingMode.AddressingLabel("$arrAllocation")
+            )
+        )
+
+        representation.addMainInstr(BranchInstruction("malloc", Condition.L))
+
+        // store the array address in an allocated register
+        val arrLocation: Register = Registers.allocate()
+        representation.addMainInstr(MoveInstruction(arrLocation, Registers.r0))
+
+        // we start the index at +4 so we can store the size of the array at +0
+        var arrIndex = TypeIdentifier.INT_SIZE
+        for (elem in arrayLiter.elems) {
+            visit(elem)
+            val dest: Register = elem.getDestReg()
+
+            when (mapAST.operator.operator) {
+                "-" -> visitNeg(dest)
+                "!" -> visitNot(dest)
+                "len" -> visitLen(dest)
+            }
+
+            // store the value of elem at the current index
+            representation.addMainInstr(
+                getStoreInstruction(
+                    dest,
+                    AddressingMode.AddressingMode2(arrLocation, Immediate(arrIndex)),
+                    elem.getType()
+                )
+            )
+
+            arrIndex += elemsSize
+            Registers.free(dest)
+        }
+
+        // store the length of the array at arrLocation +0
+        val sizeDest: Register = Registers.allocate()
+        representation.addMainInstr(
+            LoadInstruction(
+                sizeDest,
+                AddressingMode.AddressingLabel("${arrayLiter.elemsLength()}")
+            )
+        )
+
+        // store the length of the array at the front of its allocated space
+        representation.addMainInstr(
+            StoreInstruction(
+                sizeDest,
+                AddressingMode.AddressingMode2(arrLocation)
+            )
+        )
+        Registers.free(sizeDest)
+
+        mapAST.setDestReg(arrLocation)
+
     }
 
     override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {

@@ -579,7 +579,6 @@ open class SemanticVisitor(
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
         visitChild(mapAST.st(), mapAST.assignRHS)
         val exprType = mapAST.assignRHS.getType().getType()
-        print(exprType.toString())
 
         when (mapAST.operator.operator) {
             "len" -> {
