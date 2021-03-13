@@ -783,7 +783,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
                 AddressingMode.AddressingMode2(Registers.sp)
             )
         )
-        representation.addMainInstr(ReverseSubtractInstruction(dest, dest, Immediate(0)))
+        representation.addMainInstr(ReverseSubtractInstruction(unop.getDestReg(), dest, Immediate(0)))
 
         representation.addMainInstr(
             BranchInstruction(
