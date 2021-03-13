@@ -125,7 +125,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         restoreStackPointer(innerScope, stackSize)
     }
 
-    /* MAIN VISIT METHODS (OVERIDDEN FROM THE BASE VISITOR CLASS)
+    /* MAIN VISIT METHODS (OVER-RIDDEN FROM THE BASE VISITOR CLASS)
        ---------------------------------------------------------
      */
 
@@ -1335,6 +1335,10 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         )
 
         // (we don't free the dest register here as it contains the value we want to use elsewhere)
+    }
+
+    override fun visitMapAST(mapAST: ExprAST.MapAST) {
+        TODO("Not yet implemented")
     }
 
     /* completes visiting pair elems to the point that the address of it is in the dest register,

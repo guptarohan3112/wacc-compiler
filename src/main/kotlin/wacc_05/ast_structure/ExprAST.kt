@@ -1,6 +1,7 @@
 package wacc_05.ast_structure
 
 import antlr.WaccParser
+import wacc_05.ast_structure.assignment_ast.ArrayLiterAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
@@ -265,6 +266,20 @@ sealed class ExprAST : AssignRHSAST() {
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitBinOpAST(this)
+        }
+    }
+
+    data class MapAST(
+        val ctx: WaccParser.ExprContext,
+        val unaryOps: ArrayList<UnOpAST>
+    ) : ExprAST() {
+
+        override fun getType(): TypeIdentifier {
+            return TypeIdentifier.ArrayIdentifier(unaryOps[0].getType(), unaryOps.size)
+        }
+
+        override fun <T> accept(visitor: ASTVisitor<T>): T {
+            return visitor.visitMapAST(this)
         }
     }
 }

@@ -575,4 +575,8 @@ open class SemanticVisitor(
         child.functionST = functionST
         visit(child)
     }
+
+    override fun visitMapAST(mapAST: ExprAST.MapAST) {
+        TODO("Not yet implemented")
+    }
 }

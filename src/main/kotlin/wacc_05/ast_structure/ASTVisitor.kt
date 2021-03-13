@@ -77,4 +77,6 @@ interface ASTVisitor<T> {
     fun visitNewPairAST(newPair: NewPairAST): T
 
     fun visitPairElemAST(pairElem: PairElemAST): T
+
+    fun visitMapAST(mapAST: ExprAST.MapAST): T
 }

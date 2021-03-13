@@ -612,6 +612,17 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             ctx.OR() != null -> {
                 ExprAST.BinOpAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)), ctx.OR().text)
             }
+            ctx.MAP() != null -> {
+                val unOps: ArrayList<ExprAST.UnOpAST> = ArrayList()
+                val arrAST = visitArrayLit(ctx.arrayLit())
+                val unOp = ctx.unaryOper()
+
+                for (expr in arrAST.elems){
+                    unOps.add(ExprAST.UnOpAST(unOp, expr, unOp.text))
+                }
+
+                ExprAST.MapAST(ctx, unOps)
+            }
             else -> throw Exception("Error : Cannot match context with type")
         }
     }
