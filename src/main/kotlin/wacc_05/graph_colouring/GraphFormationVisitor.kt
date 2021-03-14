@@ -14,7 +14,6 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
     // Visitor class which will make the interference graph (make all necessary nodes and put them
     // in the list of nodes)
 
-    // int x = 3   0
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
         visit(decl.assignment)
         decl.setGraphNode(decl.assignment.getGraphNode())
@@ -30,11 +29,6 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         assign.setGraphNode(assign.rhs.getGraphNode())
         assign.getGraphNode().setIdentifier(assign.lhs.getStringValue())
         graph.incrementIndex()
-
-//        val graphNode = GraphNode(graph.getIndex(), assign.lhs.getStringValue())
-//
-//        graph.addNode(graphNode)
-//        graph.incrementIndex()
     }
 
     override fun visitAssignLHSAST(lhs: AssignLHSAST) {
