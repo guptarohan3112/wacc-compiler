@@ -141,7 +141,29 @@ class ForLoopTests : StatSemanticTests() {
 
     @Test
     fun forLoopNoComparison() {
-        TODO("Implement this test")
+        st.add("int", TypeIdentifier.INT_TYPE)
+
+        every { seh.typeMismatch(any(), any(), any())} just runs
+
+        val forLoopAddition = StatementAST.ForAST(
+            statForContext,
+            validLoopVarDecl,
+            ExprAST.BinOpAST(
+                WaccParser.ExprContext(WaccParser.StatContext(), 0),
+                ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "i"),
+                ExprAST.IntLiterAST("+", "7"),
+                "+"
+            ),
+            loopVarIncrement,
+            StatementAST.SkipAST
+        )
+
+        forLoopAddition.st = st
+        visitor.visitForAST(forLoopAddition)
+
+        verify(exactly = 1) {
+            seh.typeMismatch(any(), boolType, intType)
+        }
     }
 
     @Test
