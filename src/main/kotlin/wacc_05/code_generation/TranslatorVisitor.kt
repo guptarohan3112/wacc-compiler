@@ -5,13 +5,14 @@ import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.code_generation.instructions.*
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 import wacc_05.code_generation.utilities.*
+import wacc_05.graph_colouring.InterferenceGraph
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
 import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-open class TranslatorVisitor(private val representation: AssemblyRepresentation) :
+open class TranslatorVisitor(private val representation: AssemblyRepresentation, private val graph: InterferenceGraph) :
     ASTBaseVisitor() {
 
     private val MAX_STACK_SIZE: Int = 1024
@@ -33,7 +34,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     private fun calculateStackSize(bodyInScope: StatementAST): Int {
         // Calculate stack size for scope and decrement the stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
-        val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope)
+        val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope, graph)
         decrementAssemblySP(stackSize)
         return stackSize
     }
@@ -537,7 +538,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
         // Allocate stack space for all of the local variables and looping variable. Update stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
-        val stackSize: Int = stackSizeCalculator.getStackSize(body)
+        val stackSize: Int = stackSizeCalculator.getStackSize(body, graph)
         val updatedStackSize: Int = stackSize + FOUR_BYTES
         decrementAssemblySP(updatedStackSize)
         body.setStackPtr(body.getStackPtr() - updatedStackSize)

@@ -7,8 +7,9 @@ import wacc_05.code_generation.instructions.CompareInstruction
 import wacc_05.code_generation.instructions.LabelInstruction
 import wacc_05.code_generation.instructions.LoadInstruction
 import wacc_05.code_generation.utilities.*
+import wacc_05.graph_colouring.InterferenceGraph
 
-class O1TranslatorVisitor(private val representation: AssemblyRepresentation) : TranslatorVisitor(representation) {
+class O1TranslatorVisitor(private val representation: AssemblyRepresentation, private val graph: InterferenceGraph) : TranslatorVisitor(representation, graph) {
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
 

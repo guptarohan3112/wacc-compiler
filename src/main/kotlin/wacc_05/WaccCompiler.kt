@@ -104,9 +104,9 @@ object WaccCompiler {
             val representation = AssemblyRepresentation()
 
             val translatorVisitor = if (optimisation == 1) {
-                O1TranslatorVisitor(representation)
+                O1TranslatorVisitor(representation, graph)
             } else {
-                TranslatorVisitor(representation)
+                TranslatorVisitor(representation, graph)
             }
 
             translatorVisitor.visit(ast)
