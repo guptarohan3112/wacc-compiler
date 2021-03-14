@@ -9,6 +9,14 @@ import wacc_05.ast_structure.assignment_ast.*
  */
 abstract class ASTBaseVisitor : ASTVisitor<Unit> {
 
+    override fun visitMapAST(mapAST: ExprAST.MapAST) {
+        return
+    }
+
+    override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {
+        return
+    }
+
     override fun visitProgramAST(prog: ProgramAST) {
         for (func in prog.functionList) {
             visitFunctionAST(func)

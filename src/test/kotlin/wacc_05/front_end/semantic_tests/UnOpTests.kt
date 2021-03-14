@@ -25,7 +25,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.BoolLiterAST("true"),
-                "!"
+                ExprAST.OperatorAST("!")
             )
         )
 
@@ -46,7 +46,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.IntLiterAST("+", "4"),
-                "!"
+                ExprAST.OperatorAST("!")
             )
         )
 
@@ -69,7 +69,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.BoolLiterAST("true"),
-                "!"
+                ExprAST.OperatorAST("!")
             )
         )
 
@@ -90,7 +90,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.IntLiterAST("+", "3"),
-                "-"
+                ExprAST.OperatorAST("-")
             )
         )
 
@@ -111,7 +111,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.CharLiterAST("c"),
-                "-"
+                ExprAST.OperatorAST("-")
             )
         )
 
@@ -134,7 +134,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.IntLiterAST("-", "4"),
-                "-"
+                ExprAST.OperatorAST("-")
             )
         )
 
@@ -157,7 +157,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "x"),
-                "len"
+                ExprAST.OperatorAST("len")
             )
         )
 
@@ -178,7 +178,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.IntLiterAST("+", "3"),
-                "len"
+                ExprAST.OperatorAST("len")
             )
         )
 
@@ -204,7 +204,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "arr"),
-                "len"
+                ExprAST.OperatorAST("len")
             )
         )
 
@@ -225,7 +225,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.CharLiterAST("c"),
-                "ord"
+                ExprAST.OperatorAST("ord")
             )
         )
 
@@ -246,7 +246,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.IntLiterAST("+", "4"),
-                "ord"
+                ExprAST.OperatorAST("ord")
             )
         )
 
@@ -269,7 +269,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.CharLiterAST("c"),
-                "ord"
+                ExprAST.OperatorAST("ord")
             )
         )
 
@@ -290,7 +290,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.IntLiterAST("+", "42"),
-                "chr"
+                ExprAST.OperatorAST("chr")
             )
         )
 
@@ -311,7 +311,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.BoolLiterAST("false"),
-                "chr"
+                ExprAST.OperatorAST("chr")
             )
         )
 
@@ -334,7 +334,7 @@ class UnOpTests : ExprSemanticTests() {
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
                 ExprAST.IntLiterAST("+", "42"),
-                "chr"
+                ExprAST.OperatorAST("chr")
             )
         )
 

@@ -33,8 +33,6 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         visit(assign.rhs)
         visit(assign.lhs)
 
-
-
         if(assign.rhs.getGraphNode().getIdent() != "") {
             val graphNode = GraphNode(graph.getIndex(), assign.lhs.getStringValue())
         }
