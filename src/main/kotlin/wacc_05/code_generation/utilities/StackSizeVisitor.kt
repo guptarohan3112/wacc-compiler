@@ -20,8 +20,7 @@ class StackSizeVisitor {
     private fun visitStat(stat: StatementAST, graph: InterferenceGraph) {
         return when (stat) {
             is StatementAST.DeclAST -> {
-                val size: Int = stat.type.getType().getStackSize()
-                incrementStackSizeIfNecessary(stat, size, graph)
+                incrementStackSizeIfNecessary(stat, graph)
             }
             is StatementAST.SequentialAST -> {
                 visitStat(stat.stat1, graph)
@@ -33,7 +32,8 @@ class StackSizeVisitor {
         }
     }
 
-    private fun incrementStackSizeIfNecessary(stat: StatementAST.DeclAST, size: Int, graph: InterferenceGraph) {
+    private fun incrementStackSizeIfNecessary(stat: StatementAST.DeclAST, graph: InterferenceGraph) {
+        val size: Int = stat.type.getType().getStackSize()
         val correctNode: GraphNode? = graph.findNode(stat.varName)
         if (correctNode != null && !correctNode.getRegister().equals(InterferenceGraph.DefaultReg)) {
             return
