@@ -70,6 +70,10 @@ object Registers {
         return list
     }
 
+    fun allRegisters(): ArrayList<Register> {
+        return allRegisters
+    }
+
     fun free(reg: Register) {
         if (inUse.remove(reg)) {
             available.insert(reg)

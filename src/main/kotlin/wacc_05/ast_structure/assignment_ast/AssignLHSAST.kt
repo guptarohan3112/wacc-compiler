@@ -4,12 +4,15 @@ import antlr.WaccParser
 import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ASTVisitor
 import wacc_05.ast_structure.ExprAST
+import wacc_05.graph_colouring.GraphNode
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 // This class accounts for whether the left hand side of assignment is a identifier, array element or pair element
 class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: ExprAST.IdentAST?) : AST() {
+
+    private var graphNode: GraphNode? = null
 
     var arrElem: ExprAST.ArrayElemAST? = null
         private set
@@ -30,7 +33,6 @@ class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: ExprAST.Iden
                 arrElem!!.getType()
             }
             pairElem != null -> {
-
                 pairElem!!.getType()
             }
             st.lookupAll(ident?.value!!) is FunctionIdentifier -> {
@@ -40,6 +42,28 @@ class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: ExprAST.Iden
                 st.lookupAll(ident.value)!!.getType()
             }
         }
+    }
+
+    fun getStringValue(): String {
+        return when {
+            arrElem != null -> {
+                arrElem!!.ident
+            }
+            pairElem != null -> {
+                (pairElem!!.elem as ExprAST.IdentAST).value
+            }
+            else -> {
+                ident!!.value
+            }
+        }
+    }
+
+    fun getGraphNode(): GraphNode {
+        return graphNode!!
+    }
+
+    fun setGraphNode(node: GraphNode) {
+        this.graphNode = node
     }
 
     override fun <T> accept(visitor: ASTVisitor<T>): T {

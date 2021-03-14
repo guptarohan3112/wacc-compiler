@@ -1,0 +1,6 @@
+begin
+int x = 5;
+println x;
+char c = 'c';
+println c
+end

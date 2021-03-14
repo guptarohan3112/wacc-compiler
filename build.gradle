@@ -165,6 +165,27 @@ task executionTests(type: Test) {
     exclude 'wacc_05/front_end/'
 }
 
+task graphTests(type: Test) {
+    sourceSets {
+        main {
+            kotlin {
+                srcDirs += 'src/main/kotlin/'
+            }
+            java {
+                srcDirs += 'src/main/java/'
+            }
+        }
+        test {
+            kotlin {
+                srcDirs += 'src/test/kotlin/wacc_05/optimisation_tests/'
+            }
+        }
+    }
+
+    exclude 'wacc_05/front_end/'
+    exclude 'wacc_05/execution_tests/'
+}
+
 /* THE BELOW CODE WAS TAKEN FROM
  https://stackoverflow.com/questions/3963708/gradle-how-to-display-test-results-in-the-console-in-real-time"
  All Credit for this goes Shubham Chaudhary */

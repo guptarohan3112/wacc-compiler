@@ -1,0 +1,18 @@
+begin
+int a = 4;
+char b = '5';
+int c = 6;
+int d = 7;
+char e = '8';
+int f = 9;
+int g = 10;
+bool h = true;
+println a;
+println b;
+println c;
+println d;
+println e;
+println f;
+println g;
+println h
+end

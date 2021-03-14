@@ -7,24 +7,24 @@ import wacc_05.code_generation.instructions.CompareInstruction
 import wacc_05.code_generation.instructions.LabelInstruction
 import wacc_05.code_generation.instructions.LoadInstruction
 import wacc_05.code_generation.utilities.*
+import wacc_05.graph_colouring.InterferenceGraph
 
-class O1TranslatorVisitor(private val representation: AssemblyRepresentation) : TranslatorVisitor(representation) {
+class O1TranslatorVisitor(private val representation: AssemblyRepresentation, private val graph: InterferenceGraph) : TranslatorVisitor(representation, graph) {
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
 
         val condition: ExprAST = ifStat.condExpr
 
-        if (condition.canEvaluate()){
+        if (condition.canEvaluate()) {
 
             val eval = condition.evaluate()
-            if (eval == 1.toLong()){
+            if (eval == 1.toLong()) {
                 visit(ifStat.thenStat)
-            }
-            else{
+            } else {
                 visit(ifStat.elseStat)
             }
 
-        }else {
+        } else {
             super.visitIfAST(ifStat)
         }
 
@@ -34,14 +34,14 @@ class O1TranslatorVisitor(private val representation: AssemblyRepresentation) : 
 
         val condition: ExprAST = whileStat.loopExpr
 
-        if (condition.canEvaluate()){
+        if (condition.canEvaluate()) {
 
             val eval = condition.evaluate()
             if (eval == 0.toLong()) {
                 println("nothing to do")
             }
 
-        }else {
+        } else {
             super.visitWhileAST(whileStat)
         }
     }

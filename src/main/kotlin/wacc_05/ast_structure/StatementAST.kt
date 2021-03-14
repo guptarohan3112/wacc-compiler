@@ -3,6 +3,7 @@ package wacc_05.ast_structure
 import antlr.WaccParser
 import wacc_05.ast_structure.assignment_ast.AssignLHSAST
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.graph_colouring.GraphNode
 
 sealed class StatementAST : AST() {
 
@@ -20,6 +21,16 @@ sealed class StatementAST : AST() {
         val assignment: AssignRHSAST
     ) : StatementAST() {
 
+        private var graphNode: GraphNode? = null
+
+        fun setGraphNode(node: GraphNode) {
+            this.graphNode = node
+        }
+
+        fun getGraphNode(): GraphNode {
+            return graphNode!!
+        }
+
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitDeclAST(this)
         }
@@ -30,6 +41,16 @@ sealed class StatementAST : AST() {
         val lhs: AssignLHSAST,
         val rhs: AssignRHSAST
     ) : StatementAST() {
+
+        private var graphNode: GraphNode? = null
+
+        fun setGraphNode(node: GraphNode) {
+            this.graphNode = node
+        }
+
+        fun getGraphNode(): GraphNode {
+            return graphNode!!
+        }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {
             return visitor.visitAssignAST(this)

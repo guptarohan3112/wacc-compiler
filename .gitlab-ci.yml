@@ -25,4 +25,6 @@ testExecution:
     script:
         - make
         - ./gradlew executionTests
+    only:
+        - master
 

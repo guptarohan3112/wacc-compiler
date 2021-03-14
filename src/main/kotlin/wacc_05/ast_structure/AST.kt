@@ -6,6 +6,9 @@ import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 
 abstract class AST {
 
+    private var startIndex: Int = 0
+    private var endIndex: Int = 0
+
     private var set: Boolean = false
     var st: SymbolTable? = null
         set(table) {
@@ -37,6 +40,14 @@ abstract class AST {
     // Getter for the symbol table, dereferencing it before returning
     fun st(): SymbolTable {
         return st!!
+    }
+
+    fun getStackPtrOffset(): Int {
+        return st().getStackPtrOffset()
+    }
+
+    fun updatePtrOffset(ofs: Int) {
+        st().updatePtrOffset(ofs)
     }
 
     // Getter and setter for the stack pointer in the symbol table
