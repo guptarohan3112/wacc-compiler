@@ -6,7 +6,7 @@ import wacc_05.code_generation.utilities.Registers
 
 class InterferenceGraph {
 
-    companion object {
+    companion object DefaultReg{
         private val defaultReg: Register = Register(-1)
     }
 
