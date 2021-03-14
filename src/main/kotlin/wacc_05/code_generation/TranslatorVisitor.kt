@@ -664,25 +664,46 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
         val label = MessageLabelInstruction.getUniqueLabel(liter.value)
+        val dest: Operand = operandAllocation(liter.getDestReg(), liter)
+
         representation.addDataInstr(label)
-        representation.addMainInstr(
-            LoadInstruction(
-                liter.getDestReg(),
-                AddressingMode.AddressingLabel(label.getLabel())
+
+        if (dest is AddressingMode) {
+            val reg: Register = Registers.r11
+            representation.addMainInstr(PushInstruction(reg))
+            representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingLabel(label.getLabel())))
+            representation.addMainInstr(StoreInstruction(reg, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(reg))
+        } else {
+            representation.addMainInstr(
+                LoadInstruction(
+                    dest as Register,
+                    AddressingMode.AddressingLabel(label.getLabel())
+                )
             )
-        )
+        }
     }
 
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
         /* a pair liter is null so will have address zero
          * so we load the value zero into a destination register */
 
-        representation.addMainInstr(
-            LoadInstruction(
-                liter.getDestReg(),
-                AddressingMode.AddressingLabel("0")
+        val dest: Operand = operandAllocation(liter.getDestReg(), liter)
+
+        if (dest is AddressingMode) {
+            val reg: Register = Registers.r11
+            representation.addMainInstr(PushInstruction(reg))
+            representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingLabel("0")))
+            representation.addMainInstr(StoreInstruction(reg, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(reg))
+        } else {
+            representation.addMainInstr(
+                LoadInstruction(
+                    dest as Register,
+                    AddressingMode.AddressingLabel("0")
+                )
             )
-        )
+        }
     }
 
     private fun visitIdentForRead(ident: ExprAST.IdentAST) {
