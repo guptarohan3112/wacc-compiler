@@ -16,8 +16,15 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
         visit(decl.assignment)
-        decl.setGraphNode(decl.assignment.getGraphNode())
-        decl.getGraphNode().setIdentifier(decl.varName)
+
+        if (decl.assignment.getGraphNode().getIdent() != "") {
+            val graphNode = GraphNode(graph.getIndex(), decl.varName)
+            decl.setGraphNode(graphNode)
+            graph.addNode(graphNode)
+        } else {
+            decl.setGraphNode(decl.assignment.getGraphNode())
+            decl.getGraphNode().setIdentifier(decl.varName)
+        }
 
         graph.incrementIndex()
     }
@@ -25,6 +32,12 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
         visit(assign.rhs)
         visit(assign.lhs)
+
+
+
+        if(assign.rhs.getGraphNode().getIdent() != "") {
+            val graphNode = GraphNode(graph.getIndex(), assign.lhs.getStringValue())
+        }
 
         assign.setGraphNode(assign.rhs.getGraphNode())
         assign.getGraphNode().setIdentifier(assign.lhs.getStringValue())
