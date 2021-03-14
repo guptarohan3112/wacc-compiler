@@ -227,6 +227,8 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         // Obtain the register where the evaluation of the right hand side lies
         val dest: Register = decl.assignment.getDestReg()
 
+        // set the operand on the decl ast
+
         // Store the value at an available register
         val mode = if (currOffset == 0) {
             AddressingMode.AddressingMode2(Registers.sp)
@@ -823,6 +825,15 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
             "&&", "||" -> visitAndOr(binop)
             ">", ">=", "<", "<=" -> visitCompare(binop)
             "==", "!=" -> visitEquality(binop)
+        }
+    }
+
+    private fun operandAllocation(register: Register, ast: AST): Operand {
+        if (!register.equals(InterferenceGraph.DefaultReg)) {
+            return register
+        } else {
+            // TODO("Change this")
+            return register
         }
     }
 
