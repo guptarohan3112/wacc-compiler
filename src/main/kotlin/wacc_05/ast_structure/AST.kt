@@ -42,6 +42,14 @@ abstract class AST {
         return st!!
     }
 
+    fun getStackPtrOffset(): Int {
+        return st().getStackPtrOffset()
+    }
+
+    fun updatePtrOffset(ofs: Int) {
+        st().updatePtrOffset(ofs)
+    }
+
     // Getter and setter for the stack pointer in the symbol table
     fun getStackPtr(): Int {
         return st().getStackPtr()

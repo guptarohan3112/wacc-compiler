@@ -828,12 +828,22 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         }
     }
 
-    private fun operandAllocation(register: Register, ast: AST): Operand {
-        if (!register.equals(InterferenceGraph.DefaultReg)) {
-            return register
+    private fun operandAllocation(register: Register, ast: AssignRHSAST): Operand {
+        return if (!register.equals(InterferenceGraph.DefaultReg)) {
+            register
         } else {
-            // TODO("Change this")
-            return register
+            val size = ast.getStackSize()
+
+            val mode = if (size == 1) {
+                AddressingMode.AddressingMode3(Registers.sp, Immediate(ast.getStackPtrOffset()))
+            } else {
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(ast.getStackPtrOffset()))
+            }
+
+            ast.updatePtrOffset(size)
+            ast.setOperand(mode)
+
+            mode
         }
     }
 
