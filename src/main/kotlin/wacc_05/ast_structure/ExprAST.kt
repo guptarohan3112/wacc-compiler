@@ -296,7 +296,7 @@ sealed class ExprAST : AssignRHSAST() {
     ) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
-            return TypeIdentifier.ArrayIdentifier(assignRHS.getType().getType(), 0)
+            return TypeIdentifier.ArrayIdentifier(assignRHS.getType().getType().getType(), 0)
         }
 
         override fun <T> accept(visitor: ASTVisitor<T>): T {

@@ -1356,6 +1356,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
             AddInstruction(spaceReg, spaceReg, Immediate(TypeIdentifier.INT_SIZE))
         )
 
+
         // load allocation into param register for malloc and branch
         representation.addMainInstr(
             MoveInstruction(
@@ -1378,6 +1379,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
 
         val arrayElemReg = Registers.allocate()
         val condLabel = LabelInstruction.getUniqueLabel()
+
         representation.addMainInstr(condLabel)
         representation.addMainInstr(
             LoadInstruction(arrayElemReg, AddressingMode.AddressingMode2(rhsDestReg, arrIndexReg))
@@ -1438,7 +1440,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     }
 
     override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {
-        TODO("Not yet implemented")
+        return
     }
 
     /* completes visiting pair elems to the point that the address of it is in the dest register,
