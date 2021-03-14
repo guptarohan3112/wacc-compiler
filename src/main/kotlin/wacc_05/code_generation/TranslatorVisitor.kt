@@ -35,6 +35,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         val stackSizeCalculator = StackSizeVisitor()
         val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope)
         decrementAssemblySP(stackSize)
+        bodyInScope.setStackPtr(bodyInScope.getStackPtr() - stackSize)
         return stackSize
     }
 
