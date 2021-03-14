@@ -1332,24 +1332,39 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
 
         visit(mapAST.assignRHS)
-        val arrayLiter = mapAST.assignRHS as ArrayLiterAST
+        val rhsDestReg: Register = mapAST.assignRHS.getDestReg()
+        val elemsSize: Int = mapAST.assignRHS.getType().getStackSize()
 
-        // we want to allocate (length * size of elem) + INT_SIZE
-        val elemsSize: Int = if (arrayLiter.elemsLength() > 0) {
-            arrayLiter.elems[0].getStackSize()
-        } else {
-            0
-        }
+        val lengthReg = Registers.allocate()
+        val spaceReg = Registers.allocate()
 
-        val arrAllocation: Int = arrayLiter.elemsLength() * elemsSize + TypeIdentifier.INT_SIZE
+        // store length of array in lengthReg
+        representation.addMainInstr(
+            LoadInstruction(lengthReg, AddressingMode.AddressingMode2(rhsDestReg))
+        )
+
+        // store elemsSize in spaceReg for multiplication
+        representation.addMainInstr(
+            MoveInstruction(spaceReg, Immediate(elemsSize))
+        )
+
+        representation.addMainInstr(
+            MultiplyInstruction(spaceReg, lengthReg, spaceReg)
+        )
+
+        representation.addMainInstr(
+            AddInstruction(spaceReg, spaceReg, Immediate(TypeIdentifier.INT_SIZE))
+        )
 
         // load allocation into param register for malloc and branch
         representation.addMainInstr(
-            LoadInstruction(
+            MoveInstruction(
                 Registers.r0,
-                AddressingMode.AddressingLabel("$arrAllocation")
+                spaceReg
             )
         )
+
+        Registers.free(spaceReg)
 
         representation.addMainInstr(BranchInstruction("malloc", Condition.L))
 
@@ -1358,36 +1373,55 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         representation.addMainInstr(MoveInstruction(arrLocation, Registers.r0))
 
         // we start the index at +4 so we can store the size of the array at +0
-        var arrIndex = TypeIdentifier.INT_SIZE
-        for (elem in arrayLiter.elems) {
-            visit(elem)
-            val dest: Register = elem.getDestReg()
+        val arrIndexReg = Registers.allocate()
+        representation.addMainInstr(MoveInstruction(arrIndexReg, Immediate(TypeIdentifier.INT_SIZE)))
 
-            when (mapAST.operator.operator) {
-                "-" -> visitNeg(dest)
-                "!" -> visitNot(dest)
-                "len" -> visitLen(dest)
-            }
-
-            // store the value of elem at the current index
-            representation.addMainInstr(
-                getStoreInstruction(
-                    dest,
-                    AddressingMode.AddressingMode2(arrLocation, Immediate(arrIndex)),
-                    elem.getType()
-                )
-            )
-
-            arrIndex += elemsSize
-            Registers.free(dest)
+        val arrayElemReg = Registers.allocate()
+        val condLabel = LabelInstruction.getUniqueLabel()
+        representation.addMainInstr(condLabel)
+        representation.addMainInstr(
+            LoadInstruction(arrayElemReg, AddressingMode.AddressingMode2(rhsDestReg, arrIndexReg))
+        )
+        when (mapAST.operator.operator) {
+            "-" -> visitNeg(arrayElemReg)
+            "!" -> visitNot(arrayElemReg)
+            "len" -> visitLen(arrayElemReg)
         }
+
+        // store the value of elem at the current index
+        representation.addMainInstr(
+            StoreInstruction(
+                arrayElemReg,
+                AddressingMode.AddressingMode2(arrLocation, arrIndexReg)
+            )
+        )
+
+        representation.addMainInstr(
+            AddInstruction(arrIndexReg, arrIndexReg, Immediate(elemsSize))
+        )
+
+        representation.addMainInstr(
+            SubtractInstruction(lengthReg, lengthReg, Immediate(1))
+        )
+
+        representation.addMainInstr(
+            CompareInstruction(lengthReg, Immediate(0))
+        )
+
+        representation.addMainInstr(
+            BranchInstruction(condLabel.getLabel(), Condition.NE)
+        )
+
+        Registers.free(arrayElemReg)
+        Registers.free(lengthReg)
+        Registers.free(arrIndexReg)
 
         // store the length of the array at arrLocation +0
         val sizeDest: Register = Registers.allocate()
         representation.addMainInstr(
             LoadInstruction(
                 sizeDest,
-                AddressingMode.AddressingLabel("${arrayLiter.elemsLength()}")
+                AddressingMode.AddressingMode2(rhsDestReg)
             )
         )
 
@@ -1401,7 +1435,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation)
         Registers.free(sizeDest)
 
         mapAST.setDestReg(arrLocation)
-
     }
 
     override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {
