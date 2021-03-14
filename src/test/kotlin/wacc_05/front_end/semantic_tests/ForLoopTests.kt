@@ -102,7 +102,7 @@ class ForLoopTests : StatSemanticTests() {
         st.add("int", TypeIdentifier.INT_TYPE)
         st.add("char", TypeIdentifier.CHAR_TYPE)
 
-        every { seh.typeMismatch(any(), any(), any())} just runs
+        every { seh.typeMismatch(any(), any(), any()) } just runs
 
         val forLoopNoInt = StatementAST.ForAST(
             statForContext,
@@ -143,7 +143,7 @@ class ForLoopTests : StatSemanticTests() {
     fun forLoopNoComparison() {
         st.add("int", TypeIdentifier.INT_TYPE)
 
-        every { seh.typeMismatch(any(), any(), any())} just runs
+        every { seh.typeMismatch(any(), any(), any()) } just runs
 
         val forLoopAddition = StatementAST.ForAST(
             statForContext,
@@ -168,6 +168,29 @@ class ForLoopTests : StatSemanticTests() {
 
     @Test
     fun forLoopNoUpdate() {
-        TODO("Implement this test")
+        st.add("int", TypeIdentifier.INT_TYPE)
+
+        every { seh.noAssignmentFound(any()) } just runs
+
+        val forLoopPrintUpdate = StatementAST.ForAST(
+            statForContext,
+            validLoopVarDecl,
+            ExprAST.BinOpAST(
+                WaccParser.ExprContext(WaccParser.StatContext(), 0),
+                ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "i"),
+                ExprAST.IntLiterAST("+", "5"),
+                "<"
+            ),
+            StatementAST.PrintAST(
+                ExprAST.StrLiterAST("This is not an assignment"),
+                false
+            ),
+            StatementAST.SkipAST
+        )
+
+        forLoopPrintUpdate.st = st
+        visitor.visitForAST(forLoopPrintUpdate)
+
+        verify(exactly = 1) { seh.noAssignmentFound(any()) }
     }
 }
