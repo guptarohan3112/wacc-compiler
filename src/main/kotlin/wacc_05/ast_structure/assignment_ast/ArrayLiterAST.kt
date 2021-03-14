@@ -3,10 +3,13 @@ package wacc_05.ast_structure.assignment_ast
 import antlr.WaccParser
 import wacc_05.ast_structure.ASTVisitor
 import wacc_05.ast_structure.ExprAST
+import wacc_05.graph_colouring.GraphNode
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<ExprAST>) :
     AssignRHSAST() {
+
+    private var sizeGraphNode: GraphNode? = null
 
     override fun getType(): TypeIdentifier {
         return if (elems.size == 0) {
@@ -24,5 +27,13 @@ class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<Ex
 
     override fun <T> accept(visitor: ASTVisitor<T>): T {
         return visitor.visitArrayLiterAST(this)
+    }
+
+    fun setSizeGraphNode(sizeGraphNode: GraphNode) {
+        this.sizeGraphNode = sizeGraphNode
+    }
+
+    fun getSizeGraphNode(): GraphNode {
+        return sizeGraphNode!!
     }
 }

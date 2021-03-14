@@ -81,6 +81,8 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
             graph.incrementIndex()
         }
 
+        arrayLiter.setSizeGraphNode(GraphNode(graph.getIndex(), ""))
+
         createAndSetGraphNode(arrayLiter)
     }
 

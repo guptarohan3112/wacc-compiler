@@ -1148,11 +1148,9 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         }
 
         // store the length of the array at arrLocation +0
-        // TODO: change implementation so we can get this register using colouring
-        val sizeDest: Register = Registers.allocate()
         representation.addMainInstr(
             LoadInstruction(
-                sizeDest,
+                arrayLiter.getSizeGraphNode().getRegister(),
                 AddressingMode.AddressingLabel("${arrayLiter.elemsLength()}")
             )
         )
@@ -1160,7 +1158,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         // store the length of the array at the front of its allocated space
         representation.addMainInstr(
             StoreInstruction(
-                sizeDest,
+                arrayLiter.getSizeGraphNode().getRegister(),
                 AddressingMode.AddressingMode2(arrLocation)
             )
         )

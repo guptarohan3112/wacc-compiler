@@ -8,10 +8,6 @@ class StackSizeVisitor {
 
     private var stackSize: Int = 0
 
-//    fun getStackSize(graph: InterferenceGraph): Int {
-//        val nodes = graph.getNodes()
-//    }
-
     fun getStackSize(stat: StatementAST, graph: InterferenceGraph): Int {
         visitStat(stat, graph)
         return stackSize
