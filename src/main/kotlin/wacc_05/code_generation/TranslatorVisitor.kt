@@ -225,69 +225,75 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         }
 
         // Obtain the register where the evaluation of the right hand side lies
-        val dest: Register = decl.assignment.getDestReg()
+        val dest: Operand = decl.assignment.getOperand()
 
         // set the operand on the decl ast
 
         // Store the value at an available register
-        val mode = if (currOffset == 0) {
-            AddressingMode.AddressingMode2(Registers.sp)
-        } else {
-            AddressingMode.AddressingMode2(Registers.sp, Immediate(currOffset))
-        }
+//        val mode = if (currOffset == 0) {
+//            AddressingMode.AddressingMode2(Registers.sp)
+//        } else {
+//            AddressingMode.AddressingMode2(Registers.sp, Immediate(currOffset))
+//        }
 
-        representation.addMainInstr(
-            getStoreInstruction(
-                dest,
-                mode,
-                decl.assignment.getType()
-            )
-        )
+//        representation.addMainInstr(
+//            getStoreInstruction(
+//                dest,
+//                mode,
+//                decl.assignment.getType()
+//            )
+//        )
 
         // Set the absolute stack address of the variable in the corresponding variable identifier
-        val boundaryAddr = scope.getStackPtr()
-        val varObj: VariableIdentifier = scope.lookupAll(decl.varName) as VariableIdentifier
-        varObj.setAddr(boundaryAddr + currOffset)
+        if (dest is AddressingMode) {
+            val boundaryAddr = scope.getStackPtr()
+            val varObj: VariableIdentifier = scope.lookupAll(decl.varName) as VariableIdentifier
+            varObj.setAddr(boundaryAddr + currOffset)
 
-        // Indicate that the variable identifier has now been allocated
-        varObj.allocatedNow()
+            // Indicate that the variable identifier has now been allocated
+            varObj.allocatedNow()
+        }
+//
+//        varObj.setAddr(boundaryAddr + currOffset)
+//
 
-        // Update the amount of space taken up on the stack relative to the boundary and the current stack frame
-        val size = decl.type.getStackSize()
-        scope.updatePtrOffset(size)
-
-        // Free the destination register for future use
-        Registers.free(dest)
+//
+//        // Update the amount of space taken up on the stack relative to the boundary and the current stack frame
+//        val size = decl.type.getStackSize()
+//        scope.updatePtrOffset(size)
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
         // Generate code for the right hand side of the statement
         visit(assign.rhs)
-        val dest: Register = assign.rhs.getDestReg()
+        val dest: Operand = assign.rhs.getOperand()
 
         val lhs: AssignLHSAST = assign.lhs
         when {
             lhs.ident != null -> {
-                // Find the corresponding identifier and calculate the offset relative to the current sp
-                val diff = calculateIdentSpOffset(lhs.ident.value, assign, 0)
+//
+//
+//                // Find the corresponding variable identifier
+//
+//                // Store the value at the destination register at the calculated offset to the sp
+//                val mode: AddressingMode.AddressingMode2 = if (diff == 0) {
+//                    AddressingMode.AddressingMode2(Registers.sp)
+//                } else {
+//                    AddressingMode.AddressingMode2(Registers.sp, Immediate(diff))
+//                }
+//
+//                representation.addMainInstr(
+//                    getStoreInstruction(
+//                        dest,
+//                        mode,
+//                        varIdent.getType()
+//                    )
+//                )
 
-                // Find the corresponding variable identifier
-                val varIdent = assign.st().lookUpAllAndCheckAllocation(lhs.ident.value)!!
-
-                // Store the value at the destination register at the calculated offset to the sp
-                val mode: AddressingMode.AddressingMode2 = if (diff == 0) {
-                    AddressingMode.AddressingMode2(Registers.sp)
-                } else {
-                    AddressingMode.AddressingMode2(Registers.sp, Immediate(diff))
+                if (dest is AddressingMode) {
+                    // update position of ident to follow dest
+                    lhs.ident.setOperand(dest)
                 }
-
-                representation.addMainInstr(
-                    getStoreInstruction(
-                        dest,
-                        mode,
-                        varIdent.getType()
-                    )
-                )
             }
             lhs.arrElem != null -> {
                 val arrElem = lhs.arrElem!!
@@ -297,15 +303,22 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
                 val arrDest: Register = arrElem.getDestReg()
 
                 // write to this address to update the value
-                representation.addMainInstr(
-                    getStoreInstruction(
-                        dest,
-                        AddressingMode.AddressingMode2(arrDest),
-                        arrElem.getType()
+                if (dest is AddressingMode) {
+                    representation.addMainInstr(
+                        LoadInstruction(
+                            Registers.r3,
+                            dest
+                        )
                     )
-                )
-
-                Registers.free(arrDest)
+                } else {
+                    representation.addMainInstr(
+                        getStoreInstruction(
+                            dest as Register,
+                            AddressingMode.AddressingMode2(arrDest),
+                            arrElem.getType()
+                        )
+                    )
+                }
             }
             lhs.pairElem != null -> {
                 val pairElem: PairElemAST = lhs.pairElem!!
@@ -315,21 +328,26 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
                 val pairLocation: Register = pairElem.getDestReg()
 
                 // write to this address to update the value
-                representation.addMainInstr(
-                    StoreInstruction(
-                        dest,
-                        AddressingMode.AddressingMode2(pairLocation)
+                if (dest is AddressingMode) {
+                    representation.addMainInstr(
+                        LoadInstruction(
+                            Registers.r3,
+                            dest
+                        )
                     )
-                )
-
-                Registers.free(pairLocation)
+                } else {
+                    representation.addMainInstr(
+                        StoreInstruction(
+                            dest as Register,
+                            AddressingMode.AddressingMode2(pairLocation)
+                        )
+                    )
+                }
             }
             else -> {
                 // Do nothing
             }
         }
-
-        Registers.free(dest)
     }
 
     override fun visitBeginAST(begin: StatementAST.BeginAST) {
@@ -365,9 +383,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         if (type == TypeIdentifier.CHAR_TYPE) {
             representation.addPInstr(PInstruction.p_read_char(representation))
         }
-
-        // Free the destination register for future use
-        Registers.free(reg)
     }
 
     override fun visitExitAST(exit: StatementAST.ExitAST) {
@@ -378,9 +393,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         // Move contents of the register in r0 for calling exit
         representation.addMainInstr(MoveInstruction(Registers.r0, dest))
         representation.addMainInstr(BranchInstruction("exit", Condition.L))
-
-        // Free the destination register for future use
-        Registers.free(dest)
     }
 
     override fun visitFreeAST(free: StatementAST.FreeAST) {
@@ -397,9 +409,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         } else {
             representation.addPInstr(PInstruction.p_free_pair(representation))
         }
-
-        // Free the destination register for future use
-        Registers.free(dest)
     }
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
@@ -415,9 +424,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         val elseLabel: LabelInstruction = getUniqueLabel()
         representation.addMainInstr(BranchInstruction(elseLabel.getLabel(), Condition.EQ))
 
-        // Free the destination register
-        Registers.free(destination)
-
         // Visit the 'then' branch
         visitInnerScope(ifStat, ifStat.thenStat)
 
@@ -432,9 +438,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
 
         // Make label for whatever follows the if statement
         representation.addMainInstr(nextLabel)
-
-        // Free the destination register for future use
-        Registers.free(destination)
     }
 
     // Call and add IO instructions
@@ -474,9 +477,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         if (print.newLine) {
             representation.addPInstr(PInstruction.p_print_ln(representation))
         }
-
-        // Free the register for future use
-        Registers.free(reg)
     }
 
     override fun visitReturnAST(ret: StatementAST.ReturnAST) {
@@ -490,9 +490,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         // Restore the stack pointer depending on how much stack space has been allocated thus far
         restoreStackPointer(ret, ret.getStackSizeAllocated())
         representation.addMainInstr(PopInstruction(Registers.pc))
-
-        // Free the destination register for future use
-        Registers.free(dest)
     }
 
     override fun visitSequentialAST(seq: StatementAST.SequentialAST) {
@@ -526,8 +523,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
             )
         )
 
-        // Free the register for future use
-        Registers.free(reg)
         representation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
 
@@ -801,7 +796,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         if (Registers.full()) {
             visit(binop.expr2)
             representation.addMainInstr(PushInstruction(Registers.r10))
-            Registers.free(Registers.r10)
             visit(binop.expr1)
             visitBinOpStack(binop)
         } else {
@@ -1216,7 +1210,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
             symTab.setStackPtr(currStackPtr - size)
 
             // Free the destination register for future use and update argsSize
-            Registers.free(dest)
             argsSize += size
         }
 
@@ -1291,8 +1284,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
                 elem.getType()
             )
         )
-
-        Registers.free(dest)
 
         // store value in r0 at pairLocation (+ offset)
         representation.addMainInstr(
