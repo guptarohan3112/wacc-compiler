@@ -29,18 +29,15 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         graph.incrementIndex()
     }
 
+
+    // x = 5 -> x and 5 have registers, move reg for 5 into reg for x
+    //       -> x has register, give register to rhs to store 5 in
+    // a[3] = rhs -> get rhs and at translation store rhs into a[3] address
+
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
         visit(assign.rhs)
-        visit(assign.lhs)
-
-
-
-        if(assign.rhs.getGraphNode().getIdent() != "") {
-            val graphNode = GraphNode(graph.getIndex(), assign.lhs.getStringValue())
-        }
-
-        assign.setGraphNode(assign.rhs.getGraphNode())
-        assign.getGraphNode().setIdentifier(assign.lhs.getStringValue())
+        val graphNode = graph.findNode(assign.lhs.getStringValue())
+        graphNode?.updateEndIndex(graph.getIndex())
         graph.incrementIndex()
     }
 
