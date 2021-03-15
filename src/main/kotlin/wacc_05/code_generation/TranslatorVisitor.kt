@@ -1403,23 +1403,42 @@ open class TranslatorVisitor(
         representation.addMainInstr(BranchInstruction("malloc", Condition.L))
 
         // store the array address in an allocated register
-        val arrLocation: Register = arrayLiter.getDestReg()
-        representation.addMainInstr(MoveInstruction(arrLocation, Registers.r0))
+        val arrLocation: Operand = arrayLiter.getOperand()
+        val reg = if (arrLocation is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+            Registers.r11
+        } else {
+            arrLocation as Register
+        }
+
+        representation.addMainInstr(MoveInstruction(reg, Registers.r0))
 
         // we start the index at +4 so we can store the size of the array at +0
         var arrIndex = TypeIdentifier.INT_SIZE
         for (elem in arrayLiter.elems) {
             visit(elem)
-            val dest: Register = elem.getDestReg()
+            val dest: Operand = elem.getOperand()
+
+            val elemReg = if (dest is AddressingMode) {
+                representation.addMainInstr(PushInstruction(Registers.r12))
+                representation.addMainInstr(LoadInstruction(Registers.r12, dest))
+                Registers.r12
+            } else {
+                dest as Register
+            }
 
             // store the value of elem at the current index
             representation.addMainInstr(
                 getStoreInstruction(
-                    dest,
-                    AddressingMode.AddressingMode2(arrLocation, Immediate(arrIndex)),
+                    elemReg,
+                    AddressingMode.AddressingMode2(reg, Immediate(arrIndex)),
                     elem.getType()
                 )
             )
+
+            if (dest is AddressingMode) {
+                representation.addMainInstr(PopInstruction(elemReg))
+            }
 
             arrIndex += elemsSize
         }
@@ -1436,9 +1455,14 @@ open class TranslatorVisitor(
         representation.addMainInstr(
             StoreInstruction(
                 arrayLiter.getSizeGraphNode().getOperand() as Register,
-                AddressingMode.AddressingMode2(arrLocation)
+                AddressingMode.AddressingMode2(reg)
             )
         )
+
+        if (arrLocation is AddressingMode) {
+            representation.addMainInstr(StoreInstruction(reg, arrLocation as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(reg))
+        }
     }
 
     // handled by visitAssignAST
@@ -1511,12 +1535,25 @@ open class TranslatorVisitor(
         )
 
         // move malloc result into allocated register
-        val pairLocation = newPair.getDestReg()
-        representation.addMainInstr(MoveInstruction(pairLocation, Registers.r0))
+
+        val pairLocation = newPair.getOperand()
+        val reg = if (pairLocation is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+            Registers.r11
+        } else {
+            pairLocation as Register
+        }
+
+        representation.addMainInstr(MoveInstruction(reg, Registers.r0))
 
         // visit & allocate the pair's children using the helper function
-        allocatePairElem(newPair.fst, pairLocation, 0)
-        allocatePairElem(newPair.snd, pairLocation, TypeIdentifier.ADDR_SIZE)
+        allocatePairElem(newPair.fst, reg, 0)
+        allocatePairElem(newPair.snd, reg, TypeIdentifier.ADDR_SIZE)
+
+        if (pairLocation is AddressingMode) {
+            representation.addMainInstr(StoreInstruction(reg, pairLocation as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(reg))
+        }
     }
 
     /* a helper function which will allocate a pair's element and move it into the register where the pair has
@@ -1526,7 +1563,15 @@ open class TranslatorVisitor(
     private fun allocatePairElem(elem: ExprAST, pairLocation: Register, offset: Int) {
         // visit elem and get its destination register
         visit(elem)
-        val dest: Register = elem.getDestReg()
+        val dest: Operand = elem.getOperand()
+
+        val reg = if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r12))
+            representation.addMainInstr(LoadInstruction(Registers.r12, dest))
+            Registers.r12
+        } else {
+            dest as Register
+        }
 
         // do allocation - move size of elem into param register then branch into malloc
         val allocation: Int = elem.getType().getStackSize()
@@ -1541,7 +1586,7 @@ open class TranslatorVisitor(
         // move value for dest into the address given by malloc
         representation.addMainInstr(
             getStoreInstruction(
-                dest,
+                reg,
                 AddressingMode.AddressingMode2(Registers.r0),
                 elem.getType()
             )
@@ -1554,6 +1599,10 @@ open class TranslatorVisitor(
                 AddressingMode.AddressingMode2(pairLocation, Immediate(offset))
             )
         )
+
+        if (dest is AddressingMode) {
+            representation.addMainInstr(PopInstruction(Registers.r12))
+        }
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {

@@ -4,10 +4,7 @@ import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ASTBaseVisitor
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
-import wacc_05.ast_structure.assignment_ast.ArrayLiterAST
-import wacc_05.ast_structure.assignment_ast.AssignLHSAST
-import wacc_05.ast_structure.assignment_ast.AssignRHSAST
-import wacc_05.ast_structure.assignment_ast.PairElemAST
+import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisitor() {
@@ -106,6 +103,14 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
         createAndSetGraphNode(liter)
+    }
+
+    override fun visitNewPairAST(newPair: NewPairAST) {
+        visit(newPair.fst)
+        graph.incrementIndex()
+        visit(newPair.snd)
+        graph.incrementIndex()
+        createAndSetGraphNode(newPair)
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
