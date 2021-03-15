@@ -662,20 +662,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         if (liter.value == "'\\0'") {
             placeInRegisterOrStack(dest, AddressingMode.AddressingLabel("0"), true)
         } else {
-            if (dest is AddressingMode) {
-                val reg: Register = Registers.r11
-                representation.addMainInstr(PushInstruction(reg))
-                representation.addMainInstr(MoveInstruction(reg, ImmediateChar(liter.value)))
-                representation.addMainInstr(StoreInstruction(reg, dest as AddressingMode.AddressingMode2, Condition.B))
-                representation.addMainInstr(PopInstruction(reg))
-            } else {
-                representation.addMainInstr(
-                    MoveInstruction(
-                        dest as Register,
-                        ImmediateChar(liter.value)
-                    )
-                )
-            }
+            placeInRegisterOrStack(dest, AddressingMode.AddressingLabel("\'${liter.getValue()}\'"), true)
         }
     }
 
