@@ -35,6 +35,7 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
     // a[3] = rhs -> get rhs and at translation store rhs into a[3] address
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
+        // Do this, but every rhs needs to not override the graphnode if it has already been set
         visit(assign.rhs)
         val graphNode = graph.findNode(assign.lhs.getStringValue())
         graphNode?.updateEndIndex(graph.getIndex())

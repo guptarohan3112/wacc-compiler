@@ -12,7 +12,10 @@ import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-open class TranslatorVisitor(private val representation: AssemblyRepresentation, private val graph: InterferenceGraph) :
+open class TranslatorVisitor(
+    private val representation: AssemblyRepresentation,
+    private val graph: InterferenceGraph
+) :
     ASTBaseVisitor() {
 
     private val MAX_STACK_SIZE: Int = 1024
@@ -139,7 +142,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
             }
 
             ast.updatePtrOffset(size)
-            ast.setOperand(mode)
+//            ast.setOperand(mode)
 
             mode
         }
@@ -153,7 +156,11 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         representation.addMainInstr(PopInstruction(dest))
     }
 
-    private fun placeInRegisterOrStack(destination: Operand, mode: AddressingMode, byteSize: Boolean) {
+    private fun placeInRegisterOrStack(
+        destination: Operand,
+        mode: AddressingMode,
+        byteSize: Boolean
+    ) {
         if (destination is AddressingMode) {
             val reg: Register = Registers.r11
             representation.addMainInstr(PushInstruction(reg))
@@ -167,7 +174,12 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
                     )
                 )
             } else {
-                representation.addMainInstr(StoreInstruction(reg, destination as AddressingMode.AddressingMode2))
+                representation.addMainInstr(
+                    StoreInstruction(
+                        reg,
+                        destination as AddressingMode.AddressingMode2
+                    )
+                )
             }
             representation.addMainInstr(PopInstruction(reg))
         } else {
@@ -341,7 +353,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
 
                 if (dest is AddressingMode) {
                     // update position of ident to follow dest
-                    lhs.ident.setOperand(dest)
+                    lhs.ident.setAddr()
                 }
             }
             lhs.arrElem != null -> {
@@ -662,7 +674,11 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         if (liter.value == "'\\0'") {
             placeInRegisterOrStack(dest, AddressingMode.AddressingLabel("0"), true)
         } else {
-            placeInRegisterOrStack(dest, AddressingMode.AddressingLabel("\'${liter.getValue()}\'"), true)
+            placeInRegisterOrStack(
+                dest,
+                AddressingMode.AddressingLabel("\'${liter.getValue()}\'"),
+                true
+            )
         }
     }
 
@@ -728,7 +744,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
 
         val dest: Register
 
-        if(operand is AddressingMode) {
+        if (operand is AddressingMode) {
             dest = Registers.r11
         } else {
             dest = operand as Register
@@ -755,7 +771,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
             }
         }
 
-        if(operand is AddressingMode) {
+        if (operand is AddressingMode) {
             representation.addMainInstr(PopInstruction(Registers.r11))
         }
     }
@@ -870,7 +886,13 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
                 AddressingMode.AddressingMode2(Registers.sp)
             )
         )
-        representation.addMainInstr(ReverseSubtractInstruction(unop.getDestReg(), dest, Immediate(0)))
+        representation.addMainInstr(
+            ReverseSubtractInstruction(
+                unop.getDestReg(),
+                dest,
+                Immediate(0)
+            )
+        )
 
         representation.addMainInstr(
             BranchInstruction(
@@ -1146,7 +1168,12 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         val cond1: Condition
         val cond2: Condition
 
-        representation.addMainInstr(CompareInstruction(binop.expr1.getDestReg(), binop.expr2.getDestReg()))
+        representation.addMainInstr(
+            CompareInstruction(
+                binop.expr1.getDestReg(),
+                binop.expr2.getDestReg()
+            )
+        )
 
         when (binop.operator) {
             "==" -> {

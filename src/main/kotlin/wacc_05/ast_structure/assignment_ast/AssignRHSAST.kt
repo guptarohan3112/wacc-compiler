@@ -1,9 +1,9 @@
 package wacc_05.ast_structure.assignment_ast
 
 import wacc_05.ast_structure.AST
-import wacc_05.code_generation.utilities.Operand
-import wacc_05.code_generation.utilities.Register
+import wacc_05.code_generation.utilities.*
 import wacc_05.graph_colouring.GraphNode
+import wacc_05.graph_colouring.InterferenceGraph
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 abstract class AssignRHSAST : AST() {
@@ -12,15 +12,34 @@ abstract class AssignRHSAST : AST() {
 
     private var graphNode: GraphNode? = null
 
+    private var addr: Int = -1
     // set this on operandAllocation if the register is equal to the default register
-    private var operand: Operand? = null
+//    private var operand: Operand? = null
 
     fun getOperand(): Operand {
-        return operand ?: getDestReg()
+        return if (!getDestReg().equals(InterferenceGraph.DefaultReg)) {
+            getDestReg()
+        } else {
+            val offset: Int = addr - st().getStackPtr()
+            if (getStackSize() > 1) {
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+            } else {
+                AddressingMode.AddressingMode3(Registers.sp, Immediate(offset))
+            }
+        }
+//        return operand ?: getDestReg()
     }
 
-    fun setOperand(operand: Operand) {
-        this.operand = operand
+    fun setAddr() {
+        this.addr = st().getStackPtr() + st().getStackPtrOffset()
+    }
+
+    fun getAddr(): Int {
+        return addr
+    }
+
+    fun setAddr(addr: Int) {
+        this.addr = addr
     }
 
     abstract fun getType(): TypeIdentifier
