@@ -1540,15 +1540,27 @@ open class TranslatorVisitor(
     override fun visitPairElemAST(pairElem: PairElemAST) {
         // load the address of the pair elem into a register using the helper method
         visitPairElemFstPhase(pairElem)
-        val dest: Register = pairElem.getDestReg()
+        val dest: Operand = pairElem.getOperand()
 
-        // load the value at the given address into the same register
-        representation.addMainInstr(
-            LoadInstruction(
-                dest,
-                AddressingMode.AddressingMode2(dest)
+        if(dest is AddressingMode) {
+            // load the value at the given address into the same register
+            representation.addMainInstr(
+                LoadInstruction(
+                    Registers.r11,
+                    AddressingMode.AddressingMode2(Registers.r11)
+                )
             )
-        )
+
+            representation.addMainInstr(StoreInstruction(Registers.r11, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(Registers.r11))
+        } else {
+            representation.addMainInstr(
+                LoadInstruction(
+                    dest as Register,
+                    AddressingMode.AddressingMode2(dest)
+                )
+            )
+        }
 
         // (we don't free the dest register here as it contains the value we want to use elsewhere)
     }
@@ -1559,26 +1571,37 @@ open class TranslatorVisitor(
      */
     private fun visitPairElemFstPhase(pairElem: PairElemAST) {
         visit(pairElem.elem)
-        val dest: Register = pairElem.elem.getDestReg()
+        // location of the pair
+        val pairLocation: Operand = pairElem.elem.getOperand()
+        val dest: Operand = pairElem.getOperand()
 
         // set param and branch to check for null dereference
-        representation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        representation.addMainInstr(MoveInstruction(Registers.r0, pairLocation))
         representation.addPInstr(PInstruction.p_check_null_pointer(representation))
 
-        /* if the pair elem is snd then we want to add ADDR_SIZE (+4) as an offset, otherwise it is fst and we
-         * don't need an offset */
-        if (!pairElem.isFst) {
+        val reg: Register
+
+        if(dest is AddressingMode) {
+            reg = Registers.r11
+            representation.addMainInstr(PushInstruction(reg))
+        } else {
+            reg = dest as Register
+        }
+
+        representation.addMainInstr(MoveInstruction(reg, pairLocation))
+
+        if(!pairElem.isFst) {
             representation.addMainInstr(
                 LoadInstruction(
-                    dest,
-                    AddressingMode.AddressingMode2(dest, Immediate(TypeIdentifier.ADDR_SIZE))
+                    reg,
+                    AddressingMode.AddressingMode2(reg, Immediate(TypeIdentifier.ADDR_SIZE))
                 )
             )
         } else {
             representation.addMainInstr(
                 LoadInstruction(
-                    dest,
-                    AddressingMode.AddressingMode2(dest)
+                    reg,
+                    AddressingMode.AddressingMode2(reg)
                 )
             )
         }

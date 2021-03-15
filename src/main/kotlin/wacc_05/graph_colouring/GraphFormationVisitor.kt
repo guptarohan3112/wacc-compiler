@@ -52,7 +52,11 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
         visit(pairElem.elem)
-        pairElem.setGraphNode(pairElem.elem.getGraphNode())
+        val graphNode: GraphNode = pairElem.elem.getGraphNode()
+        pairElem.setPairLocation(graphNode)
+        graphNode.updateEndIndex(graph.getIndex())
+        createAndSetGraphNode(pairElem)
+        graph.incrementIndex()
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
