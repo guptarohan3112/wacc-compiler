@@ -13,7 +13,6 @@ abstract class AssignRHSAST : AST() {
     private var graphNode: GraphNode? = null
 
     private var addr: Int = -1
-    // set this on operandAllocation if the register is equal to the default register
 //    private var operand: Operand? = null
 
     fun getOperand(): Operand {

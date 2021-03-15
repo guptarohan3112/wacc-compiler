@@ -409,25 +409,6 @@ open class TranslatorVisitor(
                         )
                     }
                 }
-
-                // write to this address to update the value
-                if (dest is AddressingMode) {
-                    representation.addMainInstr(
-                        MoveInstruction(
-                            Registers.r11,
-                            dest
-                        )
-                    )
-                    representation.addMainInstr(PopInstruction(Registers.r11))
-                } else {
-                    representation.addMainInstr(
-                        getStoreInstruction(
-                            dest as Register,
-                            AddressingMode.AddressingMode2(arrDest as Register),
-                            arrElem.getType()
-                        )
-                    )
-                }
             }
             lhs.pairElem != null -> {
                 val pairElem: PairElemAST = lhs.pairElem!!
@@ -907,43 +888,151 @@ open class TranslatorVisitor(
     }
 
     private fun visitLen(unop: ExprAST.UnOpAST) {
-        val dest: Register = unop.getDestReg()
+        val dest: Operand = unop.getOperand()
+        val arrLocation = unop.expr.getOperand()
 
         // load the value of the length into the destination register
-        representation.addMainInstr(
-            LoadInstruction(
-                dest,
-                AddressingMode.AddressingMode2(dest)
-            )
-        )
+        if (dest is AddressingMode) {
+            val reg = Registers.r11
+            representation.addMainInstr(PushInstruction(Registers.r11))
+
+            if (arrLocation is AddressingMode) {
+                representation.addMainInstr(LoadInstruction(reg, arrLocation))
+            } else {
+                representation.addMainInstr(
+                    LoadInstruction(
+                        reg,
+                        AddressingMode.AddressingMode2(arrLocation as Register)
+                    )
+                )
+            }
+
+            representation.addMainInstr(PopInstruction(Registers.r11))
+        } else {
+            if (arrLocation is AddressingMode) {
+                representation.addMainInstr(
+                    LoadInstruction(dest as Register, arrLocation)
+                )
+            } else {
+                representation.addMainInstr(
+                    LoadInstruction(
+                        dest as Register,
+                        AddressingMode.AddressingMode2(arrLocation as Register)
+                    )
+                )
+            }
+        }
     }
 
     private fun visitNot(unop: ExprAST.UnOpAST) {
-        val dest: Register = unop.getDestReg()
-        representation.addMainInstr(
-            EorInstruction(
-                dest,
-                dest,
-                Immediate(1)
-            )
-        )
+        val dest: Operand = unop.getOperand()
+        val exprDest: Operand = unop.expr.getOperand()
+
+
+        if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+
+            if (exprDest is AddressingMode) {
+                representation.addMainInstr(LoadInstruction(Registers.r11, exprDest))
+            } else {
+                representation.addMainInstr(
+                    LoadInstruction(
+                        Registers.r11,
+                        AddressingMode.AddressingMode2(exprDest as Register)
+                    )
+                )
+            }
+
+            representation.addMainInstr(EorInstruction(Registers.r11, Registers.r11, Immediate(1)))
+            representation.addMainInstr(StoreInstruction(Registers.r11, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(Registers.r11))
+        } else {
+            if (exprDest is AddressingMode) {
+                representation.addMainInstr(LoadInstruction(dest as Register, exprDest))
+                representation.addMainInstr(EorInstruction(dest, dest, Immediate(1)))
+            } else {
+                representation.addMainInstr(EorInstruction(dest as Register, exprDest as Register, Immediate(1)))
+            }
+        }
     }
 
     private fun visitNeg(unop: ExprAST.UnOpAST) {
-        val dest: Register = unop.expr.getDestReg()
-        representation.addMainInstr(
-            LoadInstruction(
-                dest,
-                AddressingMode.AddressingMode2(Registers.sp)
-            )
-        )
-        representation.addMainInstr(
-            ReverseSubtractInstruction(
-                unop.getDestReg(),
-                dest,
-                Immediate(0)
-            )
-        )
+        val exprDest: Operand = unop.expr.getOperand()
+        val dest: Operand = unop.getOperand()
+
+        if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+            if (exprDest is AddressingMode) {
+                representation.addMainInstr(PushInstruction(Registers.r12))
+                representation.addMainInstr(LoadInstruction(Registers.r12, exprDest))
+                representation.addMainInstr(
+                    LoadInstruction(
+                        Registers.r11,
+                        AddressingMode.AddressingMode2(Registers.sp)
+                    )
+                )
+                representation.addMainInstr(
+                    ReverseSubtractInstruction(
+                        Registers.r11,
+                        Registers.r12,
+                        Immediate(0)
+                    )
+                )
+                representation.addMainInstr(PopInstruction(Registers.r12))
+            } else {
+                representation.addMainInstr(
+                    LoadInstruction(
+                        Registers.r11,
+                        AddressingMode.AddressingMode2(Registers.sp)
+                    )
+                )
+                representation.addMainInstr(
+                    ReverseSubtractInstruction(
+                        Registers.r11,
+                        exprDest as Register,
+                        Immediate(0)
+                    )
+                )
+            }
+
+            representation.addMainInstr(StoreInstruction(Registers.r11, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(Registers.r11))
+        } else {
+            if (exprDest is AddressingMode) {
+                representation.addMainInstr(PushInstruction(Registers.r11))
+                representation.addMainInstr(LoadInstruction(Registers.r11, exprDest))
+                representation.addMainInstr(
+                    LoadInstruction(
+                        Registers.r11,
+                        AddressingMode.AddressingMode2(Registers.sp)
+                    )
+                )
+                representation.addMainInstr(
+                    ReverseSubtractInstruction(
+                        dest as Register,
+                        Registers.r11,
+                        Immediate(0)
+                    )
+                )
+                representation.addMainInstr(PopInstruction(Registers.r11))
+            } else {
+                representation.addMainInstr(
+                    LoadInstruction(
+                        exprDest as Register,
+                        AddressingMode.AddressingMode2(Registers.sp)
+                    )
+                )
+                representation.addMainInstr(
+                    ReverseSubtractInstruction(
+                        dest as Register,
+                        exprDest,
+                        Immediate(0)
+                    )
+                )
+            }
+        }
+
+
 
         representation.addMainInstr(
             BranchInstruction(
