@@ -30,7 +30,7 @@ abstract class AssignRHSAST : AST() {
     }
 
     fun getDestReg(): Register {
-        return graphNode!!.getRegister()
+        return graphNode!!.getOperand() as Register
     }
 
     fun setDestReg(reg: Register) {

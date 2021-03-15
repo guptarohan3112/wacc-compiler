@@ -54,9 +54,12 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         pairElem.setGraphNode(pairElem.elem.getGraphNode())
     }
 
-    // TODO: we have to update this when calculateIdentSpoffset changes
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
+        val graphNode: GraphNode = graph.findNode(arrayElem.ident)!!
+        arrayElem.setArrayLocation(graphNode)
+        graphNode.updateEndIndex(graph.getIndex())
         createAndSetGraphNode(arrayElem)
+        graph.incrementIndex()
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {

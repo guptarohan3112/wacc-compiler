@@ -1,11 +1,12 @@
 package wacc_05.graph_colouring
 
+import wacc_05.code_generation.utilities.Operand
 import wacc_05.code_generation.utilities.Register
 
 class GraphNode(private var startIndex: Int, private var ident: String = "") {
     // the register that will be allocated to this node during graph colouring
     // Make an operand to deal with variables that end up going on the stack?
-    private var register: Register? = null
+    private var operand: Operand? = null
 
     // Start and end index which defines the live range for a graph node
 //    private var startIndex: Int = 0
@@ -22,12 +23,12 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
         this.ident = identifier
     }
 
-    fun setRegister(register: Register) {
-        this.register = register
+    fun setOperand(operand: Operand) {
+        this.operand = operand
     }
 
-    fun getRegister(): Register {
-        return register!!
+    fun getOperand(): Operand {
+        return operand!!
     }
 
     private fun getStartIndex(): Int {

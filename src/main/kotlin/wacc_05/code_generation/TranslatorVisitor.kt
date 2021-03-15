@@ -348,7 +348,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
                 val arrElem = lhs.arrElem!!
 
                 // load the address of the elem into a register
-                visitArrayElemFstPhase(arrElem)
+                visitArrayElemFstPhase(arrElem, false)
                 val arrDest: Register = arrElem.getDestReg()
 
                 // write to this address to update the value
@@ -723,8 +723,16 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         // load the address of the array elem
-        visitArrayElemFstPhase(arrayElem)
-        val dest: Register = arrayElem.getDestReg()
+        visitArrayElemFstPhase(arrayElem, true)
+        val operand: Operand = arrayElem.getOperand()
+
+        val dest: Register
+
+        if(operand is AddressingMode) {
+            dest = Registers.r11
+        } else {
+            dest = operand as Register
+        }
 
         // load the value at the address into the destination register
         val type: TypeIdentifier = arrayElem.getElemType()
@@ -746,13 +754,16 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
                 )
             }
         }
+
+        if(operand is AddressingMode) {
+            representation.addMainInstr(PopInstruction(Registers.r11))
+        }
     }
 
-    private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
-
+    private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST, isRead: Boolean) {
         // Move the start of the array into dest register
-        // assume dest is location of address of array
         val dest: Operand = operandAllocation(arrayElem.getDestReg(), arrayElem)
+
         val reg: Register
 
         if (dest is AddressingMode) {
@@ -811,7 +822,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
             }
         }
 
-        if (dest is AddressingMode) {
+        if (dest is AddressingMode && !isRead) {
             representation.addMainInstr(PopInstruction(reg))
         }
     }
@@ -1230,7 +1241,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         // store the length of the array at arrLocation +0
         representation.addMainInstr(
             LoadInstruction(
-                arrayLiter.getSizeGraphNode().getRegister(),
+                arrayLiter.getSizeGraphNode().getOperand() as Register,
                 AddressingMode.AddressingLabel("${arrayLiter.elemsLength()}")
             )
         )
@@ -1238,7 +1249,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         // store the length of the array at the front of its allocated space
         representation.addMainInstr(
             StoreInstruction(
-                arrayLiter.getSizeGraphNode().getRegister(),
+                arrayLiter.getSizeGraphNode().getOperand() as Register,
                 AddressingMode.AddressingMode2(arrLocation)
             )
         )

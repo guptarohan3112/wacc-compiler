@@ -50,7 +50,7 @@ class InterferenceGraph {
         val allRegisters: ArrayList<Register> = Registers.allRegisters()
 
         for (node in listOfNodes) {
-            node.setRegister(defaultReg)
+            node.setOperand(defaultReg)
         }
 
         for (node in listOfNodes) {
@@ -60,15 +60,15 @@ class InterferenceGraph {
 
     private fun colourNode(node: GraphNode, opsInUse: HashSet<Register>, allRegisters: ArrayList<Register>) {
         for (neighbour in node.getNeighbours()) {
-            if (neighbour.getRegister() != defaultReg) {
-                opsInUse.add(neighbour.getRegister())
+            if (neighbour.getOperand() != defaultReg) {
+                opsInUse.add(neighbour.getOperand() as Register)
             }
         }
 
         val notInUse = allRegisters.subtract(opsInUse)
 
         if (notInUse.isNotEmpty()) {
-            node.setRegister(notInUse.elementAt(0))
+            node.setOperand(notInUse.elementAt(0))
         }
     }
 

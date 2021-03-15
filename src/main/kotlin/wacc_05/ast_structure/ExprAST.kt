@@ -2,6 +2,7 @@ package wacc_05.ast_structure
 
 import antlr.WaccParser
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.graph_colouring.GraphNode
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 sealed class ExprAST : AssignRHSAST() {
@@ -148,6 +149,16 @@ sealed class ExprAST : AssignRHSAST() {
         val ident: String,
         val exprs: ArrayList<ExprAST>
     ) : ExprAST() {
+
+        private var arrLocation: GraphNode? = null
+
+        fun getArrayLocation(): GraphNode {
+            return arrLocation!!
+        }
+
+        fun setArrayLocation(arrLocation: GraphNode) {
+            this.arrLocation = arrLocation
+        }
 
         override fun getType(): TypeIdentifier {
             val type = st().lookupAll(ident)
