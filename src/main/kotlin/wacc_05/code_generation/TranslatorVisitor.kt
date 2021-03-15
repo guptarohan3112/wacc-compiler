@@ -691,27 +691,34 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
     }
 
     private fun visitIdentGeneral(ident: ExprAST.IdentAST, read: Boolean) {
-        val paramOffset = ident.getParamOffset()
-        val spOffset: Int = calculateIdentSpOffset(ident.value, ident, paramOffset)
-
-        if (read) {
-            representation.addMainInstr(
-                AddInstruction(
-                    ident.getDestReg(),
-                    Registers.sp,
-                    Immediate(spOffset)
-                )
-            )
-        } else {
-            val type = ident.getType()
-            var mode: AddressingMode =
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
-
-            if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
-                mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
-            }
-            representation.addMainInstr(LoadInstruction(ident.getDestReg(), mode))
-        }
+//        val dest: Operand = operandAllocation(ident.getDestReg(), ident)
+//
+//        if (dest is AddressingMode) {
+//            representation.addMainInstr(PushInstruction(Registers.r11))
+//
+//            val paramOffset = ident.getParamOffset()
+//            val spOffset: Int = calculateIdentSpOffset(ident.value, ident, paramOffset)
+//
+//            if (read) {
+//                representation.addMainInstr(
+//                    AddInstruction(
+//                        ident.getDestReg(),
+//                        Registers.sp,
+//                        Immediate(spOffset)
+//                    )
+//                )
+//            } else {
+//                val type = ident.getType()
+//                var mode: AddressingMode =
+//                    AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
+//
+//                if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
+//                    mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
+//                }
+//                representation.addMainInstr(LoadInstruction(ident.getDestReg(), mode))
+//            }
+//        }
+        return
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
@@ -742,60 +749,70 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
     }
 
     private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
-        val offset: Int = calculateIdentSpOffset(arrayElem.ident, arrayElem, 0)
 
         // Move the start of the array into dest register
-        val dest: Register = arrayElem.getDestReg()
-        representation.addMainInstr(
-            AddInstruction(
-                dest,
-                Registers.sp,
-                Immediate(offset)
-            )
-        )
+        // assume dest is location of address of array
+        val dest: Operand = operandAllocation(arrayElem.getDestReg(), arrayElem)
+        val reg: Register
 
-        // For each element, change dest to the location of that index
-        // (this may be the address of another element)
+        if (dest is AddressingMode) {
+            reg = Registers.r11
+            representation.addMainInstr(PushInstruction(reg))
+        } else {
+            reg = dest as Register
+        }
+
         for (expr in arrayElem.exprs) {
-            // do LDR rX [rX] in case rX represents the address of an array
-            representation.addMainInstr(
-                LoadInstruction(
-                    dest,
-                    AddressingMode.AddressingMode2(dest)
-                )
-            )
+            representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingMode2(reg)))
 
             visit(expr)
-            val exprDest: Register = expr.getDestReg()
+            val exprDest: Operand = expr.getOperand()
 
-            // Set parameters and branch to check the index
             representation.addMainInstr(MoveInstruction(Registers.r0, exprDest))
-            representation.addMainInstr(MoveInstruction(Registers.r1, dest))
+            representation.addMainInstr(MoveInstruction(Registers.r1, reg))
             representation.addPInstr(PInstruction.p_check_array_bounds(representation))
 
             representation.addMainInstr(
                 AddInstruction(
-                    dest,
-                    dest,
-                    Immediate(TypeIdentifier.INT_SIZE)
+                    reg,
+                    reg,
+                    Immediate(TypeIdentifier.ADDR_SIZE)
                 )
             )
 
             val type: TypeIdentifier = arrayElem.getElemType()
             when (type.getStackSize()) {
                 FOUR_BYTES -> {
-                    representation.addMainInstr(
-                        AddInstruction(
-                            dest,
-                            dest,
-                            ShiftOperand(exprDest, ShiftOperand.Shift.LSL, 2)
+                    if (exprDest is AddressingMode) {
+                        val temp: Register = Registers.r12
+                        representation.addMainInstr(PushInstruction(temp))
+                        representation.addMainInstr(MoveInstruction(temp, exprDest))
+                        representation.addMainInstr(
+                            AddInstruction(
+                                reg,
+                                reg,
+                                ShiftOperand(temp, ShiftOperand.Shift.LSL, 2)
+                            )
                         )
-                    )
+                        representation.addMainInstr(PopInstruction(temp))
+                    } else {
+                        representation.addMainInstr(
+                            AddInstruction(
+                                reg,
+                                reg,
+                                ShiftOperand(exprDest as Register, ShiftOperand.Shift.LSL, 2)
+                            )
+                        )
+                    }
                 }
                 else -> {
-                    representation.addMainInstr(AddInstruction(dest, dest, exprDest))
+                    representation.addMainInstr(AddInstruction(reg, reg, exprDest))
                 }
             }
+        }
+
+        if (dest is AddressingMode) {
+            representation.addMainInstr(PopInstruction(reg))
         }
     }
 
