@@ -126,6 +126,55 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         restoreStackPointer(innerScope, stackSize)
     }
 
+    private fun operandAllocation(register: Register, ast: AssignRHSAST): Operand {
+        return if (!register.equals(InterferenceGraph.DefaultReg)) {
+            register
+        } else {
+            val size = ast.getStackSize()
+
+            val mode = if (size == 1) {
+                AddressingMode.AddressingMode3(Registers.sp, Immediate(ast.getStackPtrOffset()))
+            } else {
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(ast.getStackPtrOffset()))
+            }
+
+            ast.updatePtrOffset(size)
+            ast.setOperand(mode)
+
+            mode
+        }
+    }
+
+    private fun pushAndCompare(reg: AddressingMode, imm: Int) {
+        val dest: Register = Registers.r11
+        representation.addMainInstr(PushInstruction(dest))
+        representation.addMainInstr(MoveInstruction(dest, reg))
+        representation.addMainInstr(CompareInstruction(dest, Immediate(imm)))
+        representation.addMainInstr(PopInstruction(dest))
+    }
+
+    private fun placeInRegisterOrStack(destination: Operand, mode: AddressingMode, byteSize: Boolean) {
+        if (destination is AddressingMode) {
+            val reg: Register = Registers.r11
+            representation.addMainInstr(PushInstruction(reg))
+            representation.addMainInstr(LoadInstruction(reg, mode))
+            if (byteSize) {
+                representation.addMainInstr(
+                    StoreInstruction(
+                        reg,
+                        destination as AddressingMode.AddressingMode2,
+                        Condition.B
+                    )
+                )
+            } else {
+                representation.addMainInstr(StoreInstruction(reg, destination as AddressingMode.AddressingMode2))
+            }
+            representation.addMainInstr(PopInstruction(reg))
+        } else {
+            representation.addMainInstr(LoadInstruction(destination as Register, mode))
+        }
+    }
+
     /* MAIN VISIT METHODS (OVERIDDEN FROM THE BASE VISITOR CLASS)
        ---------------------------------------------------------
      */
@@ -537,14 +586,6 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         representation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
 
-    private fun pushAndCompare(reg: AddressingMode, imm: Int) {
-        val dest: Register = Registers.r11
-        representation.addMainInstr(PushInstruction(dest))
-        representation.addMainInstr(MoveInstruction(dest, reg))
-        representation.addMainInstr(CompareInstruction(dest, Immediate(imm)))
-        representation.addMainInstr(PopInstruction(dest))
-    }
-
     override fun visitForAST(forLoop: StatementAST.ForAST) {
         val body: StatementAST = forLoop.body
 
@@ -604,15 +645,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
 
         val dest: Operand = operandAllocation(liter.getDestReg(), liter)
 
-        if (dest is AddressingMode) {
-            val reg: Register = Registers.r11
-            representation.addMainInstr(PushInstruction(reg))
-            representation.addMainInstr(LoadInstruction(reg, mode))
-            representation.addMainInstr(StoreInstruction(reg, dest as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(reg))
-        } else {
-            representation.addMainInstr(LoadInstruction(dest as Register, mode))
-        }
+        placeInRegisterOrStack(dest, mode, false)
     }
 
     override fun visitBoolLiterAST(liter: ExprAST.BoolLiterAST) {
@@ -620,30 +653,14 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
 
         val dest: Operand = operandAllocation(liter.getDestReg(), liter)
 
-        if (dest is AddressingMode) {
-            val reg: Register = Registers.r11
-            representation.addMainInstr(PushInstruction(reg))
-            representation.addMainInstr(MoveInstruction(reg, Immediate(intValue)))
-            representation.addMainInstr(StoreInstruction(reg, dest as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(reg))
-        } else {
-            representation.addMainInstr(MoveInstruction(dest as Register, Immediate(intValue)))
-        }
+        placeInRegisterOrStack(dest, AddressingMode.AddressingLabel("$intValue"), true)
     }
 
     override fun visitCharLiterAST(liter: ExprAST.CharLiterAST) {
         val dest: Operand = operandAllocation(liter.getDestReg(), liter)
 
         if (liter.value == "'\\0'") {
-            if (dest is AddressingMode) {
-                val reg: Register = Registers.r11
-                representation.addMainInstr(PushInstruction(reg))
-                representation.addMainInstr(MoveInstruction(reg, Immediate(0)))
-                representation.addMainInstr(StoreInstruction(reg, dest as AddressingMode.AddressingMode2, Condition.B))
-                representation.addMainInstr(PopInstruction(reg))
-            } else {
-                representation.addMainInstr(MoveInstruction(dest as Register, Immediate(0)))
-            }
+            placeInRegisterOrStack(dest, AddressingMode.AddressingLabel("0"), true)
         } else {
             if (dest is AddressingMode) {
                 val reg: Register = Registers.r11
@@ -668,42 +685,14 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
 
         representation.addDataInstr(label)
 
-        if (dest is AddressingMode) {
-            val reg: Register = Registers.r11
-            representation.addMainInstr(PushInstruction(reg))
-            representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingLabel(label.getLabel())))
-            representation.addMainInstr(StoreInstruction(reg, dest as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(reg))
-        } else {
-            representation.addMainInstr(
-                LoadInstruction(
-                    dest as Register,
-                    AddressingMode.AddressingLabel(label.getLabel())
-                )
-            )
-        }
+        placeInRegisterOrStack(dest, AddressingMode.AddressingLabel(label.getLabel()), false)
     }
 
     override fun visitPairLiterAST(liter: ExprAST.PairLiterAST) {
         /* a pair liter is null so will have address zero
          * so we load the value zero into a destination register */
-
         val dest: Operand = operandAllocation(liter.getDestReg(), liter)
-
-        if (dest is AddressingMode) {
-            val reg: Register = Registers.r11
-            representation.addMainInstr(PushInstruction(reg))
-            representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingLabel("0")))
-            representation.addMainInstr(StoreInstruction(reg, dest as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(reg))
-        } else {
-            representation.addMainInstr(
-                LoadInstruction(
-                    dest as Register,
-                    AddressingMode.AddressingLabel("0")
-                )
-            )
-        }
+        placeInRegisterOrStack(dest, AddressingMode.AddressingLabel("0"), false)
     }
 
     private fun visitIdentForRead(ident: ExprAST.IdentAST) {
@@ -907,26 +896,12 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
         }
     }
 
-    private fun operandAllocation(register: Register, ast: AssignRHSAST): Operand {
-        return if (!register.equals(InterferenceGraph.DefaultReg)) {
-            register
-        } else {
-            val size = ast.getStackSize()
-
-            val mode = if (size == 1) {
-                AddressingMode.AddressingMode3(Registers.sp, Immediate(ast.getStackPtrOffset()))
-            } else {
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(ast.getStackPtrOffset()))
-            }
-
-            ast.updatePtrOffset(size)
-            ast.setOperand(mode)
-
-            mode
-        }
-    }
-
     private fun visitAdd(binop: ExprAST.BinOpAST) {
+
+
+        // push r11
+        // push r12
+
 
         representation.addMainInstr(
             AddInstruction(
@@ -1141,6 +1116,7 @@ open class TranslatorVisitor(private val representation: AssemblyRepresentation,
                 cond1
             )
         )
+
         representation.addMainInstr(
             MoveInstruction(
                 binop.getDestReg(),
