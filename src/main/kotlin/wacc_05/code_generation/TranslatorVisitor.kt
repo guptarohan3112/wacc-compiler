@@ -330,52 +330,100 @@ open class TranslatorVisitor(
         val dest: Operand = assign.rhs.getOperand()
 
         val lhs: AssignLHSAST = assign.lhs
+
         when {
             lhs.ident != null -> {
-//
-//
-//                // Find the corresponding variable identifier
-//
-//                // Store the value at the destination register at the calculated offset to the sp
-//                val mode: AddressingMode.AddressingMode2 = if (diff == 0) {
-//                    AddressingMode.AddressingMode2(Registers.sp)
-//                } else {
-//                    AddressingMode.AddressingMode2(Registers.sp, Immediate(diff))
-//                }
-//
-//                representation.addMainInstr(
-//                    getStoreInstruction(
-//                        dest,
-//                        mode,
-//                        varIdent.getType()
-//                    )
-//                )
+                val lhsLocation = lhs.getGraphNode().getOperand()
 
-                if (dest is AddressingMode) {
-                    // update position of ident to follow dest
-                    lhs.ident.setAddr()
+                if (!lhsLocation.equals(InterferenceGraph.DefaultReg)) {
+                    representation.addMainInstr(MoveInstruction(lhsLocation as Register, dest))
+                } else {
+                    val offset: Int = calculateIdentSpOffset(lhs.getStringValue(), assign, 0)
+                    if (dest is AddressingMode) {
+                        representation.addMainInstr(PushInstruction(Registers.r11))
+                        representation.addMainInstr(MoveInstruction(Registers.r11, dest))
+                        // TODO: Update to check for size of lhs
+                        representation.addMainInstr(
+                            StoreInstruction(
+                                Registers.r11,
+                                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+                            )
+                        )
+                        representation.addMainInstr(PopInstruction(Registers.r11))
+                    } else {
+                        representation.addMainInstr(
+                            StoreInstruction(
+                                dest as Register,
+                                lhsLocation as AddressingMode.AddressingMode2
+                            )
+                        )
+                    }
                 }
             }
             lhs.arrElem != null -> {
                 val arrElem = lhs.arrElem!!
 
                 // load the address of the elem into a register
-                visitArrayElemFstPhase(arrElem, false)
-                val arrDest: Register = arrElem.getDestReg()
+                visitArrayElemFstPhase(arrElem)
+                val arrDest: Operand = arrElem.getOperand()
+
+                // store value into address
+                if (arrDest is AddressingMode) {
+                    if (dest is AddressingMode) {
+                        representation.addMainInstr(PushInstruction(Registers.r12))
+                        representation.addMainInstr(LoadInstruction(Registers.r12, dest))
+                        representation.addMainInstr(
+                            StoreInstruction(
+                                Registers.r12,
+                                AddressingMode.AddressingMode2(Registers.r11)
+                            )
+                        )
+                        representation.addMainInstr(PopInstruction(Registers.r12))
+                        representation.addMainInstr(PopInstruction(Registers.r11))
+                    } else {
+                        representation.addMainInstr(
+                            StoreInstruction(
+                                dest as Register,
+                                AddressingMode.AddressingMode2(Registers.r11)
+                            )
+                        )
+                        representation.addMainInstr(PopInstruction(Registers.r11))
+                    }
+                } else {
+                    if (dest is AddressingMode) {
+                        representation.addMainInstr(PushInstruction(Registers.r12))
+                        representation.addMainInstr(LoadInstruction(Registers.r12, dest))
+                        representation.addMainInstr(
+                            StoreInstruction(
+                                Registers.r12,
+                                AddressingMode.AddressingMode2(arrDest as Register)
+                            )
+                        )
+                        representation.addMainInstr(PopInstruction(Registers.r11))
+                    } else {
+                        representation.addMainInstr(
+                            StoreInstruction(
+                                dest as Register,
+                                AddressingMode.AddressingMode2(arrDest as Register)
+                            )
+                        )
+                    }
+                }
 
                 // write to this address to update the value
                 if (dest is AddressingMode) {
                     representation.addMainInstr(
-                        LoadInstruction(
-                            Registers.r3,
+                        MoveInstruction(
+                            Registers.r11,
                             dest
                         )
                     )
+                    representation.addMainInstr(PopInstruction(Registers.r11))
                 } else {
                     representation.addMainInstr(
                         getStoreInstruction(
                             dest as Register,
-                            AddressingMode.AddressingMode2(arrDest),
+                            AddressingMode.AddressingMode2(arrDest as Register),
                             arrElem.getType()
                         )
                     )
@@ -739,15 +787,13 @@ open class TranslatorVisitor(
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         // load the address of the array elem
-        visitArrayElemFstPhase(arrayElem, true)
+        visitArrayElemFstPhase(arrayElem)
         val operand: Operand = arrayElem.getOperand()
 
-        val dest: Register
-
-        if (operand is AddressingMode) {
-            dest = Registers.r11
+        val dest: Register = if (operand is AddressingMode) {
+            Registers.r11
         } else {
-            dest = operand as Register
+            operand as Register
         }
 
         // load the value at the address into the destination register
@@ -776,9 +822,16 @@ open class TranslatorVisitor(
         }
     }
 
-    private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST, isRead: Boolean) {
+    private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
         // Move the start of the array into dest register
-        val dest: Operand = operandAllocation(arrayElem.getDestReg(), arrayElem)
+        val dest: Operand = arrayElem.getOperand()
+
+        var arrLocation: Operand = arrayElem.getArrayLocation().getOperand()
+
+        if (arrLocation.equals(InterferenceGraph.DefaultReg)) {
+            val offset = calculateIdentSpOffset(arrayElem.ident, arrayElem, 0)
+            arrLocation = AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+        }
 
         val reg: Register
 
@@ -788,6 +841,8 @@ open class TranslatorVisitor(
         } else {
             reg = dest as Register
         }
+
+        representation.addMainInstr(MoveInstruction(reg, arrLocation))
 
         for (expr in arrayElem.exprs) {
             representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingMode2(reg)))
@@ -836,10 +891,6 @@ open class TranslatorVisitor(
                     representation.addMainInstr(AddInstruction(reg, reg, exprDest))
                 }
             }
-        }
-
-        if (dest is AddressingMode && !isRead) {
-            representation.addMainInstr(PopInstruction(reg))
         }
     }
 

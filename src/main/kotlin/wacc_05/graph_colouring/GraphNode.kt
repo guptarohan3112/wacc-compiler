@@ -12,6 +12,7 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
 //    private var startIndex: Int = 0
     private var endIndex: Int = startIndex
 
+
     // neighbouring nodes in the graph
     private val neighbours: HashSet<GraphNode> = HashSet()
 
