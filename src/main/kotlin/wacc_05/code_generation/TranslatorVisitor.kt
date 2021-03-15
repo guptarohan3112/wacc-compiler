@@ -1082,9 +1082,7 @@ open class TranslatorVisitor(
 
     private fun visitBinOp(binop: ExprAST.BinOpAST) {
         when (binop.operator) {
-            "+" -> visitAdd(binop)
-            "-" -> visitSub(binop)
-            "*" -> visitMultiply(binop)
+            "+", "-", "*" -> binopRegisterOrStack(binop)
             "/", "%" -> visitDivMod(binop)
             "&&", "||" -> visitAndOr(binop)
             ">", ">=", "<", "<=" -> visitCompare(binop)
@@ -1092,58 +1090,67 @@ open class TranslatorVisitor(
         }
     }
 
-    private fun visitAdd(binop: ExprAST.BinOpAST) {
+    private fun binopRegisterOrStack(binop: ExprAST.BinOpAST) {
+        val dest: Operand = binop.getOperand()
+        val expr1Dest: Operand = binop.getOperand()
+        val expr2Dest: Operand = binop.getOperand()
 
+        val reg: Register = if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+            Registers.r11
+        } else {
+            dest as Register
+        }
+        val expr1Reg: Register = if (expr1Dest is AddressingMode) {
+            if (reg != Registers.r11) {
+                representation.addMainInstr(PushInstruction(Registers.r11))
+            }
 
-        // push r11
-        // push r12
+            representation.addMainInstr(LoadInstruction(Registers.r11, expr1Dest))
+            Registers.r11
+        } else {
+            expr1Dest as Register
+        }
+        val expr2Reg: Register = if (expr2Dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r12))
+            representation.addMainInstr(LoadInstruction(Registers.r12, expr2Dest))
+            Registers.r12
+        } else {
+            expr2Dest as Register
+        }
 
+        when (binop.operator) {
+            "+" -> {
+                representation.addMainInstr(AddInstruction(reg, expr1Reg, expr2Reg, Condition.S))
+                checkOverflow(Condition.LVS)
+            }
+            "-" -> {
+                representation.addMainInstr(SubtractInstruction(reg, expr1Reg, expr2Reg, Condition.S))
+                checkOverflow(Condition.LVS)
+            }
+            "*" -> {
+                representation.addMainInstr(SMultiplyInstruction(reg, expr1Reg, expr2Reg))
+                checkOverflow(Condition.LNE)
+            }
+        }
 
-        representation.addMainInstr(
-            AddInstruction(
-                binop.getDestReg(),
-                binop.expr1.getDestReg(),
-                binop.expr2.getDestReg(),
-                Condition.S
+        if (expr2Dest is AddressingMode) {
+            representation.addMainInstr(PopInstruction(Registers.r12))
+        }
+
+        if (dest is AddressingMode) {
+            representation.addMainInstr(
+                getStoreInstruction(
+                    reg,
+                    dest as AddressingMode.AddressingMode2,
+                    binop.getType()
+                )
             )
-        )
+        }
 
-        checkOverflow(Condition.LVS)
-
-    }
-
-    private fun visitSub(binop: ExprAST.BinOpAST) {
-
-        representation.addMainInstr(
-            SubtractInstruction(
-                binop.getDestReg(),
-                binop.expr1.getDestReg(),
-                binop.expr2.getDestReg(),
-                Condition.S
-            )
-        )
-
-        checkOverflow(Condition.LVS)
-    }
-
-    private fun visitMultiply(binop: ExprAST.BinOpAST) {
-
-        representation.addMainInstr(
-            SMultiplyInstruction(
-                binop.getDestReg(),
-                binop.expr1.getDestReg(),
-                binop.expr2.getDestReg()
-            )
-        )
-//        representation.addMainInstr(
-//            CompareInstruction(
-//                binop.expr1,
-//                ShiftOperand(dest1, ShiftOperand.Shift.ASR, 31)
-//            )
-//        )
-
-        checkOverflow(Condition.LNE)
-
+        if (dest is AddressingMode || expr1Dest is AddressingMode) {
+            representation.addMainInstr(PopInstruction(Registers.r11))
+        }
     }
 
     private fun checkOverflow(cond: Condition) {
@@ -1157,12 +1164,14 @@ open class TranslatorVisitor(
     }
 
     private fun visitDivMod(binop: ExprAST.BinOpAST) {
+        val expr1Dest: Operand = binop.expr1.getOperand()
+        val expr2Dest: Operand = binop.expr2.getOperand()
 
         // get result from expr1 and move into param register 1
-        representation.addMainInstr(MoveInstruction(Registers.r0, binop.expr1.getDestReg()))
+        representation.addMainInstr(MoveInstruction(Registers.r0, expr1Dest))
 
         // get result from expr2 and move into param register 2
-        representation.addMainInstr(MoveInstruction(Registers.r1, binop.expr2.getDestReg()))
+        representation.addMainInstr(MoveInstruction(Registers.r1, expr2Dest))
 
         representation.addPInstr(PInstruction.p_check_divide_by_zero(representation))
         representation.addMainInstr(
@@ -1178,9 +1187,24 @@ open class TranslatorVisitor(
 
         // allocate a register to move the result into
         if (binop.operator == "/") {
-            representation.addMainInstr(MoveInstruction(binop.getDestReg(), Registers.r0))
+            storeOrMoveBinop(binop, Registers.r0)
         } else {
-            representation.addMainInstr(MoveInstruction(binop.getDestReg(), Registers.r1))
+            storeOrMoveBinop(binop, Registers.r1)
+        }
+    }
+
+    private fun storeOrMoveBinop(binop: ExprAST.BinOpAST, reg: Register) {
+        val dest = binop.getOperand()
+        if (dest is AddressingMode) {
+            representation.addMainInstr(
+                getStoreInstruction(
+                    reg,
+                    dest as AddressingMode.AddressingMode2,
+                    binop.getType()
+                )
+            )
+        } else {
+            representation.addMainInstr(MoveInstruction(dest as Register, reg))
         }
     }
 
