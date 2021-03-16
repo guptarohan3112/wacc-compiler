@@ -1,12 +1,13 @@
 package wacc_05.ast_structure.assignment_ast
 
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.AST
 import wacc_05.code_generation.utilities.*
 import wacc_05.graph_colouring.GraphNode
 import wacc_05.graph_colouring.InterferenceGraph
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-abstract class AssignRHSAST : AST() {
+abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
 
     private var dest: Register? = null
 
@@ -14,6 +15,10 @@ abstract class AssignRHSAST : AST() {
 
     private var addr: Int = -1
 //    private var operand: Operand? = null
+
+    fun getLineNo(): Int {
+        return ctx.getStart().line
+    }
 
     fun getOperand(): Operand {
         return if (!getDestReg().equals(InterferenceGraph.DefaultReg)) {

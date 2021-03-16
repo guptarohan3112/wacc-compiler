@@ -149,7 +149,7 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
     }
 
     private fun createAndSetGraphNode(node: AssignRHSAST) {
-        val graphNode = GraphNode(graph.getIndex())
+        val graphNode = GraphNode(node.getLineNo())
         node.setGraphNode(graphNode)
         graph.addNode(graphNode)
     }
