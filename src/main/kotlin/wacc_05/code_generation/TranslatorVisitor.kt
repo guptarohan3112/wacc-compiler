@@ -921,36 +921,19 @@ open class TranslatorVisitor(
         val dest: Operand = unop.getOperand()
         val arrLocation = unop.expr.getOperand()
 
+        val source: AddressingMode = if (arrLocation is AddressingMode) {
+            arrLocation
+        } else {
+            AddressingMode.AddressingMode2(arrLocation as Register)
+        }
+
         // load the value of the length into the destination register
         if (dest is AddressingMode) {
-            val reg = Registers.r11
             representation.addMainInstr(PushInstruction(Registers.r11))
-
-            if (arrLocation is AddressingMode) {
-                representation.addMainInstr(LoadInstruction(reg, arrLocation))
-            } else {
-                representation.addMainInstr(
-                    LoadInstruction(
-                        reg,
-                        AddressingMode.AddressingMode2(arrLocation as Register)
-                    )
-                )
-            }
-
+            representation.addMainInstr(LoadInstruction(Registers.r11, source))
             representation.addMainInstr(PopInstruction(Registers.r11))
         } else {
-            if (arrLocation is AddressingMode) {
-                representation.addMainInstr(
-                    LoadInstruction(dest as Register, arrLocation)
-                )
-            } else {
-                representation.addMainInstr(
-                    LoadInstruction(
-                        dest as Register,
-                        AddressingMode.AddressingMode2(arrLocation as Register)
-                    )
-                )
-            }
+            representation.addMainInstr(LoadInstruction(dest as Register, source))
         }
     }
 
@@ -958,23 +941,20 @@ open class TranslatorVisitor(
         val dest: Operand = unop.getOperand()
         val exprDest: Operand = unop.expr.getOperand()
 
+        val source: AddressingMode = if (exprDest is AddressingMode) {
+            exprDest
+        } else {
+            AddressingMode.AddressingMode2(exprDest as Register)
+        }
 
         if (dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(Registers.r11))
 
-            if (exprDest is AddressingMode) {
-                representation.addMainInstr(LoadInstruction(Registers.r11, exprDest))
-            } else {
-                representation.addMainInstr(
-                    LoadInstruction(
-                        Registers.r11,
-                        AddressingMode.AddressingMode2(exprDest as Register)
-                    )
-                )
-            }
-
+            // Some functionality in between the pushing and the popping
+            representation.addMainInstr(LoadInstruction(Registers.r11, source))
             representation.addMainInstr(EorInstruction(Registers.r11, Registers.r11, Immediate(1)))
             representation.addMainInstr(StoreInstruction(Registers.r11, dest as AddressingMode.AddressingMode2))
+
             representation.addMainInstr(PopInstruction(Registers.r11))
         } else {
             if (exprDest is AddressingMode) {
@@ -987,14 +967,21 @@ open class TranslatorVisitor(
     }
 
     private fun visitNeg(unop: ExprAST.UnOpAST) {
-        val exprDest: Operand = unop.expr.getOperand()
         val dest: Operand = unop.getOperand()
+        val exprDest: Operand = unop.expr.getOperand()
+
+        val destReg: Register
+        val exprDestReg: Register
 
         if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r11))
+            destReg = Registers.r11
+            representation.addMainInstr(PushInstruction(destReg))
+
+            // Some functionality between the pushing and the popping
             if (exprDest is AddressingMode) {
-                representation.addMainInstr(PushInstruction(Registers.r12))
-                representation.addMainInstr(LoadInstruction(Registers.r12, exprDest))
+                exprDestReg = Registers.r12
+                representation.addMainInstr(PushInstruction(exprDestReg))
+                representation.addMainInstr(LoadInstruction(exprDestReg, exprDest))
                 representation.addMainInstr(
                     LoadInstruction(
                         Registers.r11,
@@ -1003,13 +990,14 @@ open class TranslatorVisitor(
                 )
                 representation.addMainInstr(
                     ReverseSubtractInstruction(
-                        Registers.r11,
-                        Registers.r12,
+                        destReg,
+                        exprDestReg,
                         Immediate(0)
                     )
                 )
-                representation.addMainInstr(PopInstruction(Registers.r12))
+                representation.addMainInstr(PopInstruction(exprDestReg))
             } else {
+                exprDestReg = exprDest as Register
                 representation.addMainInstr(
                     LoadInstruction(
                         Registers.r11,
@@ -1018,44 +1006,47 @@ open class TranslatorVisitor(
                 )
                 representation.addMainInstr(
                     ReverseSubtractInstruction(
-                        Registers.r11,
-                        exprDest as Register,
+                        destReg,
+                        exprDestReg,
                         Immediate(0)
                     )
                 )
             }
+            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
 
-            representation.addMainInstr(StoreInstruction(Registers.r11, dest as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(Registers.r11))
+            representation.addMainInstr(PopInstruction(destReg))
         } else {
+            destReg = dest as Register
             if (exprDest is AddressingMode) {
-                representation.addMainInstr(PushInstruction(Registers.r11))
-                representation.addMainInstr(LoadInstruction(Registers.r11, exprDest))
+                exprDestReg = Registers.r11
+                representation.addMainInstr(PushInstruction(exprDestReg))
+                representation.addMainInstr(LoadInstruction(exprDestReg, exprDest))
                 representation.addMainInstr(
                     LoadInstruction(
-                        Registers.r11,
+                        exprDestReg,
                         AddressingMode.AddressingMode2(Registers.sp)
                     )
                 )
                 representation.addMainInstr(
                     ReverseSubtractInstruction(
-                        dest as Register,
-                        Registers.r11,
+                        destReg,
+                        exprDestReg,
                         Immediate(0)
                     )
                 )
-                representation.addMainInstr(PopInstruction(Registers.r11))
+                representation.addMainInstr(PopInstruction(exprDestReg))
             } else {
+                exprDestReg = exprDest as Register
                 representation.addMainInstr(
                     LoadInstruction(
-                        exprDest as Register,
+                        exprDestReg,
                         AddressingMode.AddressingMode2(Registers.sp)
                     )
                 )
                 representation.addMainInstr(
                     ReverseSubtractInstruction(
-                        dest as Register,
-                        exprDest,
+                        destReg,
+                        exprDestReg,
                         Immediate(0)
                     )
                 )
