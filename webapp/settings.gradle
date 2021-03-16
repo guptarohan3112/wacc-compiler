@@ -1,5 +1,0 @@
-rootProject.name = 'webapp'
-include ':compiler'
-include ':server'
-project(':compiler').projectDir = new File('../compiler')
-project(':server').projectDir = new File('/server')

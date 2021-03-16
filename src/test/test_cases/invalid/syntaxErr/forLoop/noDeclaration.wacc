@@ -1,0 +1,15 @@
+# No declaration of looping variable is present
+
+# Output
+# #syntax_error#
+
+# Exit:
+# 100
+
+# Program:
+
+begin
+  for (i < 7, i = i + 2) do
+    println "This looks a bit more like a while loop"
+  done
+end
