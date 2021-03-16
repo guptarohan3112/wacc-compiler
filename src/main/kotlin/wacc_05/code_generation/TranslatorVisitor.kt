@@ -1457,14 +1457,20 @@ open class TranslatorVisitor(
             // Account for the number of bytes that already have been allocated
             arg.setParamOffset(arg.getParamOffset() + argsSize)
             visit(arg)
-            val dest: Register = arg.getDestReg()
+            val dest: Operand = arg.getOperand()
+
+            val destReg: Register = chooseRegisterFromOperand(dest, Registers.r11)
+            if (destReg == Registers.r11) {
+                representation.addMainInstr(PushInstruction(destReg))
+                representation.addMainInstr(LoadInstruction(destReg, dest as AddressingMode))
+            }
 
             // Get the size (in bytes) that this argument will take
             val size: Int = arg.getStackSize()
 
             representation.addMainInstr(
                 getStoreInstruction(
-                    dest,
+                    destReg,
                     AddressingMode.AddressingMode2(Registers.sp, Immediate(-1 * size), true),
                     arg.getType()
                 )
@@ -1475,11 +1481,17 @@ open class TranslatorVisitor(
 
             // Free the destination register for future use and update argsSize
             argsSize += size
+
+            if (destReg == Registers.r11) {
+                representation.addMainInstr(PopInstruction(destReg))
+            }
         }
 
         // Reset the parameter offset for future use of the symbol table
         symTab.setParamOffset(0)
         symTab.updatePtrOffset(-1 * argsSize)
+
+        // Save registers
 
         // Branch to the function label in the assembly code
         representation.addMainInstr(
@@ -1488,6 +1500,8 @@ open class TranslatorVisitor(
                 Condition.L
             )
         )
+
+        // Restore registers
 
         // Restore the stack pointer
         restoreStackPointer(funcCall, argsSize)
