@@ -12,14 +12,20 @@ import wacc_05.ast_structure.TypeAST
 
 class BinOpTests : ExprSemanticTests() {
 
-    val statDeclarationContext: WaccParser.StatDeclarationContext =
+    private val statDeclarationContext: WaccParser.StatDeclarationContext =
         WaccParser.StatDeclarationContext(WaccParser.StatContext())
 
-    val baseTypeContext: WaccParser.BaseTypeContext =
+    private val baseTypeContext: WaccParser.BaseTypeContext =
         WaccParser.BaseTypeContext(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), 0)
 
-    val exprContext: WaccParser.ExprContext =
+    private val exprContext: WaccParser.ExprContext =
         WaccParser.ExprContext(WaccParser.StatContext(), 0)
+
+    private val intLitContext: WaccParser.IntLitContext = WaccParser.IntLitContext(WaccParser.StatContext(), 0)
+
+    private val charLitContext: WaccParser.CharLitContext = WaccParser.CharLitContext(WaccParser.StatContext(), 0)
+
+    private val boolLitContext: WaccParser.BoolLitContext = WaccParser.BoolLitContext(WaccParser.StatContext(), 0)
 
     @Test
     fun binOpMultValidCheck() {
@@ -33,8 +39,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.IntLiterAST(ctx, "+", "3"),
-                ExprAST.IntLiterAST(ctx, "+", "5"),
+                ExprAST.IntLiterAST(intLitContext, "+", "3"),
+                ExprAST.IntLiterAST(intLitContext, "+", "5"),
                 "*"
             )
         )
@@ -55,8 +61,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.IntLiterAST(ctx, "+", "4"),
-                ExprAST.CharLiterAST(ctx, "c"),
+                ExprAST.IntLiterAST(intLitContext, "+", "4"),
+                ExprAST.CharLiterAST(charLitContext, "c"),
                 "*"
             )
         )
@@ -80,8 +86,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.IntLiterAST(ctx, "+", "4"),
-                ExprAST.IntLiterAST(ctx, "+", "5"),
+                ExprAST.IntLiterAST(intLitContext, "+", "4"),
+                ExprAST.IntLiterAST(intLitContext, "+", "5"),
                 "*"
             )
         )
@@ -102,8 +108,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.BoolLiterAST(ctx, "true"),
-                ExprAST.BoolLiterAST(ctx, "false"),
+                ExprAST.BoolLiterAST(boolLitContext, "true"),
+                ExprAST.BoolLiterAST(boolLitContext, "false"),
                 "&&"
             )
         )
@@ -124,8 +130,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.CharLiterAST(ctx, "c"),
-                ExprAST.BoolLiterAST(ctx, "true"),
+                ExprAST.CharLiterAST(charLitContext, "c"),
+                ExprAST.BoolLiterAST(boolLitContext, "true"),
                 "&&"
             )
         )
@@ -148,8 +154,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.BoolLiterAST(ctx, "true"),
-                ExprAST.BoolLiterAST(ctx, "false"),
+                ExprAST.BoolLiterAST(boolLitContext, "true"),
+                ExprAST.BoolLiterAST(boolLitContext, "false"),
                 "||"
             )
         )
