@@ -984,75 +984,12 @@ open class TranslatorVisitor(
         if (dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(destReg))
 
-            // Some functionality between the pushing and the popping
-            if (exprDest is AddressingMode) {
-                representation.addMainInstr(PushInstruction(exprDestReg))
-                representation.addMainInstr(LoadInstruction(exprDestReg, exprDest))
-                representation.addMainInstr(
-                    LoadInstruction(
-                        destReg,
-                        AddressingMode.AddressingMode2(Registers.sp)
-                    )
-                )
-                representation.addMainInstr(
-                    ReverseSubtractInstruction(
-                        destReg,
-                        exprDestReg,
-                        Immediate(0)
-                    )
-                )
-                representation.addMainInstr(PopInstruction(exprDestReg))
-            } else {
-                representation.addMainInstr(
-                    LoadInstruction(
-                        destReg,
-                        AddressingMode.AddressingMode2(Registers.sp)
-                    )
-                )
-                representation.addMainInstr(
-                    ReverseSubtractInstruction(
-                        destReg,
-                        exprDestReg,
-                        Immediate(0)
-                    )
-                )
-            }
-            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
+            negHelper(exprDest, exprDestReg, destReg, destReg)
 
+            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
             representation.addMainInstr(PopInstruction(destReg))
         } else {
-            if (exprDest is AddressingMode) {
-                representation.addMainInstr(PushInstruction(exprDestReg))
-                representation.addMainInstr(LoadInstruction(exprDestReg, exprDest))
-                representation.addMainInstr(
-                    LoadInstruction(
-                        exprDestReg,
-                        AddressingMode.AddressingMode2(Registers.sp)
-                    )
-                )
-                representation.addMainInstr(
-                    ReverseSubtractInstruction(
-                        destReg,
-                        exprDestReg,
-                        Immediate(0)
-                    )
-                )
-                representation.addMainInstr(PopInstruction(exprDestReg))
-            } else {
-                representation.addMainInstr(
-                    LoadInstruction(
-                        exprDestReg,
-                        AddressingMode.AddressingMode2(Registers.sp)
-                    )
-                )
-                representation.addMainInstr(
-                    ReverseSubtractInstruction(
-                        destReg,
-                        exprDestReg,
-                        Immediate(0)
-                    )
-                )
-            }
+            negHelper(exprDest, exprDestReg, destReg, exprDestReg)
         }
 
         representation.addMainInstr(
@@ -1062,6 +999,38 @@ open class TranslatorVisitor(
             )
         )
         representation.addPInstr(PInstruction.p_throw_overflow_error(representation))
+    }
+
+    private fun negHelper(
+        exprDest: Operand,
+        exprDestReg: Register,
+        destReg: Register,
+        regToLoad: Register
+    ) {
+        if (exprDest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(exprDestReg))
+            representation.addMainInstr(LoadInstruction(exprDestReg, exprDest))
+            negation(regToLoad, destReg, exprDestReg)
+            representation.addMainInstr(PopInstruction(exprDestReg))
+        } else {
+            negation(regToLoad, destReg, exprDestReg)
+        }
+    }
+
+    private fun negation(regToLoad: Register, destReg: Register, exprDestReg: Register) {
+        representation.addMainInstr(
+            LoadInstruction(
+                regToLoad,
+                AddressingMode.AddressingMode2(Registers.sp)
+            )
+        )
+        representation.addMainInstr(
+            ReverseSubtractInstruction(
+                destReg,
+                exprDestReg,
+                Immediate(0)
+            )
+        )
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
