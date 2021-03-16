@@ -21,15 +21,6 @@ class BinOpTests : ExprSemanticTests() {
     private val exprContext: WaccParser.ExprContext =
         WaccParser.ExprContext(WaccParser.StatContext(), 0)
 
-    private val intLitContext: WaccParser.IntLitContext =
-        WaccParser.IntLitContext(WaccParser.StatContext(), 0)
-
-    private val charLitContext: WaccParser.CharLitContext =
-        WaccParser.CharLitContext(WaccParser.StatContext(), 0)
-
-    private val boolLitContext: WaccParser.BoolLitContext =
-        WaccParser.BoolLitContext(WaccParser.StatContext(), 0)
-
     @Test
     fun binOpMultValidCheck() {
         // these tests will use DeclAST as a way of verifying the return type of the binOp

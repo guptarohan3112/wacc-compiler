@@ -56,7 +56,6 @@ class ExecutionTests(
         Registers.freeAll()
         LabelInstruction.reset()
         MessageLabelInstruction.reset()
-        ExprAST.PairLiterAST.clear()
 
         Thread.sleep(300)
         assertTrue(testPassed, "Failed Valid Program Checker Tests")

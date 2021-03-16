@@ -24,6 +24,10 @@ open class ExprSemanticTests {
 
     val visitor: ASTVisitor<Unit> = SemanticVisitor(st, functionST, seh)
 
+    val intLitContext = WaccParser.IntLitContext(WaccParser.StatContext(), 0)
+    val boolLitContext = WaccParser.BoolLitContext(WaccParser.StatContext(), 0)
+    val charLitContext = WaccParser.CharLitContext(WaccParser.StatContext(), 0)
+
     @Test
     fun varIdentPresentCheck() {
         st.add("int", intType)
