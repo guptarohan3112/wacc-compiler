@@ -196,11 +196,10 @@ open class TranslatorVisitor(
     ) {
         val structureDest: Operand = structure.getOperand()
 
-        val structureDestReg: Register = if (structureDest is AddressingMode) {
+        val structureDestReg: Register = chooseRegisterFromOperand(structureDest, Registers.r11)
+        if (structureDest is AddressingMode) {
             representation.addMainInstr(PushInstruction(Registers.r11))
             Registers.r11
-        } else {
-            structureDest as Register
         }
         val destReg: Register = chooseRegisterFromOperand(dest, Registers.r12)
 
