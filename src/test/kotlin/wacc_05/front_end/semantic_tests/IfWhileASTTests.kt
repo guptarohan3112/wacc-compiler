@@ -17,7 +17,7 @@ class IfWhileASTTests : StatSemanticTests() {
 
         val ifStat = StatementAST.IfAST(
             WaccParser.StatIfContext(WaccParser.StatContext()),
-            ExprAST.BoolLiterAST(ctx, "true"),
+            ExprAST.BoolLiterAST(boolLitContext, "true"),
             StatementAST.SkipAST,
             StatementAST.SkipAST
         )
@@ -36,11 +36,11 @@ class IfWhileASTTests : StatSemanticTests() {
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
                 ExprAST.BinOpAST(
                     WaccParser.ExprContext(WaccParser.StatContext(), 0),
-                    ExprAST.IntLiterAST(ctx, "+", "3"),
-                    ExprAST.IntLiterAST(ctx, "+", "3"),
+                    ExprAST.IntLiterAST(intLitContext, "+", "3"),
+                    ExprAST.IntLiterAST(intLitContext, "+", "3"),
                     "+"
                 ),
-                ExprAST.IntLiterAST(ctx, "+", "6"),
+                ExprAST.IntLiterAST(intLitContext, "+", "6"),
                 "=="
             ),
             StatementAST.SkipAST,
@@ -57,16 +57,16 @@ class IfWhileASTTests : StatSemanticTests() {
 
         val ifStat = StatementAST.IfAST(
             WaccParser.StatIfContext(WaccParser.StatContext()),
-            ExprAST.BoolLiterAST(ctx, "true"),
+            ExprAST.BoolLiterAST(boolLitContext, "true"),
             StatementAST.IfAST(
                 WaccParser.StatIfContext(WaccParser.StatContext()),
-                ExprAST.BoolLiterAST(ctx, "false"),
+                ExprAST.BoolLiterAST(boolLitContext, "false"),
                 StatementAST.SkipAST,
                 StatementAST.SkipAST
             ),
             StatementAST.IfAST(
                 WaccParser.StatIfContext(WaccParser.StatContext()),
-                ExprAST.BoolLiterAST(ctx, "false"),
+                ExprAST.BoolLiterAST(boolLitContext, "false"),
                 StatementAST.SkipAST,
                 StatementAST.SkipAST
             )
@@ -82,16 +82,16 @@ class IfWhileASTTests : StatSemanticTests() {
 
         val ifStat = StatementAST.IfAST(
             WaccParser.StatIfContext(WaccParser.StatContext()),
-            ExprAST.BoolLiterAST(ctx, "true"),
+            ExprAST.BoolLiterAST(boolLitContext, "true"),
             StatementAST.IfAST(
                 WaccParser.StatIfContext(WaccParser.StatContext()),
-                ExprAST.IntLiterAST(ctx, "+", "3"),
+                ExprAST.IntLiterAST(intLitContext, "+", "3"),
                 StatementAST.SkipAST,
                 StatementAST.SkipAST
             ),
             StatementAST.IfAST(
                 WaccParser.StatIfContext(WaccParser.StatContext()),
-                ExprAST.CharLiterAST(ctx, "c"),
+                ExprAST.CharLiterAST(charLitContext, "c"),
                 StatementAST.SkipAST,
                 StatementAST.SkipAST
             )
@@ -110,7 +110,7 @@ class IfWhileASTTests : StatSemanticTests() {
 
         val ifStat = StatementAST.IfAST(
             WaccParser.StatIfContext(WaccParser.StatContext()),
-            ExprAST.IntLiterAST(ctx, "+", "3"),
+            ExprAST.IntLiterAST(intLitContext, "+", "3"),
             StatementAST.SkipAST,
             StatementAST.SkipAST
         )
@@ -126,7 +126,7 @@ class IfWhileASTTests : StatSemanticTests() {
         // a very basic while loop check
         val whileStat = StatementAST.WhileAST(
             WaccParser.StatWhileContext(WaccParser.StatContext()),
-            ExprAST.BoolLiterAST(ctx, "true"),
+            ExprAST.BoolLiterAST(boolLitContext, "true"),
             StatementAST.SkipAST
         )
 
@@ -142,8 +142,8 @@ class IfWhileASTTests : StatSemanticTests() {
             WaccParser.StatWhileContext(WaccParser.StatContext()),
             ExprAST.BinOpAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
-                ExprAST.BoolLiterAST(ctx, "true"),
-                ExprAST.BoolLiterAST(ctx, "false"),
+                ExprAST.BoolLiterAST(boolLitContext, "true"),
+                ExprAST.BoolLiterAST(boolLitContext, "false"),
                 "||"
             ),
             StatementAST.SkipAST
@@ -158,10 +158,10 @@ class IfWhileASTTests : StatSemanticTests() {
         // a simple nested while loop test
         val whileStat = StatementAST.WhileAST(
             WaccParser.StatWhileContext(WaccParser.StatContext()),
-            ExprAST.BoolLiterAST(ctx, "true"),
+            ExprAST.BoolLiterAST(boolLitContext, "true"),
             StatementAST.WhileAST(
                 WaccParser.StatWhileContext(WaccParser.StatContext()),
-                ExprAST.BoolLiterAST(ctx, "false"),
+                ExprAST.BoolLiterAST(boolLitContext, "false"),
                 StatementAST.SkipAST
             )
         )
@@ -178,10 +178,10 @@ class IfWhileASTTests : StatSemanticTests() {
 
         val whileStat = StatementAST.WhileAST(
             WaccParser.StatWhileContext(WaccParser.StatContext()),
-            ExprAST.BoolLiterAST(ctx, "true"),
+            ExprAST.BoolLiterAST(boolLitContext, "true"),
             StatementAST.WhileAST(
                 WaccParser.StatWhileContext(WaccParser.StatContext()),
-                ExprAST.IntLiterAST(ctx, "+", "3"),
+                ExprAST.IntLiterAST(intLitContext, "+", "3"),
                 StatementAST.SkipAST
             )
         )
@@ -198,7 +198,7 @@ class IfWhileASTTests : StatSemanticTests() {
 
         val whileStat = StatementAST.WhileAST(
             WaccParser.StatWhileContext(WaccParser.StatContext()),
-            ExprAST.CharLiterAST(ctx, "c"),
+            ExprAST.CharLiterAST(charLitContext, "c"),
             StatementAST.SkipAST
         )
 

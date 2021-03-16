@@ -15,8 +15,6 @@ import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class AssignASTTests : StatSemanticTests() {
 
-    private val intLitContext: WaccParser.IntLitContext = WaccParser.IntLitContext(WaccParser.StatContext(), 0)
-    private val charLitContext: WaccParser.CharLitContext = WaccParser.CharLitContext(WaccParser.StatContext(), 0)
     private val newPairContext: WaccParser.NewPairContext = WaccParser.NewPairContext(WaccParser.StatContext(), 0)
 
     @Test

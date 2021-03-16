@@ -28,6 +28,10 @@ open class StatSemanticTests {
 
     var visitor: ASTVisitor<Unit> = SemanticVisitor(st, functionST, seh)
 
+    val intLitContext = WaccParser.IntLitContext(WaccParser.StatContext(), 0)
+    val boolLitContext = WaccParser.BoolLitContext(WaccParser.StatContext(), 0)
+    val charLitContext = WaccParser.CharLitContext(WaccParser.StatContext(), 0)
+
     @Test
     fun skipASTCheck() {
         // a skip AST check should not find any errors
@@ -154,7 +158,7 @@ open class StatSemanticTests {
 
         val ret = StatementAST.ReturnAST(
             WaccParser.StatReturnContext(WaccParser.StatContext()),
-            ExprAST.BoolLiterAST(ctx, "true")
+            ExprAST.BoolLiterAST(boolLitContext, "true")
         )
 
         ret.st = childSt
@@ -169,7 +173,7 @@ open class StatSemanticTests {
 
         val ret = StatementAST.ReturnAST(
             WaccParser.StatReturnContext(WaccParser.StatContext()),
-            ExprAST.IntLiterAST(ctx, "+", "3")
+            ExprAST.IntLiterAST(intLitContext, "+", "3")
         )
 
         ret.st = childSt
@@ -185,7 +189,7 @@ open class StatSemanticTests {
 
         val exit = StatementAST.ExitAST(
             WaccParser.StatExitContext(WaccParser.StatContext()),
-            ExprAST.IntLiterAST(ctx, "+", "0")
+            ExprAST.IntLiterAST(intLitContext, "+", "0")
         )
 
         exit.st = st
@@ -200,8 +204,8 @@ open class StatSemanticTests {
             WaccParser.StatExitContext(WaccParser.StatContext()),
             ExprAST.BinOpAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
-                ExprAST.IntLiterAST(ctx, "+", "3"),
-                ExprAST.IntLiterAST(ctx, "+", "4"),
+                ExprAST.IntLiterAST(intLitContext, "+", "3"),
+                ExprAST.IntLiterAST(intLitContext, "+", "4"),
                 "+"
             )
         )
@@ -218,7 +222,7 @@ open class StatSemanticTests {
 
         val exit = StatementAST.ExitAST(
             WaccParser.StatExitContext(WaccParser.StatContext()),
-            ExprAST.CharLiterAST(ctx, "c")
+            ExprAST.CharLiterAST(charLitContext, "c")
         )
 
         exit.st = st
