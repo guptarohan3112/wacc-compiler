@@ -1099,7 +1099,7 @@ open class TranslatorVisitor(
         } else {
             dest as Register
         }
-        val expr1Reg: Register = allocateReg(Registers.r11, expr1Dest, reg)
+        val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, reg)
         val expr2Reg: Register = if (expr2Dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(Registers.r12))
             representation.addMainInstr(LoadInstruction(Registers.r12, expr2Dest))
@@ -1197,7 +1197,7 @@ open class TranslatorVisitor(
         }
     }
 
-    private fun allocateReg(reg: Register, exprDest: Operand, destReg: Register): Register {
+    private fun pushRegisterAndLoad(reg: Register, exprDest: Operand, destReg: Register): Register {
         return if (exprDest is AddressingMode) {
             if (destReg != reg) {
                 representation.addMainInstr(PushInstruction(reg))
@@ -1210,7 +1210,7 @@ open class TranslatorVisitor(
         }
     }
 
-    private fun deallocateReg(reg: Register, exprDest: Operand, destReg: Register) {
+    private fun popTempRegisterConditional(reg: Register, exprDest: Operand, destReg: Register) {
         if (exprDest is AddressingMode && destReg != reg) {
             representation.addMainInstr(PopInstruction(reg))
         }
@@ -1219,10 +1219,10 @@ open class TranslatorVisitor(
     private fun andOrWithImmediate(imm: ExprAST.BoolLiterAST, expr: ExprAST, destReg: Register, operator: String) {
         val operand = Immediate(imm.getValue())
         val exprDest: Operand = expr.getOperand()
-        val exprReg: Register = allocateReg(Registers.r11, exprDest, destReg)
+        val exprReg: Register = pushRegisterAndLoad(Registers.r11, exprDest, destReg)
 
         translateAndOr(destReg, exprReg, operand, operator)
-        deallocateReg(exprReg, exprDest, destReg)
+        popTempRegisterConditional(exprReg, exprDest, destReg)
     }
 
     private fun translateAndOr(destReg: Register, exprReg: Register, operand: Operand, operator: String) {
@@ -1257,7 +1257,7 @@ open class TranslatorVisitor(
                 val expr1Dest: Operand = binop.expr1.getOperand()
                 val expr2Dest: Operand = binop.expr2.getOperand()
 
-                val expr1Reg: Register = allocateReg(Registers.r11, expr1Dest, destReg)
+                val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, destReg)
                 val expr2Reg: Register = if (expr2Dest is AddressingMode) {
                     val reg: Register = if (expr1Dest is AddressingMode) {
                         Registers.r12
@@ -1277,8 +1277,8 @@ open class TranslatorVisitor(
 
                 translateAndOr(destReg, expr1Reg, expr2Reg, binop.operator)
 
-                deallocateReg(expr2Reg, expr2Dest, destReg)
-                deallocateReg(expr1Reg, expr1Dest, destReg)
+                popTempRegisterConditional(expr2Reg, expr2Dest, destReg)
+                popTempRegisterConditional(expr1Reg, expr1Dest, destReg)
             }
         }
 
@@ -1295,32 +1295,27 @@ open class TranslatorVisitor(
     }
 
     private fun visitCompare(binop: ExprAST.BinOpAST) {
+        val dest: Operand = binop.getOperand()
+        val destReg = if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+            Registers.r11
+        } else {
+            dest as Register
+        }
+        val expr1Dest: Operand = binop.expr1.getOperand()
+        val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, destReg)
 
         var cond1: Condition? = null
         var cond2: Condition? = null
 
         when (binop.expr1.getType()) {
             is TypeIdentifier.IntIdentifier -> {
-
-                when (binop.expr2) {
-                    is ExprAST.IntLiterAST -> {
-                        representation.addMainInstr(
-                            CompareInstruction(
-                                binop.expr1.getDestReg(),
-                                Immediate(binop.expr2.getValue())
-                            )
-                        )
-                    }
-
-                    else -> {
-                        representation.addMainInstr(
-                            CompareInstruction(
-                                binop.expr1.getDestReg(),
-                                binop.expr2.getDestReg()
-                            )
-                        )
-                    }
-                }
+                representation.addMainInstr(
+                    CompareInstruction(
+                        expr1Reg,
+                        binop.expr2.getOperand()
+                    )
+                )
 
                 when (binop.operator) {
                     ">" -> {
@@ -1348,7 +1343,7 @@ open class TranslatorVisitor(
                     is ExprAST.CharLiterAST -> {
                         representation.addMainInstr(
                             CompareInstruction(
-                                binop.expr1.getDestReg(),
+                                expr1Reg,
                                 ImmediateChar(binop.expr2.value)
                             )
                         )
@@ -1357,8 +1352,8 @@ open class TranslatorVisitor(
                     else -> {
                         representation.addMainInstr(
                             CompareInstruction(
-                                binop.expr1.getDestReg(),
-                                binop.expr2.getDestReg()
+                                expr1Reg,
+                                binop.expr2.getOperand()
                             )
                         )
                     }
@@ -1387,7 +1382,7 @@ open class TranslatorVisitor(
 
         representation.addMainInstr(
             MoveInstruction(
-                binop.getDestReg(),
+                destReg,
                 Immediate(1),
                 cond1
             )
@@ -1395,24 +1390,35 @@ open class TranslatorVisitor(
 
         representation.addMainInstr(
             MoveInstruction(
-                binop.getDestReg(),
+                destReg,
                 Immediate(0),
                 cond2
             )
         )
+
+        popTempRegisterConditional(expr1Reg, expr1Dest, destReg)
+
+        if (destReg == Registers.r11) {
+            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(destReg))
+        }
     }
 
     private fun visitEquality(binop: ExprAST.BinOpAST) {
+        val dest: Operand = binop.getOperand()
+        val destReg = if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+            Registers.r11
+        } else {
+            dest as Register
+        }
+        val expr1Dest: Operand = binop.expr1.getOperand()
+        val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, destReg)
 
         val cond1: Condition
         val cond2: Condition
 
-        representation.addMainInstr(
-            CompareInstruction(
-                binop.expr1.getDestReg(),
-                binop.expr2.getDestReg()
-            )
-        )
+        representation.addMainInstr(CompareInstruction(expr1Reg, binop.expr2.getOperand()))
 
         when (binop.operator) {
             "==" -> {
@@ -1428,18 +1434,25 @@ open class TranslatorVisitor(
 
         representation.addMainInstr(
             MoveInstruction(
-                binop.getDestReg(),
+                destReg,
                 Immediate(1),
                 cond1
             )
         )
         representation.addMainInstr(
             MoveInstruction(
-                binop.getDestReg(),
+                destReg,
                 Immediate(0),
                 cond2
             )
         )
+
+        popTempRegisterConditional(expr1Reg, expr1Dest, destReg)
+
+        if (destReg == Registers.r11) {
+            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(destReg))
+        }
     }
 
     // types do not require any assembly code
