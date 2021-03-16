@@ -921,6 +921,12 @@ open class TranslatorVisitor(
         val dest: Operand = unop.getOperand()
         val arrLocation = unop.expr.getOperand()
 
+        val destReg: Register = if (dest is AddressingMode) {
+            Registers.r11
+        } else {
+            dest as Register
+        }
+
         val source: AddressingMode = if (arrLocation is AddressingMode) {
             arrLocation
         } else {
@@ -929,12 +935,16 @@ open class TranslatorVisitor(
 
         // load the value of the length into the destination register
         if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r11))
-            representation.addMainInstr(LoadInstruction(Registers.r11, source))
-            representation.addMainInstr(PopInstruction(Registers.r11))
+            representation.addMainInstr(PushInstruction(destReg))
+            lenHelper(destReg, source)
+            representation.addMainInstr(PopInstruction(destReg))
         } else {
-            representation.addMainInstr(LoadInstruction(dest as Register, source))
+            lenHelper(destReg, source)
         }
+    }
+
+    private fun lenHelper(dest: Register, src: AddressingMode) {
+        representation.addMainInstr(LoadInstruction(dest, src))
     }
 
     private fun visitNot(unop: ExprAST.UnOpAST) {
