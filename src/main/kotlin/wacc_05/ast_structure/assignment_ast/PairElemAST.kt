@@ -6,8 +6,8 @@ import wacc_05.ast_structure.ExprAST
 import wacc_05.graph_colouring.GraphNode
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class PairElemAST(val ctx: WaccParser.PairElemContext, val elem: ExprAST, val isFst: Boolean) :
-    AssignRHSAST() {
+class PairElemAST(ctx: WaccParser.PairElemContext, val elem: ExprAST, val isFst: Boolean) :
+    AssignRHSAST(ctx) {
 
     private var pairLocation: GraphNode? = null
 

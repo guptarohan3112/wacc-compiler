@@ -6,8 +6,8 @@ import wacc_05.ast_structure.ExprAST
 import wacc_05.graph_colouring.GraphNode
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class ArrayLiterAST(val ctx: WaccParser.ArrayLitContext, val elems: ArrayList<ExprAST>) :
-    AssignRHSAST() {
+class ArrayLiterAST(ctx: WaccParser.ArrayLitContext, val elems: ArrayList<ExprAST>) :
+    AssignRHSAST(ctx) {
 
     private var sizeGraphNode: GraphNode? = null
 

@@ -5,7 +5,7 @@ import wacc_05.ast_structure.ASTVisitor
 import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class NewPairAST(val ctx: WaccParser.NewPairContext, val fst: ExprAST, val snd: ExprAST) : AssignRHSAST() {
+class NewPairAST(ctx: WaccParser.NewPairContext, val fst: ExprAST, val snd: ExprAST) : AssignRHSAST(ctx) {
 
     override fun getType(): TypeIdentifier {
         return TypeIdentifier.PairIdentifier(fst.getType(), snd.getType())

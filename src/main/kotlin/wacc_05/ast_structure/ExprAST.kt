@@ -1,11 +1,12 @@
 package wacc_05.ast_structure
 
 import antlr.WaccParser
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.graph_colouring.GraphNode
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-sealed class ExprAST : AssignRHSAST() {
+sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
 
     /* This is a helper function for evaluating binary operator expressions
      * it determines if the binary operator can be evaluated to a single value
@@ -27,7 +28,7 @@ sealed class ExprAST : AssignRHSAST() {
         return Long.MAX_VALUE
     }
 
-    data class IntLiterAST(val ctx: WaccParser.IntLitContext, val sign: String, val value: String) : ExprAST() {
+    class IntLiterAST(ctx: WaccParser.IntLitContext, val sign: String, val value: String) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
@@ -50,7 +51,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class BoolLiterAST(val ctx: WaccParser.BoolLitContext, val value: String) : ExprAST() {
+    class BoolLiterAST(ctx: WaccParser.BoolLitContext, val value: String) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.BOOL_TYPE
@@ -76,7 +77,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class CharLiterAST(val ctx: WaccParser.CharLitContext, val value: String) : ExprAST() {
+    class CharLiterAST(ctx: WaccParser.CharLitContext, val value: String) : ExprAST(ctx) {
 
         override fun canEvaluate(): Boolean {
             return true
@@ -99,7 +100,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class StrLiterAST(val ctx: WaccParser.StrLitContext, val value: String) : ExprAST() {
+    class StrLiterAST(ctx: WaccParser.StrLitContext, val value: String) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.StringIdentifier(value.length)
@@ -110,7 +111,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    class PairLiterAST(ctx: WaccParser.ExprContext) : ExprAST() {
+    class PairLiterAST(ctx: WaccParser.ExprContext) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.PAIR_LIT_TYPE
@@ -126,7 +127,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class IdentAST(val ctx: WaccParser.IdentContext, val value: String) : ExprAST() {
+    class IdentAST(ctx: WaccParser.IdentContext, val value: String) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return when (val type = st().lookupAll(value)) {
@@ -144,11 +145,11 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class ArrayElemAST(
-        val ctx: WaccParser.ArrayElemContext,
+    class ArrayElemAST(
+        ctx: WaccParser.ArrayElemContext,
         val ident: String,
         val exprs: ArrayList<ExprAST>
-    ) : ExprAST() {
+    ) : ExprAST(ctx) {
 
         private var arrLocation: GraphNode? = null
 
@@ -183,11 +184,11 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class UnOpAST(
-        val ctx: WaccParser.UnaryOperContext,
+    class UnOpAST(
+        ctx: WaccParser.UnaryOperContext,
         val expr: ExprAST,
         val operator: String
-    ) : ExprAST() {
+    ) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return when (operator) {
@@ -223,12 +224,12 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class BinOpAST(
-        val ctx: WaccParser.ExprContext,
+    class BinOpAST(
+        ctx: WaccParser.ExprContext,
         val expr1: ExprAST,
         val expr2: ExprAST,
         val operator: String
-    ) : ExprAST() {
+    ) : ExprAST(ctx) {
 
         companion object {
             val intIntFunctions = hashSetOf("*", "/", "+", "-", "%")
