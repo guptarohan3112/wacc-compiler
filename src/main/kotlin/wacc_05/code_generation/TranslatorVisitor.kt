@@ -188,8 +188,8 @@ open class TranslatorVisitor(
         }
     }
 
-    // Helper method which assumes that the location of either an array or a pair is stored in a separate register
-    // Need to change the name
+    // Stores the value on the right hand side of the assignment at the address of the left hand side
+    // Note: this is in the case that the left hand side is a pair element or array element
     private fun storeValueInAddress(
         dest: Operand,
         destReg: Register,
@@ -226,7 +226,7 @@ open class TranslatorVisitor(
     }
 
     // Creates an addressing mode depending on the input operand
-    private fun chooseAddressingMode(operand: Operand) : AddressingMode {
+    private fun chooseAddressingMode(operand: Operand): AddressingMode {
         return if (operand is AddressingMode) {
             operand
         } else {
@@ -456,24 +456,18 @@ open class TranslatorVisitor(
                 visitPairElemFstPhase(pairElem)
                 val pairLocation: Operand = pairElem.getOperand()
 
-                if (pairLocation is AddressingMode) {
-                    if (dest is AddressingMode) {
-                        representation.addMainInstr(PushInstruction(Registers.r12))
-                        representation.addMainInstr(LoadInstruction(Registers.r12, dest))
-                        representation.addMainInstr(
-                            StoreInstruction(
-                                Registers.r12,
-                                AddressingMode.AddressingMode2(Registers.r11)
-                            )
-                        )
-                        representation.addMainInstr(PopInstruction(Registers.r12))
-                    } else {
-                        StoreInstruction(dest as Register, AddressingMode.AddressingMode2(Registers.r11))
-                    }
-                    representation.addMainInstr(PopInstruction(Registers.r11))
+                val pairDestReg: Register = if (pairLocation is AddressingMode) {
+                    representation.addMainInstr(PushInstruction(Registers.r11))
+                    Registers.r11
                 } else {
-                    // This is definitely wrong
-                    storeValueInAddress(dest, pairLocation as Register, pairLocation)
+                    pairLocation as Register
+                }
+                val destReg: Register = chooseRegisterFromOperand(dest, Registers.r12)
+
+                storeValueInAddress(dest, destReg, pairDestReg)
+
+                if (pairLocation is AddressingMode) {
+                    representation.addMainInstr(PopInstruction(pairDestReg))
                 }
             }
             else -> {
@@ -952,7 +946,13 @@ open class TranslatorVisitor(
                 representation.addMainInstr(LoadInstruction(destReg, source))
                 representation.addMainInstr(EorInstruction(destReg, destReg, Immediate(1)))
             } else {
-                representation.addMainInstr(EorInstruction(destReg, exprDest as Register, Immediate(1)))
+                representation.addMainInstr(
+                    EorInstruction(
+                        destReg,
+                        exprDest as Register,
+                        Immediate(1)
+                    )
+                )
             }
         }
     }
@@ -1086,7 +1086,14 @@ open class TranslatorVisitor(
                 checkOverflow(Condition.LVS)
             }
             "-" -> {
-                representation.addMainInstr(SubtractInstruction(reg, expr1Reg, expr2Reg, Condition.S))
+                representation.addMainInstr(
+                    SubtractInstruction(
+                        reg,
+                        expr1Reg,
+                        expr2Reg,
+                        Condition.S
+                    )
+                )
                 checkOverflow(Condition.LVS)
             }
             "*" -> {
@@ -1444,7 +1451,12 @@ open class TranslatorVisitor(
         )
 
         if (arrLocation is AddressingMode) {
-            representation.addMainInstr(StoreInstruction(reg, arrLocation as AddressingMode.AddressingMode2))
+            representation.addMainInstr(
+                StoreInstruction(
+                    reg,
+                    arrLocation as AddressingMode.AddressingMode2
+                )
+            )
             representation.addMainInstr(PopInstruction(reg))
         }
     }
@@ -1600,7 +1612,12 @@ open class TranslatorVisitor(
                 )
             )
 
-            representation.addMainInstr(StoreInstruction(Registers.r11, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(
+                StoreInstruction(
+                    Registers.r11,
+                    dest as AddressingMode.AddressingMode2
+                )
+            )
             representation.addMainInstr(PopInstruction(Registers.r11))
         } else {
             representation.addMainInstr(
