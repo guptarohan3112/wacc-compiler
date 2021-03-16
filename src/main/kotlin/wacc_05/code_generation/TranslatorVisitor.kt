@@ -214,13 +214,22 @@ open class TranslatorVisitor(
         }
     }
 
-    // Helper method to choose which register to use to translate the element of an array literal
-    // or pair element, depending on whether a register has been assigned to it or not
-    private fun chooseRegister(dest: Operand, tempReg: Register): Register {
-        return if (dest is AddressingMode) {
+    // Helper method to determines whether the input operand is a register, and assigns a temporary
+    // register if not
+    private fun chooseRegisterFromOperand(operand: Operand, tempReg: Register): Register {
+        return if (operand is AddressingMode) {
             tempReg
         } else {
-            dest as Register
+            operand as Register
+        }
+    }
+
+    // Creates an addressing mode depending on the input operand
+    private fun chooseAddressingMode(operand: Operand) : AddressingMode {
+        return if (operand is AddressingMode) {
+            operand
+        } else {
+            AddressingMode.AddressingMode2(operand as Register)
         }
     }
 
@@ -228,7 +237,7 @@ open class TranslatorVisitor(
     private fun moveLocation(elem: AssignRHSAST, location: Operand): Register {
         val dest: Operand = elem.getOperand()
 
-        val reg: Register = chooseRegister(dest, Registers.r11)
+        val reg: Register = chooseRegisterFromOperand(dest, Registers.r11)
         if (dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(reg))
         }
@@ -915,13 +924,8 @@ open class TranslatorVisitor(
         val dest: Operand = unop.getOperand()
         val arrLocation = unop.expr.getOperand()
 
-        val destReg: Register = chooseRegister(dest, Registers.r11)
-
-        val source: AddressingMode = if (arrLocation is AddressingMode) {
-            arrLocation
-        } else {
-            AddressingMode.AddressingMode2(arrLocation as Register)
-        }
+        val destReg: Register = chooseRegisterFromOperand(dest, Registers.r11)
+        val source: AddressingMode = chooseAddressingMode(arrLocation)
 
         // load the value of the length into the destination register
         if (dest is AddressingMode) {
@@ -941,13 +945,8 @@ open class TranslatorVisitor(
         val dest: Operand = unop.getOperand()
         val exprDest: Operand = unop.expr.getOperand()
 
-        val destReg: Register = chooseRegister(dest, Registers.r11)
-
-        val source: AddressingMode = if (exprDest is AddressingMode) {
-            exprDest
-        } else {
-            AddressingMode.AddressingMode2(exprDest as Register)
-        }
+        val destReg: Register = chooseRegisterFromOperand(dest, Registers.r11)
+        val source: AddressingMode = chooseAddressingMode(exprDest)
 
         if (dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(destReg))
@@ -976,10 +975,10 @@ open class TranslatorVisitor(
 
         if (dest is AddressingMode) {
             destReg = Registers.r11
-            exprDestReg = chooseRegister(exprDest, Registers.r12)
+            exprDestReg = chooseRegisterFromOperand(exprDest, Registers.r12)
         } else {
             destReg = dest as Register
-            exprDestReg = chooseRegister(exprDest, Registers.r11)
+            exprDestReg = chooseRegisterFromOperand(exprDest, Registers.r11)
         }
 
         if (dest is AddressingMode) {
@@ -1446,7 +1445,7 @@ open class TranslatorVisitor(
             visit(elem)
             val dest: Operand = elem.getOperand()
 
-            val elemReg = chooseRegister(dest, Registers.r12)
+            val elemReg = chooseRegisterFromOperand(dest, Registers.r12)
             if (elemReg == Registers.r12) {
                 representation.addMainInstr(PushInstruction(elemReg))
                 representation.addMainInstr(LoadInstruction(elemReg, dest as AddressingMode))
@@ -1590,7 +1589,7 @@ open class TranslatorVisitor(
         visit(elem)
         val dest: Operand = elem.getOperand()
 
-        val reg: Register = chooseRegister(dest, Registers.r12)
+        val reg: Register = chooseRegisterFromOperand(dest, Registers.r12)
         if (reg == Registers.r12) {
             representation.addMainInstr(PushInstruction(reg))
             representation.addMainInstr(LoadInstruction(reg, dest as AddressingMode))
