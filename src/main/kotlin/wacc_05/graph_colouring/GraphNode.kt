@@ -9,9 +9,7 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
     private var operand: Operand? = null
 
     // Start and end index which defines the live range for a graph node
-//    private var startIndex: Int = 0
     private var endIndex: Int = startIndex
-
 
     // neighbouring nodes in the graph
     private val neighbours: HashSet<GraphNode> = HashSet()
@@ -50,6 +48,15 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
 
     fun getNeighbours(): HashSet<GraphNode> {
         return neighbours
+    }
+
+    fun addNeighbourTwoWay(other: GraphNode) {
+        addNeighbour(other)
+        other.addNeighbour(this)
+    }
+
+    fun isVariable(): Boolean {
+        return ident != ""
     }
 
     fun overlapsWith(node: GraphNode): Boolean {
