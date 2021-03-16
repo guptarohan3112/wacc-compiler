@@ -187,6 +187,44 @@ open class TranslatorVisitor(
         }
     }
 
+    // Helper method which assumes that the location of either an array or a pair is stored in a separate register
+    // Need to change the name
+    private fun useBothTemporaries(
+        dest: Operand,
+        structureLocation: Operand
+    ) {
+        if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r12))
+            representation.addMainInstr(LoadInstruction(Registers.r12, dest))
+            representation.addMainInstr(
+                StoreInstruction(
+                    Registers.r12,
+                    AddressingMode.AddressingMode2(structureLocation as Register)
+                )
+            )
+            representation.addMainInstr(PopInstruction(Registers.r11))
+        } else {
+            representation.addMainInstr(
+                StoreInstruction(
+                    dest as Register,
+                    AddressingMode.AddressingMode2(structureLocation as Register)
+                )
+            )
+        }
+    }
+
+    // Helper method to choose which register to use to translate the element of an array literal
+    // or pair element, depending on whether a register has been assigned to it or not
+    private fun useR12OrDestReg(dest: Operand): Register {
+        return if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r12))
+            representation.addMainInstr(LoadInstruction(Registers.r12, dest))
+            Registers.r12
+        } else {
+            dest as Register
+        }
+    }
+
     /* MAIN VISIT METHODS (OVERIDDEN FROM THE BASE VISITOR CLASS)
        ---------------------------------------------------------
      */
@@ -390,24 +428,7 @@ open class TranslatorVisitor(
                         representation.addMainInstr(PopInstruction(Registers.r11))
                     }
                 } else {
-                    if (dest is AddressingMode) {
-                        representation.addMainInstr(PushInstruction(Registers.r12))
-                        representation.addMainInstr(LoadInstruction(Registers.r12, dest))
-                        representation.addMainInstr(
-                            StoreInstruction(
-                                Registers.r12,
-                                AddressingMode.AddressingMode2(arrDest as Register)
-                            )
-                        )
-                        representation.addMainInstr(PopInstruction(Registers.r11))
-                    } else {
-                        representation.addMainInstr(
-                            StoreInstruction(
-                                dest as Register,
-                                AddressingMode.AddressingMode2(arrDest as Register)
-                            )
-                        )
-                    }
+                    useBothTemporaries(dest, arrDest)
                 }
             }
             lhs.pairElem != null -> {
@@ -433,24 +454,7 @@ open class TranslatorVisitor(
                     }
                     representation.addMainInstr(PopInstruction(Registers.r11))
                 } else {
-                    if (dest is AddressingMode) {
-                        representation.addMainInstr(PushInstruction(Registers.r12))
-                        representation.addMainInstr(LoadInstruction(Registers.r12, dest))
-                        representation.addMainInstr(
-                            StoreInstruction(
-                                Registers.r12,
-                                AddressingMode.AddressingMode2(pairLocation as Register)
-                            )
-                        )
-                        representation.addMainInstr(PopInstruction(Registers.r12))
-                    } else {
-                        representation.addMainInstr(
-                            StoreInstruction(
-                                dest as Register,
-                                AddressingMode.AddressingMode2(pairLocation as Register)
-                            )
-                        )
-                    }
+                    useBothTemporaries(dest, pairLocation)
                 }
             }
             else -> {
@@ -1443,13 +1447,7 @@ open class TranslatorVisitor(
             visit(elem)
             val dest: Operand = elem.getOperand()
 
-            val elemReg = if (dest is AddressingMode) {
-                representation.addMainInstr(PushInstruction(Registers.r12))
-                representation.addMainInstr(LoadInstruction(Registers.r12, dest))
-                Registers.r12
-            } else {
-                dest as Register
-            }
+            val elemReg = useR12OrDestReg(dest)
 
             // store the value of elem at the current index
             representation.addMainInstr(
@@ -1589,13 +1587,7 @@ open class TranslatorVisitor(
         visit(elem)
         val dest: Operand = elem.getOperand()
 
-        val reg = if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r12))
-            representation.addMainInstr(LoadInstruction(Registers.r12, dest))
-            Registers.r12
-        } else {
-            dest as Register
-        }
+        val reg: Register = useR12OrDestReg(dest)
 
         // do allocation - move size of elem into param register then branch into malloc
         val allocation: Int = elem.getType().getStackSize()
