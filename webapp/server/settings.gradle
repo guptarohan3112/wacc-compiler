@@ -1,4 +1,0 @@
-rootProject.name = 'server'
-include 'src'
-include ':compiler'
-project(':compiler').projectDir = new File('../../compiler')

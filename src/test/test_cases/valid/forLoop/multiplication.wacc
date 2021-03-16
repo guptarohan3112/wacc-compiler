@@ -1,0 +1,25 @@
+# Multiplication done by a nested for loop
+
+# Output:
+# 20
+
+# Exit:
+# 0
+
+# Program:
+
+begin
+  int mult(int m, int n) is
+    int total = 0;
+    for (int i = 0, i < m, i = i + 1) do
+      for (int j = 0, j < n, j = j + 1) do
+        total = total + 1
+      done
+    done;
+    return total
+  end
+  int first = 4;
+  int second = 5;
+  int result = call mult(first, second);
+  println result
+end
