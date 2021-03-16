@@ -551,10 +551,7 @@ open class TranslatorVisitor(
         // Condition checking
         val destination: Operand = operandAllocation(condition.getDestReg(), condition)
         if (destination is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r11))
-            representation.addMainInstr(MoveInstruction(Registers.r11, destination))
-            representation.addMainInstr(CompareInstruction(Registers.r11, Immediate(0)))
-            representation.addMainInstr(PopInstruction(Registers.r11))
+            pushAndCompare(destination, 0)
         } else {
             representation.addMainInstr(CompareInstruction(destination as Register, Immediate(0)))
         }
