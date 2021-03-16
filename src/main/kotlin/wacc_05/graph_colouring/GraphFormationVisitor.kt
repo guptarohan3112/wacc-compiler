@@ -114,62 +114,34 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
-        var expr1Imm: Boolean = false
-        var expr2Imm: Boolean = false
+        visit(binop.expr1)
+        visit(binop.expr2)
 
-        // we use this conditional to check if either of the binop expressions will be loaded as an immediate
-        // during translation
-        if (binop.expr1 is ExprAST.BoolLiterAST || binop.expr1 is ExprAST.CharLiterAST) {
-            visit(binop.expr2)
-            expr1Imm = true
-        } else if (binop.expr2 is ExprAST.BoolLiterAST || binop.expr2 is ExprAST.CharLiterAST) {
-            visit(binop.expr1)
-            expr2Imm = true
-        } else {
-            visit(binop.expr1)
-            visit(binop.expr2)
+        // these registers have to be used at the same time so we manually add the conflict
+        binop.expr1.getGraphNode().addNeighbour(binop.expr2.getGraphNode())
+        binop.expr2.getGraphNode().addNeighbour(binop.expr1.getGraphNode())
 
-            // these registers have to be used at the same time so we manually add the conflict
-            binop.expr1.getGraphNode().addNeighbourTwoWay(binop.expr2.getGraphNode())
-        }
-
-        // depending on what is immediate / a variable, we have to set the binop graphnode to different things
-        // annoyingly we cannot minimise this much further as each case is slightly different
-        if(!expr1Imm) {
-          if(!expr2Imm) {
-              if(binop.expr1.getGraphNode().isVariable()) {
-                  if(binop.expr2.getGraphNode().isVariable()) {
-                      createAndSetGraphNode(binop)
-                      binop.getGraphNode().addNeighbourTwoWay(binop.expr2.getGraphNode())
-                      binop.getGraphNode().addNeighbourTwoWay(binop.expr1.getGraphNode())
-                  } else {
-                      binop.setGraphNode(binop.expr2.getGraphNode())
-                  }
-              } else {
-                  binop.setGraphNode(binop.expr1.getGraphNode())
-              }
-          } else {
-              if(binop.expr1.getGraphNode().isVariable()) {
-                  createAndSetGraphNode(binop)
-                  binop.getGraphNode().addNeighbourTwoWay(binop.expr1.getGraphNode())
-              } else {
-                  binop.setGraphNode(binop.expr1.getGraphNode())
-              }
-          }
-        } else {
-            if(binop.expr2.getGraphNode().isVariable()) {
+        // without optimisations taking place we know that the result of the binop is always put in expr1 dest reg
+        if (binop.expr1.getGraphNode().isVariable()) {
+            if (binop.expr2.getGraphNode().isVariable()) {
                 createAndSetGraphNode(binop)
-                binop.getGraphNode().addNeighbourTwoWay(binop.expr2.getGraphNode())
+                binop.getGraphNode().addNeighbour(binop.expr1.getGraphNode())
+                binop.expr1.getGraphNode().addNeighbour(binop.getGraphNode())
+
+                binop.getGraphNode().addNeighbour(binop.expr2.getGraphNode())
+                binop.expr2.getGraphNode().addNeighbour(binop.getGraphNode())
             } else {
                 binop.setGraphNode(binop.expr2.getGraphNode())
             }
+        } else {
+            binop.setGraphNode(binop.expr1.getGraphNode())
         }
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         visit(unop.expr)
 
-        if (unop.expr.getGraphNode().getIdent() != "") {
+        if (unop.expr.getGraphNode().isVariable()) {
             createAndSetGraphNode(unop)
         } else {
             unop.setGraphNode(unop.expr.getGraphNode())

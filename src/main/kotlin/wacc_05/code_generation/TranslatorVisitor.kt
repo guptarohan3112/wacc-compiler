@@ -1213,23 +1213,6 @@ open class TranslatorVisitor(
         }
     }
 
-    private fun andOrWithImmediate(imm: ExprAST.BoolLiterAST, expr: ExprAST, destReg: Register, operator: String) {
-        val operand = Immediate(imm.getValue())
-        val exprDest: Operand = expr.getOperand()
-        val exprReg: Register = pushRegisterAndLoad(Registers.r11, exprDest, destReg)
-
-        translateAndOr(destReg, exprReg, operand, operator)
-        popTempRegisterConditional(exprReg, exprDest, destReg)
-    }
-
-    private fun translateAndOr(destReg: Register, exprReg: Register, operand: Operand, operator: String) {
-        if (operator == "&&") {
-            representation.addMainInstr(AndInstruction(destReg, exprReg, operand))
-        } else {
-            representation.addMainInstr(OrInstruction(destReg, exprReg, operand))
-        }
-    }
-
     private fun visitAndOr(binop: ExprAST.BinOpAST) {
 
         val dest: Operand = binop.getOperand()
@@ -1240,43 +1223,34 @@ open class TranslatorVisitor(
             dest as Register
         }
 
-        when {
-            binop.expr1 is ExprAST.BoolLiterAST -> {
-                andOrWithImmediate(binop.expr1, binop.expr2, destReg, binop.operator)
-            }
+        val expr1Dest: Operand = binop.expr1.getOperand()
+        val expr2Dest: Operand = binop.expr2.getOperand()
 
-            binop.expr2 is ExprAST.BoolLiterAST -> {
-                andOrWithImmediate(binop.expr2, binop.expr1, destReg, binop.operator)
-            }
+        val reg: Register
+        val operand: Operand
 
-            else -> {
-                // neither are immediates
-                val expr1Dest: Operand = binop.expr1.getOperand()
-                val expr2Dest: Operand = binop.expr2.getOperand()
-
-                val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, destReg)
-                val expr2Reg: Register = if (expr2Dest is AddressingMode) {
-                    val reg: Register = if (expr1Dest is AddressingMode) {
-                        Registers.r12
-                    } else {
-                        Registers.r11
-                    }
-
-                    if (destReg != reg) {
-                        representation.addMainInstr(PushInstruction(reg))
-                    }
-
-                    representation.addMainInstr(LoadInstruction(reg, expr2Dest))
-                    reg
-                } else {
-                    expr2Dest as Register
+        if (expr1Dest is AddressingMode) {
+            if (expr2Dest is AddressingMode) {
+                if (destReg != Registers.r11) {
+                    representation.addMainInstr(PushInstruction(Registers.r11))
                 }
 
-                translateAndOr(destReg, expr1Reg, expr2Reg, binop.operator)
-
-                popTempRegisterConditional(expr2Reg, expr2Dest, destReg)
-                popTempRegisterConditional(expr1Reg, expr1Dest, destReg)
+                reg = Registers.r11
+                operand = expr2Dest
+                representation.addMainInstr(LoadInstruction(reg, expr1Dest))
+            } else {
+                reg = expr2Dest as Register
+                operand = expr1Dest
             }
+        } else {
+            reg = expr1Dest as Register
+            operand = expr2Dest
+        }
+
+        if (binop.operator == "&&") {
+            representation.addMainInstr(AndInstruction(destReg, reg, operand))
+        } else {
+            representation.addMainInstr(OrInstruction(destReg, reg, operand))
         }
 
         if (destReg == Registers.r11) {
@@ -1287,7 +1261,10 @@ open class TranslatorVisitor(
                     binop.getType()
                 )
             )
-            representation.addMainInstr(PopInstruction(destReg))
+        }
+
+        if (destReg == Registers.r11 || reg == Registers.r11) {
+            representation.addMainInstr(PopInstruction(Registers.r11))
         }
     }
 
@@ -1335,26 +1312,12 @@ open class TranslatorVisitor(
             }
 
             is TypeIdentifier.CharIdentifier -> {
-
-                when (binop.expr2) {
-                    is ExprAST.CharLiterAST -> {
-                        representation.addMainInstr(
-                            CompareInstruction(
-                                expr1Reg,
-                                ImmediateChar(binop.expr2.value)
-                            )
-                        )
-                    }
-
-                    else -> {
-                        representation.addMainInstr(
-                            CompareInstruction(
-                                expr1Reg,
-                                binop.expr2.getOperand()
-                            )
-                        )
-                    }
-                }
+                representation.addMainInstr(
+                    CompareInstruction(
+                        expr1Reg,
+                        binop.expr2.getOperand()
+                    )
+                )
 
                 when (binop.operator) {
                     ">" -> {
