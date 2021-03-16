@@ -21,11 +21,14 @@ class BinOpTests : ExprSemanticTests() {
     private val exprContext: WaccParser.ExprContext =
         WaccParser.ExprContext(WaccParser.StatContext(), 0)
 
-    private val intLitContext: WaccParser.IntLitContext = WaccParser.IntLitContext(WaccParser.StatContext(), 0)
+    private val intLitContext: WaccParser.IntLitContext =
+        WaccParser.IntLitContext(WaccParser.StatContext(), 0)
 
-    private val charLitContext: WaccParser.CharLitContext = WaccParser.CharLitContext(WaccParser.StatContext(), 0)
+    private val charLitContext: WaccParser.CharLitContext =
+        WaccParser.CharLitContext(WaccParser.StatContext(), 0)
 
-    private val boolLitContext: WaccParser.BoolLitContext = WaccParser.BoolLitContext(WaccParser.StatContext(), 0)
+    private val boolLitContext: WaccParser.BoolLitContext =
+        WaccParser.BoolLitContext(WaccParser.StatContext(), 0)
 
     @Test
     fun binOpMultValidCheck() {
