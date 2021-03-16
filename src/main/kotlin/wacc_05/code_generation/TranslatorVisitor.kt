@@ -192,9 +192,18 @@ open class TranslatorVisitor(
     // Note: this is in the case that the left hand side is a pair element or array element
     private fun storeValueInAddress(
         dest: Operand,
-        destReg: Register,
-        structureDestReg: Register
+        structure: AssignRHSAST
     ) {
+        val structureDest: Operand = structure.getOperand()
+
+        val structureDestReg: Register = if (structureDest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+            Registers.r11
+        } else {
+            structureDest as Register
+        }
+        val destReg: Register = chooseRegisterFromOperand(dest, Registers.r12)
+
         if (dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(destReg))
             representation.addMainInstr(LoadInstruction(destReg, dest))
@@ -212,6 +221,10 @@ open class TranslatorVisitor(
                     AddressingMode.AddressingMode2(structureDestReg)
                 )
             )
+        }
+
+        if (structureDest is AddressingMode) {
+            representation.addMainInstr(PopInstruction(structureDestReg))
         }
     }
 
@@ -432,21 +445,8 @@ open class TranslatorVisitor(
 
                 // load the address of the elem into a register
                 visitArrayElemFstPhase(arrElem)
-                val arrDest: Operand = arrElem.getOperand()
 
-                val arrDestReg: Register = if (arrDest is AddressingMode) {
-                    representation.addMainInstr(PushInstruction(Registers.r11))
-                    Registers.r11
-                } else {
-                    arrDest as Register
-                }
-                val destReg: Register = chooseRegisterFromOperand(dest, Registers.r12)
-
-                storeValueInAddress(dest, destReg, arrDestReg)
-
-                if (arrDest is AddressingMode) {
-                    representation.addMainInstr(PopInstruction(arrDestReg))
-                }
+                storeValueInAddress(dest, arrElem)
             }
             // This needs to be changed to match refactoring
             lhs.pairElem != null -> {
@@ -454,21 +454,8 @@ open class TranslatorVisitor(
 
                 // load the address of the pair elem into a register
                 visitPairElemFstPhase(pairElem)
-                val pairLocation: Operand = pairElem.getOperand()
 
-                val pairDestReg: Register = if (pairLocation is AddressingMode) {
-                    representation.addMainInstr(PushInstruction(Registers.r11))
-                    Registers.r11
-                } else {
-                    pairLocation as Register
-                }
-                val destReg: Register = chooseRegisterFromOperand(dest, Registers.r12)
-
-                storeValueInAddress(dest, destReg, pairDestReg)
-
-                if (pairLocation is AddressingMode) {
-                    representation.addMainInstr(PopInstruction(pairDestReg))
-                }
+                storeValueInAddress(dest, pairElem)
             }
             else -> {
                 // Do nothing
