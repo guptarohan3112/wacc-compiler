@@ -990,16 +990,30 @@ open class TranslatorVisitor(
 
         if (dest is AddressingMode) {
             destReg = Registers.r11
+            exprDestReg = if (exprDest is AddressingMode) {
+                Registers.r12
+            } else {
+                exprDest as Register
+            }
+        } else {
+            destReg = dest as Register
+            exprDestReg = if (exprDest is AddressingMode) {
+                Registers.r11
+            } else {
+                exprDest as Register
+            }
+        }
+
+        if (dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(destReg))
 
             // Some functionality between the pushing and the popping
             if (exprDest is AddressingMode) {
-                exprDestReg = Registers.r12
                 representation.addMainInstr(PushInstruction(exprDestReg))
                 representation.addMainInstr(LoadInstruction(exprDestReg, exprDest))
                 representation.addMainInstr(
                     LoadInstruction(
-                        Registers.r11,
+                        destReg,
                         AddressingMode.AddressingMode2(Registers.sp)
                     )
                 )
@@ -1012,10 +1026,9 @@ open class TranslatorVisitor(
                 )
                 representation.addMainInstr(PopInstruction(exprDestReg))
             } else {
-                exprDestReg = exprDest as Register
                 representation.addMainInstr(
                     LoadInstruction(
-                        Registers.r11,
+                        destReg,
                         AddressingMode.AddressingMode2(Registers.sp)
                     )
                 )
@@ -1031,9 +1044,7 @@ open class TranslatorVisitor(
 
             representation.addMainInstr(PopInstruction(destReg))
         } else {
-            destReg = dest as Register
             if (exprDest is AddressingMode) {
-                exprDestReg = Registers.r11
                 representation.addMainInstr(PushInstruction(exprDestReg))
                 representation.addMainInstr(LoadInstruction(exprDestReg, exprDest))
                 representation.addMainInstr(
@@ -1051,7 +1062,6 @@ open class TranslatorVisitor(
                 )
                 representation.addMainInstr(PopInstruction(exprDestReg))
             } else {
-                exprDestReg = exprDest as Register
                 representation.addMainInstr(
                     LoadInstruction(
                         exprDestReg,
