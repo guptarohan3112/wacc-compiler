@@ -218,8 +218,6 @@ open class TranslatorVisitor(
     // or pair element, depending on whether a register has been assigned to it or not
     private fun chooseRegister(dest: Operand, tempReg: Register): Register {
         return if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(tempReg))
-            representation.addMainInstr(LoadInstruction(tempReg, dest))
             tempReg
         } else {
             dest as Register
@@ -230,13 +228,9 @@ open class TranslatorVisitor(
     private fun moveLocation(elem: AssignRHSAST, location: Operand): Register {
         val dest: Operand = elem.getOperand()
 
-        val reg: Register
-
+        val reg: Register = chooseRegister(dest, Registers.r11)
         if (dest is AddressingMode) {
-            reg = Registers.r11
             representation.addMainInstr(PushInstruction(reg))
-        } else {
-            reg = dest as Register
         }
 
         representation.addMainInstr(MoveInstruction(reg, location))
@@ -921,11 +915,7 @@ open class TranslatorVisitor(
         val dest: Operand = unop.getOperand()
         val arrLocation = unop.expr.getOperand()
 
-        val destReg: Register = if (dest is AddressingMode) {
-            Registers.r11
-        } else {
-            dest as Register
-        }
+        val destReg: Register = chooseRegister(dest, Registers.r11)
 
         val source: AddressingMode = if (arrLocation is AddressingMode) {
             arrLocation
@@ -951,11 +941,7 @@ open class TranslatorVisitor(
         val dest: Operand = unop.getOperand()
         val exprDest: Operand = unop.expr.getOperand()
 
-        val destReg: Register = if (dest is AddressingMode) {
-            Registers.r11
-        } else {
-            dest as Register
-        }
+        val destReg: Register = chooseRegister(dest, Registers.r11)
 
         val source: AddressingMode = if (exprDest is AddressingMode) {
             exprDest
@@ -990,18 +976,10 @@ open class TranslatorVisitor(
 
         if (dest is AddressingMode) {
             destReg = Registers.r11
-            exprDestReg = if (exprDest is AddressingMode) {
-                Registers.r12
-            } else {
-                exprDest as Register
-            }
+            exprDestReg = chooseRegister(exprDest, Registers.r12)
         } else {
             destReg = dest as Register
-            exprDestReg = if (exprDest is AddressingMode) {
-                Registers.r11
-            } else {
-                exprDest as Register
-            }
+            exprDestReg = chooseRegister(exprDest, Registers.r11)
         }
 
         if (dest is AddressingMode) {
@@ -1469,6 +1447,10 @@ open class TranslatorVisitor(
             val dest: Operand = elem.getOperand()
 
             val elemReg = chooseRegister(dest, Registers.r12)
+            if (elemReg == Registers.r12) {
+                representation.addMainInstr(PushInstruction(elemReg))
+                representation.addMainInstr(LoadInstruction(elemReg, dest as AddressingMode))
+            }
 
             // store the value of elem at the current index
             representation.addMainInstr(
@@ -1609,6 +1591,10 @@ open class TranslatorVisitor(
         val dest: Operand = elem.getOperand()
 
         val reg: Register = chooseRegister(dest, Registers.r12)
+        if (reg == Registers.r12) {
+            representation.addMainInstr(PushInstruction(reg))
+            representation.addMainInstr(LoadInstruction(reg, dest as AddressingMode))
+        }
 
         // do allocation - move size of elem into param register then branch into malloc
         val allocation: Int = elem.getType().getStackSize()
