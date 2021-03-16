@@ -8,12 +8,18 @@ import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisitor() {
+open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisitor() {
     // Visitor class which will make the interference graph (make all necessary nodes and put them
     // in the list of nodes)
 
     private fun getLineNo(ctx: ParserRuleContext): Int {
         return ctx.getStart().line
+    }
+
+    protected fun createAndSetGraphNode(node: AssignRHSAST) {
+        val graphNode = GraphNode(getLineNo(node.ctx))
+        node.setGraphNode(graphNode)
+        graph.addNode(graphNode)
     }
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
@@ -28,11 +34,6 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
             decl.getGraphNode().setIdentifier(decl.varName)
         }
     }
-
-
-    // x = 5 -> x and 5 have registers, move reg for 5 into reg for x
-    //       -> x has register, give register to rhs to store 5 in
-    // a[3] = rhs -> get rhs and at translation store rhs into a[3] address
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
         // Do this, but every rhs needs to not override the graphnode if it has already been set
@@ -141,11 +142,5 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         } else {
             unop.setGraphNode(unop.expr.getGraphNode())
         }
-    }
-
-    private fun createAndSetGraphNode(node: AssignRHSAST) {
-        val graphNode = GraphNode(getLineNo(node.ctx))
-        node.setGraphNode(graphNode)
-        graph.addNode(graphNode)
     }
 }

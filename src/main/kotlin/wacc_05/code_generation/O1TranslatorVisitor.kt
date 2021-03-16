@@ -2,14 +2,12 @@ package wacc_05.code_generation
 
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
-import wacc_05.code_generation.instructions.BranchInstruction
-import wacc_05.code_generation.instructions.CompareInstruction
-import wacc_05.code_generation.instructions.LabelInstruction
-import wacc_05.code_generation.instructions.LoadInstruction
+import wacc_05.code_generation.instructions.*
 import wacc_05.code_generation.utilities.*
 import wacc_05.graph_colouring.InterferenceGraph
 
-class O1TranslatorVisitor(private val representation: AssemblyRepresentation, private val graph: InterferenceGraph) : TranslatorVisitor(representation, graph) {
+class O1TranslatorVisitor(private val representation: AssemblyRepresentation, private val graph: InterferenceGraph) :
+    TranslatorVisitor(representation, graph) {
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
 
@@ -39,6 +37,8 @@ class O1TranslatorVisitor(private val representation: AssemblyRepresentation, pr
             val eval = condition.evaluate()
             if (eval == 0.toLong()) {
                 println("nothing to do")
+            } else {
+                super.visitWhileAST(whileStat)
             }
 
         } else {
@@ -46,18 +46,24 @@ class O1TranslatorVisitor(private val representation: AssemblyRepresentation, pr
         }
     }
 
+    private fun storeValue(dest: Operand, value: String) {
+        val destReg: Register = if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+            Registers.r11
+        } else {
+            dest as Register
+        }
+
+        representation.addMainInstr(LoadInstruction(destReg, AddressingMode.AddressingLabel(value)))
+
+        if (dest is AddressingMode) {
+            representation.addMainInstr(PopInstruction(Registers.r11))
+        }
+    }
+
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         if (unop.canEvaluate()) {
-            val dest: Register = Registers.allocate()
-
-            representation.addMainInstr(
-                LoadInstruction(
-                    dest,
-                    AddressingMode.AddressingLabel(unop.evaluate().toString())
-                )
-            )
-
-            unop.setDestReg(dest)
+            storeValue(unop.getOperand(), unop.evaluate().toString())
         } else {
             super.visitUnOpAST(unop)
         }
@@ -65,16 +71,7 @@ class O1TranslatorVisitor(private val representation: AssemblyRepresentation, pr
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
         if (binop.canEvaluate()) {
-            val dest: Register = Registers.allocate()
-
-            representation.addMainInstr(
-                LoadInstruction(
-                    dest,
-                    AddressingMode.AddressingLabel(binop.evaluate().toString())
-                )
-            )
-
-            binop.setDestReg(dest)
+            storeValue(binop.getOperand(), binop.evaluate().toString())
         } else {
             super.visitBinOpAST(binop)
         }

@@ -129,7 +129,7 @@ open class TranslatorVisitor(
         restoreStackPointer(innerScope, stackSize)
     }
 
-    private fun operandAllocation(register: Register, ast: AssignRHSAST): Operand {
+    fun operandAllocation(register: Register, ast: AssignRHSAST): Operand {
         return if (!register.equals(InterferenceGraph.DefaultReg)) {
             register
         } else {
