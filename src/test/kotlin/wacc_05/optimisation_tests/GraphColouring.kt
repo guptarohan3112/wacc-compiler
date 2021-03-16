@@ -76,7 +76,7 @@ class GraphColouring {
 
         graph.colourGraph()
 
-        assertEquals(x.getRegister(), c.getRegister())
+        assertEquals(x.getOperand(), c.getOperand())
     }
 
     @Test
@@ -104,6 +104,6 @@ class GraphColouring {
         assertEquals(8, graph.getNodes().size)
 
         graph.colourGraph()
-        assertEquals(Register(-1), graph.findNode("h")!!.getRegister())
+        assertEquals(Register(-1), graph.findNode("h")!!.getOperand())
     }
 }
