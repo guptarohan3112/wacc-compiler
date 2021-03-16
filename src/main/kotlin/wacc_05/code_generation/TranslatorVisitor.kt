@@ -755,33 +755,6 @@ open class TranslatorVisitor(
     }
 
     private fun visitIdentGeneral(ident: ExprAST.IdentAST, read: Boolean) {
-//        val dest: Operand = operandAllocation(ident.getDestReg(), ident)
-//
-//        if (dest is AddressingMode) {
-//            representation.addMainInstr(PushInstruction(Registers.r11))
-//
-//            val paramOffset = ident.getParamOffset()
-//            val spOffset: Int = calculateIdentSpOffset(ident.value, ident, paramOffset)
-//
-//            if (read) {
-//                representation.addMainInstr(
-//                    AddInstruction(
-//                        ident.getDestReg(),
-//                        Registers.sp,
-//                        Immediate(spOffset)
-//                    )
-//                )
-//            } else {
-//                val type = ident.getType()
-//                var mode: AddressingMode =
-//                    AddressingMode.AddressingMode2(Registers.sp, Immediate(spOffset))
-//
-//                if (type is TypeIdentifier.BoolIdentifier || type is TypeIdentifier.CharIdentifier) {
-//                    mode = AddressingMode.AddressingMode3(Registers.sp, Immediate(spOffset))
-//                }
-//                representation.addMainInstr(LoadInstruction(ident.getDestReg(), mode))
-//            }
-//        }
         return
     }
 
@@ -1092,8 +1065,8 @@ open class TranslatorVisitor(
 
     private fun binopRegisterOrStack(binop: ExprAST.BinOpAST) {
         val dest: Operand = binop.getOperand()
-        val expr1Dest: Operand = binop.getOperand()
-        val expr2Dest: Operand = binop.getOperand()
+        val expr1Dest: Operand = binop.expr1.getOperand()
+        val expr2Dest: Operand = binop.expr2.getOperand()
 
         val reg: Register = if (dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(Registers.r11))
@@ -1101,16 +1074,7 @@ open class TranslatorVisitor(
         } else {
             dest as Register
         }
-        val expr1Reg: Register = if (expr1Dest is AddressingMode) {
-            if (reg != Registers.r11) {
-                representation.addMainInstr(PushInstruction(Registers.r11))
-            }
-
-            representation.addMainInstr(LoadInstruction(Registers.r11, expr1Dest))
-            Registers.r11
-        } else {
-            expr1Dest as Register
-        }
+        val expr1Reg: Register = allocateReg(Registers.r11, expr1Dest, reg)
         val expr2Reg: Register = if (expr2Dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(Registers.r12))
             representation.addMainInstr(LoadInstruction(Registers.r12, expr2Dest))
@@ -1208,34 +1172,101 @@ open class TranslatorVisitor(
         }
     }
 
+    private fun allocateReg(reg: Register, exprDest: Operand, destReg: Register): Register {
+        return if (exprDest is AddressingMode) {
+            if (destReg != reg) {
+                representation.addMainInstr(PushInstruction(reg))
+            }
+
+            representation.addMainInstr(LoadInstruction(reg, exprDest))
+            reg
+        } else {
+            exprDest as Register
+        }
+    }
+
+    private fun deallocateReg(reg: Register, exprDest: Operand, destReg: Register) {
+        if (exprDest is AddressingMode && destReg != reg) {
+            representation.addMainInstr(PopInstruction(reg))
+        }
+    }
+
+    private fun andOrWithImmediate(imm: ExprAST.BoolLiterAST, expr: ExprAST, destReg: Register, operator: String) {
+        val operand = Immediate(imm.getValue())
+        val exprDest: Operand = expr.getOperand()
+        val exprReg: Register = allocateReg(Registers.r11, exprDest, destReg)
+
+        translateAndOr(destReg, exprReg, operand, operator)
+        deallocateReg(exprReg, exprDest, destReg)
+    }
+
+    private fun translateAndOr(destReg: Register, exprReg: Register, operand: Operand, operator: String) {
+        if (operator == "&&") {
+            representation.addMainInstr(AndInstruction(destReg, exprReg, operand))
+        } else {
+            representation.addMainInstr(OrInstruction(destReg, exprReg, operand))
+        }
+    }
+
     private fun visitAndOr(binop: ExprAST.BinOpAST) {
 
-        val dest: Register
-        val operand: Operand
+        val dest: Operand = binop.getOperand()
+        val destReg: Register = if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(Registers.r11))
+            Registers.r11
+        } else {
+            dest as Register
+        }
 
         when {
             binop.expr1 is ExprAST.BoolLiterAST -> {
-                dest = binop.expr2.getDestReg()
-                operand = Immediate(binop.expr1.getValue())
+                andOrWithImmediate(binop.expr1, binop.expr2, destReg, binop.operator)
             }
+
             binop.expr2 is ExprAST.BoolLiterAST -> {
-                dest = binop.expr1.getDestReg()
-                operand = Immediate(binop.expr2.getValue())
+                andOrWithImmediate(binop.expr2, binop.expr1, destReg, binop.operator)
             }
+
             else -> {
-                dest = binop.expr1.getDestReg()
-                operand = binop.expr2.getDestReg()
+                // neither are immediates
+                val expr1Dest: Operand = binop.expr1.getOperand()
+                val expr2Dest: Operand = binop.expr2.getOperand()
+
+                val expr1Reg: Register = allocateReg(Registers.r11, expr1Dest, destReg)
+                val expr2Reg: Register = if (expr2Dest is AddressingMode) {
+                    val reg: Register = if (expr1Dest is AddressingMode) {
+                        Registers.r12
+                    } else {
+                        Registers.r11
+                    }
+
+                    if (destReg != reg) {
+                        representation.addMainInstr(PushInstruction(reg))
+                    }
+
+                    representation.addMainInstr(LoadInstruction(reg, expr2Dest))
+                    reg
+                } else {
+                    expr2Dest as Register
+                }
+
+                translateAndOr(destReg, expr1Reg, expr2Reg, binop.operator)
+
+                deallocateReg(expr2Reg, expr2Dest, destReg)
+                deallocateReg(expr1Reg, expr1Dest, destReg)
             }
         }
 
-        representation.addMainInstr(
-            if (binop.operator == "&&") {
-                AndInstruction(binop.getDestReg(), dest, operand)
-            } else {
-                OrInstruction(binop.getDestReg(), dest, operand)
-            }
-        )
-
+        if (destReg == Registers.r11) {
+            representation.addMainInstr(
+                getStoreInstruction(
+                    destReg,
+                    dest as AddressingMode.AddressingMode2,
+                    binop.getType()
+                )
+            )
+            representation.addMainInstr(PopInstruction(destReg))
+        }
     }
 
     private fun visitCompare(binop: ExprAST.BinOpAST) {
