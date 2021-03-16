@@ -247,6 +247,12 @@ open class TranslatorVisitor(
         return reg
     }
 
+    // Stores the result held in a temporary register back onto the stack and pops the temporary register
+    private fun tempRegRestore(tempReg: Register, dest: AddressingMode.AddressingMode2) {
+        representation.addMainInstr(StoreInstruction(tempReg, dest))
+        representation.addMainInstr(PopInstruction(tempReg))
+    }
+
     /* MAIN VISIT METHODS (OVERIDDEN FROM THE BASE VISITOR CLASS)
        ---------------------------------------------------------
      */
@@ -950,12 +956,11 @@ open class TranslatorVisitor(
 
         if (dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(destReg))
-            representation.addMainInstr(LoadInstruction(destReg, source))
 
+            representation.addMainInstr(LoadInstruction(destReg, source))
             representation.addMainInstr(EorInstruction(destReg, destReg, Immediate(1)))
 
-            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(destReg))
+            tempRegRestore(destReg, dest as AddressingMode.AddressingMode2)
         } else {
             if (exprDest is AddressingMode) {
                 representation.addMainInstr(LoadInstruction(destReg, source))
@@ -986,8 +991,7 @@ open class TranslatorVisitor(
 
             negHelper(exprDest, exprDestReg, destReg, destReg)
 
-            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(destReg))
+            tempRegRestore(destReg, dest as AddressingMode.AddressingMode2)
         } else {
             negHelper(exprDest, exprDestReg, destReg, exprDestReg)
         }
@@ -1436,10 +1440,11 @@ open class TranslatorVisitor(
             arrIndex += elemsSize
         }
 
+        val sizeRegister: Register = arrayLiter.getSizeGraphNode().getOperand() as Register
         // store the length of the array at arrLocation +0
         representation.addMainInstr(
             LoadInstruction(
-                arrayLiter.getSizeGraphNode().getOperand() as Register,
+                sizeRegister,
                 AddressingMode.AddressingLabel("${arrayLiter.elemsLength()}")
             )
         )
@@ -1447,7 +1452,7 @@ open class TranslatorVisitor(
         // store the length of the array at the front of its allocated space
         representation.addMainInstr(
             StoreInstruction(
-                arrayLiter.getSizeGraphNode().getOperand() as Register,
+                sizeRegister,
                 AddressingMode.AddressingMode2(reg)
             )
         )
@@ -1544,8 +1549,7 @@ open class TranslatorVisitor(
         allocatePairElem(newPair.snd, reg, TypeIdentifier.ADDR_SIZE)
 
         if (pairLocation is AddressingMode) {
-            representation.addMainInstr(StoreInstruction(reg, pairLocation as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(reg))
+            tempRegRestore(reg, pairLocation as AddressingMode.AddressingMode2)
         }
     }
 
