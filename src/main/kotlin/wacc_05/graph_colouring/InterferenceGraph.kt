@@ -69,7 +69,7 @@ class InterferenceGraph {
         }
     }
 
-    private fun regsInUse(ctx: ParserRuleContext): ArrayList<Register> {
+    fun regsInUse(ctx: ParserRuleContext): ArrayList<Register> {
         val regsInUse: ArrayList<Register> = ArrayList()
         val currentLineNo = ctx.getStart().line
         for (gNode in listOfNodes) {

@@ -1102,20 +1102,20 @@ open class TranslatorVisitor(
 
         // allocate a register to move the result into
         if (binop.operator == "/") {
-            storeOrMoveBinop(binop, Registers.r0)
+            storeOrMove(binop, Registers.r0)
         } else {
-            storeOrMoveBinop(binop, Registers.r1)
+            storeOrMove(binop, Registers.r1)
         }
     }
 
-    private fun storeOrMoveBinop(binop: ExprAST.BinOpAST, reg: Register) {
-        val dest = binop.getOperand()
+    private fun storeOrMove(expr: AssignRHSAST, reg: Register) {
+        val dest = expr.getOperand()
         if (dest is AddressingMode) {
             representation.addMainInstr(
                 getStoreInstruction(
                     reg,
                     dest as AddressingMode.AddressingMode2,
-                    binop.getType()
+                    expr.getType()
                 )
             )
         } else {
@@ -1491,8 +1491,11 @@ open class TranslatorVisitor(
         symTab.setParamOffset(0)
         symTab.updatePtrOffset(-1 * argsSize)
 
-        // Save registers
         // Find all registers that are in use at this point of time and push them on the stack
+        val regsInUse: ArrayList<Register> = graph.regsInUse(funcCall.ctx)
+        for (reg in regsInUse) {
+            representation.addMainInstr(PushInstruction(reg))
+        }
 
         // Branch to the function label in the assembly code
         representation.addMainInstr(
@@ -1503,14 +1506,15 @@ open class TranslatorVisitor(
         )
 
         // Pop all of the registers that were pushed on the stack
-        // Restore registers
+        for (reg in regsInUse.reversed()) {
+            representation.addMainInstr(PopInstruction(reg))
+        }
 
         // Restore the stack pointer
         restoreStackPointer(funcCall, argsSize)
 
-        // Move the result of the function into an available register
-        val reg: Register = funcCall.getDestReg()
-        representation.addMainInstr(MoveInstruction(reg, Registers.r0))
+        // Move the result of the function into the correct destination
+        storeOrMove(funcCall, Registers.r0)
     }
 
     override fun visitNewPairAST(newPair: NewPairAST) {
