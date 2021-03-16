@@ -1,5 +1,6 @@
 package wacc_05.graph_colouring
 
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ASTBaseVisitor
 import wacc_05.ast_structure.ExprAST
@@ -11,19 +12,21 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
     // Visitor class which will make the interference graph (make all necessary nodes and put them
     // in the list of nodes)
 
+    private fun getLineNo(ctx: ParserRuleContext): Int {
+        return ctx.getStart().line
+    }
+
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
         visit(decl.assignment)
 
         if (decl.assignment.getGraphNode().getIdent() != "") {
-            val graphNode = GraphNode(graph.getIndex(), decl.varName)
+            val graphNode = GraphNode(getLineNo(decl.ctx), decl.varName)
             decl.setGraphNode(graphNode)
             graph.addNode(graphNode)
         } else {
             decl.setGraphNode(decl.assignment.getGraphNode())
             decl.getGraphNode().setIdentifier(decl.varName)
         }
-
-        graph.incrementIndex()
     }
 
 
@@ -35,14 +38,12 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         // Do this, but every rhs needs to not override the graphnode if it has already been set
         visit(assign.rhs)
         val graphNode = graph.findNode(assign.lhs.getStringValue())
-        graphNode?.updateEndIndex(graph.getIndex())
-        graph.incrementIndex()
+        graphNode?.updateEndIndex(getLineNo(assign.ctx))
     }
 
     override fun visitAssignLHSAST(lhs: AssignLHSAST) {
         val graphNode: GraphNode? = graph.findNode(lhs.getStringValue())
-        graphNode?.updateEndIndex(graph.getIndex())
-        graph.incrementIndex()
+        graphNode?.updateEndIndex(getLineNo(lhs.ctx))
 
         lhs.setGraphNode(graphNode!!)
     }
@@ -51,23 +52,20 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         visit(pairElem.elem)
         val graphNode: GraphNode = pairElem.elem.getGraphNode()
         pairElem.setPairLocation(graphNode)
-        graphNode.updateEndIndex(graph.getIndex())
+        graphNode.updateEndIndex(getLineNo(pairElem.ctx))
         createAndSetGraphNode(pairElem)
-        graph.incrementIndex()
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         val graphNode: GraphNode = graph.findNode(arrayElem.ident)!!
         arrayElem.setArrayLocation(graphNode)
-        graphNode.updateEndIndex(graph.getIndex())
+        graphNode.updateEndIndex(getLineNo(arrayElem.ctx))
         createAndSetGraphNode(arrayElem)
-        graph.incrementIndex()
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
         val graphNode: GraphNode? = graph.findNode(ident.value)
-        graphNode?.updateEndIndex(graph.getIndex())
-        graph.incrementIndex()
+        graphNode?.updateEndIndex(getLineNo(ident.ctx))
 
         ident.setGraphNode(graphNode!!)
     }
@@ -93,10 +91,9 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
         for (elem in arrayLiter.elems) {
             visit(elem)
-            graph.incrementIndex()
         }
 
-        arrayLiter.setSizeGraphNode(GraphNode(graph.getIndex(), ""))
+        arrayLiter.setSizeGraphNode(GraphNode(getLineNo(arrayLiter.ctx), ""))
 
         createAndSetGraphNode(arrayLiter)
     }
@@ -107,9 +104,7 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
 
     override fun visitNewPairAST(newPair: NewPairAST) {
         visit(newPair.fst)
-        graph.incrementIndex()
         visit(newPair.snd)
-        graph.incrementIndex()
         createAndSetGraphNode(newPair)
     }
 
@@ -149,7 +144,7 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
     }
 
     private fun createAndSetGraphNode(node: AssignRHSAST) {
-        val graphNode = GraphNode(node.getLineNo())
+        val graphNode = GraphNode(getLineNo(node.ctx))
         node.setGraphNode(graphNode)
         graph.addNode(graphNode)
     }

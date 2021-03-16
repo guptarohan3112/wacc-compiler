@@ -14,11 +14,6 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
     private var graphNode: GraphNode? = null
 
     private var addr: Int = -1
-//    private var operand: Operand? = null
-
-    fun getLineNo(): Int {
-        return ctx.getStart().line
-    }
 
     fun getOperand(): Operand {
         return if (!getDestReg().equals(InterferenceGraph.DefaultReg)) {
@@ -31,7 +26,6 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
                 AddressingMode.AddressingMode3(Registers.sp, Immediate(offset))
             }
         }
-//        return operand ?: getDestReg()
     }
 
     fun setAddr() {
