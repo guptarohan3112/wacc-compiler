@@ -10,11 +10,6 @@ class InterferenceGraph {
         private val defaultReg: Register = Register(-1)
     }
 
-    // Index used to indicate live range of a graph node in this graph
-    // This is incremented every time you move onto the next line
-    // OR incremented every time you refer to or declare a new variable (we only care about variables)
-    private var index: Int = 0
-
     private val listOfNodes: ArrayList<GraphNode> = ArrayList()
 
     fun getNodes(): ArrayList<GraphNode> {
@@ -70,13 +65,5 @@ class InterferenceGraph {
         if (notInUse.isNotEmpty()) {
             node.setOperand(notInUse.elementAt(0))
         }
-    }
-
-    fun incrementIndex() {
-        index++
-    }
-
-    fun getIndex(): Int {
-        return index
     }
 }
