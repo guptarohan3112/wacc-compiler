@@ -951,6 +951,12 @@ open class TranslatorVisitor(
         val dest: Operand = unop.getOperand()
         val exprDest: Operand = unop.expr.getOperand()
 
+        val destReg: Register = if (dest is AddressingMode) {
+            Registers.r11
+        } else {
+            dest as Register
+        }
+
         val source: AddressingMode = if (exprDest is AddressingMode) {
             exprDest
         } else {
@@ -958,20 +964,19 @@ open class TranslatorVisitor(
         }
 
         if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r11))
+            representation.addMainInstr(PushInstruction(destReg))
+            representation.addMainInstr(LoadInstruction(destReg, source))
 
-            // Some functionality in between the pushing and the popping
-            representation.addMainInstr(LoadInstruction(Registers.r11, source))
-            representation.addMainInstr(EorInstruction(Registers.r11, Registers.r11, Immediate(1)))
-            representation.addMainInstr(StoreInstruction(Registers.r11, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(EorInstruction(destReg, destReg, Immediate(1)))
 
-            representation.addMainInstr(PopInstruction(Registers.r11))
+            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
+            representation.addMainInstr(PopInstruction(destReg))
         } else {
             if (exprDest is AddressingMode) {
-                representation.addMainInstr(LoadInstruction(dest as Register, exprDest))
-                representation.addMainInstr(EorInstruction(dest, dest, Immediate(1)))
+                representation.addMainInstr(LoadInstruction(destReg, source))
+                representation.addMainInstr(EorInstruction(destReg, destReg, Immediate(1)))
             } else {
-                representation.addMainInstr(EorInstruction(dest as Register, exprDest as Register, Immediate(1)))
+                representation.addMainInstr(EorInstruction(destReg, exprDest as Register, Immediate(1)))
             }
         }
     }
