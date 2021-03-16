@@ -8,4 +8,9 @@
  */
 
 rootProject.name = 'wacc_05'
-include('src')
+include ':compiler'
+include ':webapp'
+project(':compiler').projectDir = new File('/compiler')
+project(':webapp').projectDir = new File('/webapp')
+
+

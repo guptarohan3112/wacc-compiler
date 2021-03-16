@@ -1,0 +1,16 @@
+# import at random place in file, after begin
+
+# Output:
+# #syntax_error#
+
+# Exit:
+# 100
+
+# Program:
+
+begin
+  int x = 15 ;
+  import importedFile
+  x = call dec(x) ;
+  println x
+end

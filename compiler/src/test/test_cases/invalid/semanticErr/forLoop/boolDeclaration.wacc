@@ -1,0 +1,16 @@
+# looping variable is a boolean and not an integer
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+
+begin
+  int dummyNumber = 4;
+  for (bool cond = false, cond, dummyNumber = 1) do
+    skip
+  done
+end

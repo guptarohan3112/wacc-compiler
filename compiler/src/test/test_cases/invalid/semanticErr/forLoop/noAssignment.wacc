@@ -1,0 +1,15 @@
+# A print statement is in place of where the assignment to update the looping variable should be
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+
+begin
+  for (int i = 10, i > 0, print "I should not be here") do
+    skip
+  done
+end

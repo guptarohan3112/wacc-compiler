@@ -14,15 +14,15 @@ build:
 testlocal:
     script:
         - make
-        - ./gradlew semanticTests
+        - cd compiler && ./gradlew semanticTests
 
 test:
     script:
         - make
-        - ./gradlew errorTests
+        - cd compiler && ./gradlew errorTests
 
 testExecution:
     script:
         - make
-        - ./gradlew executionTests
+        - cd compiler && ./gradlew executionTests
 

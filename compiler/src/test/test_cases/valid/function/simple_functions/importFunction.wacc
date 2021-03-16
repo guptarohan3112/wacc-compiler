@@ -1,0 +1,18 @@
+# incFunction over two files, importing one functions
+
+# Output:
+# 1
+# 4
+
+# Program:
+import importedFunction
+
+begin
+  int x = 0 ;
+  x = call inc(x) ;
+  println x ;
+  x = call inc(x) ;
+  x = call inc(x) ;
+  x = call inc(x) ;
+  println x
+end
