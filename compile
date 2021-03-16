@@ -36,7 +36,7 @@ fi
 
 FILE_NAME=$1
 
-java -jar build/libs/wacc_05.jar $FILE_NAME $OPTIMISATION $DEBUG_MODE $VALID_MODE
+java -jar build/libs/wacc_05.jar $FILE_NAME $OPTIMISATION $DEBUG_MODE $VALID_MODE $IS_FILE
 exit $?
 
 # with some arguments
