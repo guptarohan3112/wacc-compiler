@@ -1383,11 +1383,9 @@ open class TranslatorVisitor(
 
         // store the array address in an allocated register
         val arrLocation: Operand = arrayLiter.getOperand()
-        val reg = if (arrLocation is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r11))
-            Registers.r11
-        } else {
-            arrLocation as Register
+        val reg: Register = chooseRegisterFromOperand(arrLocation, Registers.r11)
+        if (reg == Registers.r11) {
+            representation.addMainInstr(PushInstruction(reg))
         }
 
         representation.addMainInstr(MoveInstruction(reg, Registers.r0))
@@ -1413,7 +1411,7 @@ open class TranslatorVisitor(
                 )
             )
 
-            if (dest is AddressingMode) {
+            if (elemReg == Registers.r12) {
                 representation.addMainInstr(PopInstruction(elemReg))
             }
 
@@ -1438,13 +1436,7 @@ open class TranslatorVisitor(
         )
 
         if (arrLocation is AddressingMode) {
-            representation.addMainInstr(
-                StoreInstruction(
-                    reg,
-                    arrLocation as AddressingMode.AddressingMode2
-                )
-            )
-            representation.addMainInstr(PopInstruction(reg))
+            tempRegRestore(reg, arrLocation as AddressingMode.AddressingMode2)
         }
     }
 
@@ -1520,11 +1512,9 @@ open class TranslatorVisitor(
         // move malloc result into allocated register
 
         val pairLocation = newPair.getOperand()
-        val reg = if (pairLocation is AddressingMode) {
+        val reg: Register = chooseRegisterFromOperand(pairLocation, Registers.r11)
+        if (reg == Registers.r11) {
             representation.addMainInstr(PushInstruction(Registers.r11))
-            Registers.r11
-        } else {
-            pairLocation as Register
         }
 
         representation.addMainInstr(MoveInstruction(reg, Registers.r0))
@@ -1533,7 +1523,7 @@ open class TranslatorVisitor(
         allocatePairElem(newPair.fst, reg, 0)
         allocatePairElem(newPair.snd, reg, TypeIdentifier.ADDR_SIZE)
 
-        if (pairLocation is AddressingMode) {
+        if (reg == Registers.r11) {
             tempRegRestore(reg, pairLocation as AddressingMode.AddressingMode2)
         }
     }
@@ -1580,8 +1570,8 @@ open class TranslatorVisitor(
             )
         )
 
-        if (dest is AddressingMode) {
-            representation.addMainInstr(PopInstruction(Registers.r12))
+        if (reg == Registers.r12) {
+            representation.addMainInstr(PopInstruction(reg))
         }
     }
 
@@ -1590,32 +1580,21 @@ open class TranslatorVisitor(
         visitPairElemFstPhase(pairElem)
         val dest: Operand = pairElem.getOperand()
 
-        if (dest is AddressingMode) {
-            // load the value at the given address into the same register
-            representation.addMainInstr(
-                LoadInstruction(
-                    Registers.r11,
-                    AddressingMode.AddressingMode2(Registers.r11)
-                )
-            )
+        val destReg: Register = chooseRegisterFromOperand(dest, Registers.r11)
 
-            representation.addMainInstr(
-                StoreInstruction(
-                    Registers.r11,
-                    dest as AddressingMode.AddressingMode2
-                )
+        // load the value at the given address into the same register
+        representation.addMainInstr(
+            LoadInstruction(
+                destReg,
+                AddressingMode.AddressingMode2(destReg)
             )
-            representation.addMainInstr(PopInstruction(Registers.r11))
-        } else {
-            representation.addMainInstr(
-                LoadInstruction(
-                    dest as Register,
-                    AddressingMode.AddressingMode2(dest)
-                )
-            )
+        )
+
+        if (dest is AddressingMode) {
+            tempRegRestore(destReg, dest as AddressingMode.AddressingMode2)
         }
 
-        // (we don't free the dest register here as it contains the value we want to use elsewhere)
+        // (we don't free the dest register otherwise as it contains the value we want to use elsewhere)
     }
 
     /* completes visiting pair elems to the point that the address of it is in the dest register,
