@@ -412,10 +412,10 @@ open class TranslatorVisitor(
 
         when {
             lhs.ident != null -> {
-                val lhsLocation = lhs.getGraphNode().getOperand()
+                val lhsLocation = lhs.getGraphNode().getRegister()
 
                 if (!lhsLocation.equals(InterferenceGraph.DefaultReg)) {
-                    representation.addMainInstr(MoveInstruction(lhsLocation as Register, dest))
+                    representation.addMainInstr(MoveInstruction(lhsLocation, dest))
                 } else {
                     val offset: Int = calculateIdentSpOffset(lhs.getStringValue(), assign, 0)
                     if (dest is AddressingMode) {
@@ -433,7 +433,7 @@ open class TranslatorVisitor(
                         representation.addMainInstr(
                             StoreInstruction(
                                 dest as Register,
-                                lhsLocation as AddressingMode.AddressingMode2
+                                AddressingMode.AddressingMode2(lhsLocation)
                             )
                         )
                     }
@@ -790,7 +790,7 @@ open class TranslatorVisitor(
     }
 
     private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
-        var arrLocation: Operand = arrayElem.getArrayLocation().getOperand()
+        var arrLocation: Operand = arrayElem.getArrayLocation().getRegister()
 
         if (arrLocation.equals(InterferenceGraph.DefaultReg)) {
             val offset = calculateIdentSpOffset(arrayElem.ident, arrayElem, 0)
@@ -1421,7 +1421,7 @@ open class TranslatorVisitor(
             arrIndex += elemsSize
         }
 
-        val sizeRegister: Register = arrayLiter.getSizeGraphNode().getOperand() as Register
+        val sizeRegister: Register = arrayLiter.getSizeGraphNode().getRegister()
         // store the length of the array at arrLocation +0
         representation.addMainInstr(
             LoadInstruction(

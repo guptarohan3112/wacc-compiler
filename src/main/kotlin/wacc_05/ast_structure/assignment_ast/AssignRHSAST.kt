@@ -47,7 +47,7 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
     }
 
     fun getDestReg(): Register {
-        return graphNode!!.getOperand() as Register
+        return graphNode!!.getRegister()
     }
 
     fun setDestReg(reg: Register) {

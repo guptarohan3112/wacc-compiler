@@ -1,5 +1,7 @@
 package wacc_05.graph_colouring
 
+import org.antlr.v4.runtime.ParserRuleContext
+import wacc_05.ast_structure.AST
 import wacc_05.code_generation.utilities.Operand
 import wacc_05.code_generation.utilities.Register
 import wacc_05.code_generation.utilities.Registers
@@ -55,8 +57,8 @@ class InterferenceGraph {
 
     private fun colourNode(node: GraphNode, opsInUse: HashSet<Register>, allRegisters: ArrayList<Register>) {
         for (neighbour in node.getNeighbours()) {
-            if (neighbour.getOperand() != defaultReg) {
-                opsInUse.add(neighbour.getOperand() as Register)
+            if (neighbour.getRegister() != defaultReg) {
+                opsInUse.add(neighbour.getRegister())
             }
         }
 
@@ -65,5 +67,16 @@ class InterferenceGraph {
         if (notInUse.isNotEmpty()) {
             node.setOperand(notInUse.elementAt(0))
         }
+    }
+
+    private fun regsInUse(ctx: ParserRuleContext): ArrayList<Register> {
+        val regsInUse: ArrayList<Register> = ArrayList()
+        val currentLineNo = ctx.getStart().line
+        for (gNode in listOfNodes) {
+            if (gNode.variableActive(currentLineNo)) {
+                regsInUse.add(gNode.getRegister())
+            }
+        }
+        return regsInUse
     }
 }
