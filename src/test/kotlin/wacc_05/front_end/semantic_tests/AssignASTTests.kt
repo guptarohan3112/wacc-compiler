@@ -9,7 +9,6 @@ import org.junit.Test
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.*
-import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.identifier_objects.FunctionIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
@@ -33,7 +32,7 @@ class AssignASTTests : StatSemanticTests() {
                     ), "x"
                 )
             ),
-            ExprAST.IntLiterAST("+", "3")
+            ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         assign.st = st
@@ -55,7 +54,7 @@ class AssignASTTests : StatSemanticTests() {
                         WaccParser.IdentContext(WaccParser.StatContext(), 0), "x"
                     ), false
                 )
-            ), ExprAST.IntLiterAST("+", "3")
+            ), ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         assign.st = st
@@ -78,9 +77,9 @@ class AssignASTTests : StatSemanticTests() {
                         0
                     ),
                     "x",
-                    arrayListOf(ExprAST.IntLiterAST("+", "3"))
+                    arrayListOf(ExprAST.IntLiterAST(ctx, "+", "3"))
                 )
-            ), ExprAST.IntLiterAST("+", "3")
+            ), ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         assign.st = st
@@ -105,7 +104,7 @@ class AssignASTTests : StatSemanticTests() {
                     ), "x"
                 )
             ),
-            ExprAST.IntLiterAST("+", "3")
+            ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         assign.st = st
@@ -134,7 +133,7 @@ class AssignASTTests : StatSemanticTests() {
                     ), "x"
                 )
             ),
-            ExprAST.IntLiterAST("+", "3")
+            ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         assign.st = st
@@ -162,7 +161,7 @@ class AssignASTTests : StatSemanticTests() {
                     ), true
                 )
             ),
-            ExprAST.IntLiterAST("+", "3")
+            ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         assign.st = st
@@ -184,10 +183,10 @@ class AssignASTTests : StatSemanticTests() {
                 ExprAST.ArrayElemAST(
                     WaccParser.ArrayElemContext(WaccParser.StatContext(), 0),
                     "x",
-                    arrayListOf(ExprAST.IntLiterAST("+", "3"))
+                    arrayListOf(ExprAST.IntLiterAST(ctx, "+", "3"))
                 )
             ),
-            ExprAST.IntLiterAST("+", "3")
+            ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         assign.st = st
@@ -218,7 +217,7 @@ class AssignASTTests : StatSemanticTests() {
             ),
             ArrayLiterAST(
                 WaccParser.ArrayLitContext(WaccParser.StatContext(), 0),
-                arrayListOf(ExprAST.IntLiterAST("+", "3"))
+                arrayListOf(ExprAST.IntLiterAST(ctx, "+", "3"))
             )
         )
 
@@ -246,7 +245,7 @@ class AssignASTTests : StatSemanticTests() {
                     ), "x"
                 )
             ),
-            NewPairAST(ExprAST.IntLiterAST("+", "3"), ExprAST.CharLiterAST("c"))
+            NewPairAST(ctx, ExprAST.IntLiterAST(ctx, "+", "3"), ExprAST.CharLiterAST(ctx, "c"))
         )
 
         assign.st = st
@@ -303,7 +302,7 @@ class AssignASTTests : StatSemanticTests() {
                     ), "x"
                 )
             ),
-            ExprAST.CharLiterAST("c")
+            ExprAST.CharLiterAST(ctx, "c")
         )
 
         assign.st = st
@@ -363,7 +362,7 @@ class AssignASTTests : StatSemanticTests() {
             ),
             ArrayLiterAST(
                 WaccParser.ArrayLitContext(WaccParser.StatContext(), 0),
-                arrayListOf(ExprAST.CharLiterAST("c"), ExprAST.CharLiterAST("f"))
+                arrayListOf(ExprAST.CharLiterAST(ctx, "c"), ExprAST.CharLiterAST(ctx, "f"))
             )
         )
 
@@ -434,7 +433,7 @@ class AssignASTTests : StatSemanticTests() {
                     ), "x"
                 )
             ),
-            NewPairAST(ExprAST.CharLiterAST("c"), ExprAST.IntLiterAST("+", "3"))
+            NewPairAST(ctx, ExprAST.CharLiterAST(ctx, "c"), ExprAST.IntLiterAST(ctx, "+", "3"))
         )
 
         assign.st = st

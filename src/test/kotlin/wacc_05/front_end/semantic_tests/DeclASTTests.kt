@@ -22,7 +22,7 @@ class DeclASTTests : StatSemanticTests() {
                 WaccParser.BaseTypeContext(WaccParser.StatContext(), 0),
                 "int"
             ), "x",
-            ExprAST.IntLiterAST("+", "3")
+            ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         decl.st = st
@@ -40,7 +40,7 @@ class DeclASTTests : StatSemanticTests() {
             WaccParser.StatDeclarationContext(WaccParser.StatContext()),
             TypeAST.BaseTypeAST(WaccParser.BaseTypeContext(WaccParser.StatContext(), 0), "int"),
             "x",
-            ExprAST.IntLiterAST("+", "3")
+            ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         decl.st = st
@@ -63,7 +63,7 @@ class DeclASTTests : StatSemanticTests() {
                 "int"
             ),
             "x",
-            ExprAST.CharLiterAST("c")
+            ExprAST.CharLiterAST(ctx, "c")
         )
 
         decl.st = st

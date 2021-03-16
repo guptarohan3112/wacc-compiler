@@ -1492,6 +1492,7 @@ open class TranslatorVisitor(
         symTab.updatePtrOffset(-1 * argsSize)
 
         // Save registers
+        // Find all registers that are in use at this point of time and push them on the stack
 
         // Branch to the function label in the assembly code
         representation.addMainInstr(
@@ -1501,6 +1502,7 @@ open class TranslatorVisitor(
             )
         )
 
+        // Pop all of the registers that were pushed on the stack
         // Restore registers
 
         // Restore the stack pointer

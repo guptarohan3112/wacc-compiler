@@ -33,8 +33,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.IntLiterAST("+", "3"),
-                ExprAST.IntLiterAST("+", "5"),
+                ExprAST.IntLiterAST(ctx, "+", "3"),
+                ExprAST.IntLiterAST(ctx, "+", "5"),
                 "*"
             )
         )
@@ -55,8 +55,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.IntLiterAST("+", "4"),
-                ExprAST.CharLiterAST("c"),
+                ExprAST.IntLiterAST(ctx, "+", "4"),
+                ExprAST.CharLiterAST(ctx, "c"),
                 "*"
             )
         )
@@ -80,8 +80,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.IntLiterAST("+", "4"),
-                ExprAST.IntLiterAST("+", "5"),
+                ExprAST.IntLiterAST(ctx, "+", "4"),
+                ExprAST.IntLiterAST(ctx, "+", "5"),
                 "*"
             )
         )
@@ -102,8 +102,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.BoolLiterAST("true"),
-                ExprAST.BoolLiterAST("false"),
+                ExprAST.BoolLiterAST(ctx, "true"),
+                ExprAST.BoolLiterAST(ctx, "false"),
                 "&&"
             )
         )
@@ -124,8 +124,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.CharLiterAST("c"),
-                ExprAST.BoolLiterAST("true"),
+                ExprAST.CharLiterAST(ctx, "c"),
+                ExprAST.BoolLiterAST(ctx, "true"),
                 "&&"
             )
         )
@@ -148,8 +148,8 @@ class BinOpTests : ExprSemanticTests() {
             "x",
             ExprAST.BinOpAST(
                 exprContext,
-                ExprAST.BoolLiterAST("true"),
-                ExprAST.BoolLiterAST("false"),
+                ExprAST.BoolLiterAST(ctx, "true"),
+                ExprAST.BoolLiterAST(ctx, "false"),
                 "||"
             )
         )

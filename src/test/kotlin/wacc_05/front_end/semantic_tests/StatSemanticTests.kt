@@ -154,7 +154,7 @@ open class StatSemanticTests {
 
         val ret = StatementAST.ReturnAST(
             WaccParser.StatReturnContext(WaccParser.StatContext()),
-            ExprAST.BoolLiterAST("true")
+            ExprAST.BoolLiterAST(ctx, "true")
         )
 
         ret.st = childSt
@@ -169,7 +169,7 @@ open class StatSemanticTests {
 
         val ret = StatementAST.ReturnAST(
             WaccParser.StatReturnContext(WaccParser.StatContext()),
-            ExprAST.IntLiterAST("+", "3")
+            ExprAST.IntLiterAST(ctx, "+", "3")
         )
 
         ret.st = childSt
@@ -185,7 +185,7 @@ open class StatSemanticTests {
 
         val exit = StatementAST.ExitAST(
             WaccParser.StatExitContext(WaccParser.StatContext()),
-            ExprAST.IntLiterAST("+", "0")
+            ExprAST.IntLiterAST(ctx, "+", "0")
         )
 
         exit.st = st
@@ -200,8 +200,8 @@ open class StatSemanticTests {
             WaccParser.StatExitContext(WaccParser.StatContext()),
             ExprAST.BinOpAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
-                ExprAST.IntLiterAST("+", "3"),
-                ExprAST.IntLiterAST("+", "4"),
+                ExprAST.IntLiterAST(ctx, "+", "3"),
+                ExprAST.IntLiterAST(ctx, "+", "4"),
                 "+"
             )
         )
@@ -218,7 +218,7 @@ open class StatSemanticTests {
 
         val exit = StatementAST.ExitAST(
             WaccParser.StatExitContext(WaccParser.StatContext()),
-            ExprAST.CharLiterAST("c")
+            ExprAST.CharLiterAST(ctx, "c")
         )
 
         exit.st = st

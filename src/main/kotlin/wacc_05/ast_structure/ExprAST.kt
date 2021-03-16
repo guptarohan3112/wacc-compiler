@@ -27,7 +27,7 @@ sealed class ExprAST : AssignRHSAST() {
         return Long.MAX_VALUE
     }
 
-    data class IntLiterAST(val sign: String, val value: String) : ExprAST() {
+    data class IntLiterAST(val ctx: WaccParser.IntLitContext, val sign: String, val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
@@ -50,7 +50,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class BoolLiterAST(val value: String) : ExprAST() {
+    data class BoolLiterAST(val ctx: WaccParser.BoolLitContext, val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.BOOL_TYPE
@@ -76,7 +76,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class CharLiterAST(val value: String) : ExprAST() {
+    data class CharLiterAST(val ctx: WaccParser.CharLitContext, val value: String) : ExprAST() {
 
         override fun canEvaluate(): Boolean {
             return true
@@ -99,7 +99,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class StrLiterAST(val value: String) : ExprAST() {
+    data class StrLiterAST(val ctx: WaccParser.StrLitContext, val value: String) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.StringIdentifier(value.length)
@@ -110,7 +110,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    object PairLiterAST : ExprAST() {
+    class PairLiterAST(ctx: WaccParser.ExprContext) : ExprAST() {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.PAIR_LIT_TYPE

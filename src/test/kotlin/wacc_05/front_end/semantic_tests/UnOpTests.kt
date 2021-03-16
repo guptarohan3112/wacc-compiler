@@ -24,7 +24,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.BoolLiterAST("true"),
+                ExprAST.BoolLiterAST(ctx, "true"),
                 "!"
             )
         )
@@ -45,7 +45,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.IntLiterAST("+", "4"),
+                ExprAST.IntLiterAST(ctx, "+", "4"),
                 "!"
             )
         )
@@ -68,7 +68,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.BoolLiterAST("true"),
+                ExprAST.BoolLiterAST(ctx, "true"),
                 "!"
             )
         )
@@ -89,7 +89,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.IntLiterAST("+", "3"),
+                ExprAST.IntLiterAST(ctx, "+", "3"),
                 "-"
             )
         )
@@ -110,7 +110,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.CharLiterAST("c"),
+                ExprAST.CharLiterAST(ctx, "c"),
                 "-"
             )
         )
@@ -133,7 +133,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.IntLiterAST("-", "4"),
+                ExprAST.IntLiterAST(ctx, "-", "4"),
                 "-"
             )
         )
@@ -177,7 +177,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.IntLiterAST("+", "3"),
+                ExprAST.IntLiterAST(ctx, "+", "3"),
                 "len"
             )
         )
@@ -224,7 +224,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.CharLiterAST("c"),
+                ExprAST.CharLiterAST(ctx, "c"),
                 "ord"
             )
         )
@@ -245,7 +245,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.IntLiterAST("+", "4"),
+                ExprAST.IntLiterAST(ctx, "+", "4"),
                 "ord"
             )
         )
@@ -268,7 +268,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.CharLiterAST("c"),
+                ExprAST.CharLiterAST(ctx, "c"),
                 "ord"
             )
         )
@@ -289,7 +289,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.IntLiterAST("+", "42"),
+                ExprAST.IntLiterAST(ctx, "+", "42"),
                 "chr"
             )
         )
@@ -310,7 +310,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.BoolLiterAST("false"),
+                ExprAST.BoolLiterAST(ctx, "false"),
                 "chr"
             )
         )
@@ -333,7 +333,7 @@ class UnOpTests : ExprSemanticTests() {
             "x",
             ExprAST.UnOpAST(
                 WaccParser.UnaryOperContext(WaccParser.StatContext(), 0),
-                ExprAST.IntLiterAST("+", "42"),
+                ExprAST.IntLiterAST(ctx, "+", "42"),
                 "chr"
             )
         )
