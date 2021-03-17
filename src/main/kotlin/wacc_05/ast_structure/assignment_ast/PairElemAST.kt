@@ -11,12 +11,12 @@ class PairElemAST(ctx: WaccParser.PairElemContext, val elem: ExprAST, val isFst:
 
     private var pairLocation: GraphNode? = null
 
-    fun setPairLocation(node: GraphNode) {
+    fun setPairLocation(node: GraphNode?) {
         this.pairLocation = node
     }
 
-    fun getPairLocation(): GraphNode {
-        return pairLocation!!
+    fun getPairLocation(): GraphNode? {
+        return pairLocation
     }
 
     override fun getType(): TypeIdentifier {
