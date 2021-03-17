@@ -419,6 +419,7 @@ open class TranslatorVisitor(
 //        )
 
         // Set the absolute stack address of the variable in the corresponding variable identifier
+
         if (dest is AddressingMode) {
             val boundaryAddr = scope.getStackPtr()
             val varObj: VariableIdentifier = scope.lookupAll(decl.varName) as VariableIdentifier
@@ -447,7 +448,8 @@ open class TranslatorVisitor(
         when {
             lhs.ident != null -> {
                 val lhsLocation =
-                    (assign.st().lookupAll(lhs.ident.value)!! as VariableIdentifier).getGraphNode().getRegister()
+                    (assign.st().lookupAll(lhs.ident.value)!! as VariableIdentifier).getGraphNode()
+                        .getRegister()
 
                 if (!lhsLocation.equals(InterferenceGraph.DefaultReg)) {
                     if (lhsLocation != dest) {
@@ -840,7 +842,12 @@ open class TranslatorVisitor(
         var i = 0
         for (expr in arrayElem.exprs) {
             if (i < arrayElem.exprs.size - 1) {
-                representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingMode2(reg)))
+                representation.addMainInstr(
+                    LoadInstruction(
+                        reg,
+                        AddressingMode.AddressingMode2(reg)
+                    )
+                )
             }
 
             visit(expr)

@@ -12,6 +12,8 @@ open class VariableIdentifier(private val type: TypeIdentifier) : IdentifierObje
     // Field indicating whether a variable has been allocated on the stack
     private var stackAllocated: Boolean = false
 
+    private var visited: Boolean = false
+
     override fun getType(): TypeIdentifier {
         return type
     }
@@ -38,6 +40,14 @@ open class VariableIdentifier(private val type: TypeIdentifier) : IdentifierObje
 
     fun allocatedNow() {
         this.stackAllocated = true
+    }
+
+    fun hasBeenVisited(): Boolean {
+        return visited
+    }
+
+    fun visitedNow() {
+        this.visited = true
     }
 
 }

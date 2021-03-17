@@ -1,12 +1,10 @@
 package wacc_05.graph_colouring
 
 import org.antlr.v4.runtime.ParserRuleContext
-import wacc_05.ast_structure.AST
 import wacc_05.ast_structure.ASTBaseVisitor
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.*
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisitor() {
@@ -37,8 +35,9 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
             decl.getGraphNode().setIdentifier(decl.varName)
         }
 
-        val identifier: VariableIdentifier = decl.st().lookUpAllAndCheckAllocation(decl.varName) as VariableIdentifier
+        val identifier: VariableIdentifier = decl.st().lookupAll(decl.varName) as VariableIdentifier
         identifier.setGraphNode(decl.getGraphNode())
+        identifier.visitedNow()
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
@@ -56,12 +55,14 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
                 visit(assign.lhs.pairElem!!)
                 visit(assign.rhs)
                 assign.rhs.getGraphNode().addNeighbourTwoWay(assign.lhs.pairElem!!.getGraphNode())
-                assign.rhs.getGraphNode().addNeighbourTwoWay(assign.lhs.pairElem!!.getPairLocation())
+                assign.rhs.getGraphNode()
+                    .addNeighbourTwoWay(assign.lhs.pairElem!!.getPairLocation())
             }
             else -> {
                 // Do this, but every rhs needs to not override the graphnode if it has already been set
                 val graphNode =
-                    (assign.lhs.st().lookupAll(assign.lhs.getStringValue())!! as VariableIdentifier).getGraphNode()
+                    (assign.lhs.st()
+                        .lookupAllAndCheckVisited(assign.lhs.getStringValue())!! as VariableIdentifier).getGraphNode()
                 graphNode.updateEndIndex(getLineNo(assign.ctx))
                 assign.rhs.setGraphNode(graphNode)
                 visit(assign.rhs)
@@ -83,7 +84,8 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         createAndSetGraphNode(arrayElem)
-        val graphNode: GraphNode = (arrayElem.st().lookupAll(arrayElem.ident)!! as VariableIdentifier).getGraphNode()
+        val graphNode: GraphNode =
+            (arrayElem.st().lookupAll(arrayElem.ident)!! as VariableIdentifier).getGraphNode()
         arrayElem.setArrayLocation(graphNode)
         graphNode.updateEndIndex(getLineNo(arrayElem.ctx))
 
@@ -97,7 +99,8 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
-        val graphNode: GraphNode = (ident.st().lookupAll(ident.value)!! as VariableIdentifier).getGraphNode()
+        val graphNode: GraphNode =
+            (ident.st().lookupAll(ident.value)!! as VariableIdentifier).getGraphNode()
         graphNode.updateEndIndex(getLineNo(ident.ctx))
 
         ident.setGraphNode(graphNode)
