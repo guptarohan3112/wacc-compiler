@@ -38,11 +38,33 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
-        // Do this, but every rhs needs to not override the graphnode if it has already been set
-        val graphNode = graph.findNode(assign.lhs.getStringValue())
-        graphNode?.updateEndIndex(getLineNo(assign.ctx))
-        assign.rhs.setGraphNode(graphNode!!)
-        visit(assign.rhs)
+        when {
+            assign.lhs.arrElem != null -> {
+                visit(assign.lhs.arrElem!!)
+                visit(assign.rhs)
+                assign.rhs.getGraphNode().addNeighbourTwoWay(assign.lhs.arrElem!!.getGraphNode())
+
+                for (elem in assign.lhs.arrElem!!.exprs) {
+                    elem.getGraphNode().addNeighbourTwoWay(assign.rhs.getGraphNode())
+                }
+            }
+            assign.lhs.pairElem != null -> {
+                visit(assign.lhs.pairElem!!)
+                visit(assign.rhs)
+                assign.rhs.getGraphNode().addNeighbourTwoWay(assign.lhs.pairElem!!.getGraphNode())
+
+                for (elem in assign.lhs.arrElem!!.exprs) {
+                    elem.getGraphNode().addNeighbourTwoWay(assign.rhs.getGraphNode())
+                }
+            }
+            else -> {
+                // Do this, but every rhs needs to not override the graphnode if it has already been set
+                val graphNode = graph.findNode(assign.lhs.getStringValue())!!
+                graphNode.updateEndIndex(getLineNo(assign.ctx))
+                assign.rhs.setGraphNode(graphNode)
+            }
+        }
+
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
@@ -54,10 +76,18 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
+        createAndSetGraphNode(arrayElem)
         val graphNode: GraphNode = graph.findNode(arrayElem.ident)!!
         arrayElem.setArrayLocation(graphNode)
         graphNode.updateEndIndex(getLineNo(arrayElem.ctx))
-        createAndSetGraphNode(arrayElem)
+
+        graphNode.addNeighbourTwoWay(arrayElem.getGraphNode())
+
+        for (elem in arrayElem.exprs) {
+            visit(elem)
+            elem.getGraphNode().addNeighbourTwoWay(arrayElem.getGraphNode())
+            arrayElem.getArrayLocation().addNeighbourTwoWay(elem.getGraphNode())
+        }
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {

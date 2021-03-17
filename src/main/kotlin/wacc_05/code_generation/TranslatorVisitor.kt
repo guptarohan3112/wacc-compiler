@@ -836,8 +836,10 @@ open class TranslatorVisitor(
         // Move the start of the array into dest register
         val reg = moveLocation(arrayElem, arrLocation)
 
-        for (expr in arrayElem.exprs) {
-            representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingMode2(reg)))
+        for ((i, expr) in arrayElem.exprs.withIndex()) {
+            if (i < arrayElem.exprs.size - 1) {
+                representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingMode2(reg)))
+            }
 
             visit(expr)
             val exprDest: Operand = expr.getOperand()
