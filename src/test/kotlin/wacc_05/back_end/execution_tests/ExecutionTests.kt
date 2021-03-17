@@ -19,7 +19,7 @@ class ExecutionTests(
 ) {
 
     companion object {
-        private val DIRECTORY_PATH = "src/test/test_cases/valid/array"
+        private val DIRECTORY_PATH = "src/test/test_cases/valid/pairs"
 
         // we have to ignore these tests as our test program cannot run command line inputs
         private val READ_TESTS = hashSetOf(

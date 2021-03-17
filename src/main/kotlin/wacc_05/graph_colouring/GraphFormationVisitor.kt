@@ -27,7 +27,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
         visit(decl.assignment)
 
-        if (decl.assignment.getGraphNode().getIdent() != "") {
+        if (decl.assignment.getGraphNode().isVariable()) {
             val graphNode = GraphNode(getLineNo(decl.ctx), decl.varName)
             decl.setGraphNode(graphNode)
             graph.addNode(graphNode)
@@ -52,10 +52,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
                 visit(assign.lhs.pairElem!!)
                 visit(assign.rhs)
                 assign.rhs.getGraphNode().addNeighbourTwoWay(assign.lhs.pairElem!!.getGraphNode())
-
-                for (elem in assign.lhs.arrElem!!.exprs) {
-                    elem.getGraphNode().addNeighbourTwoWay(assign.rhs.getGraphNode())
-                }
+                assign.rhs.getGraphNode().addNeighbourTwoWay(assign.lhs.pairElem!!.getPairLocation())
             }
             else -> {
                 // Do this, but every rhs needs to not override the graphnode if it has already been set
@@ -68,11 +65,14 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
+        createAndSetGraphNode(pairElem)
+
         visit(pairElem.elem)
         val graphNode: GraphNode = pairElem.elem.getGraphNode()
         pairElem.setPairLocation(graphNode)
         graphNode.updateEndIndex(getLineNo(pairElem.ctx))
-        createAndSetGraphNode(pairElem)
+
+        pairElem.getGraphNode().addNeighbourTwoWay(pairElem.elem.getGraphNode())
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
@@ -133,9 +133,11 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     }
 
     override fun visitNewPairAST(newPair: NewPairAST) {
-        visit(newPair.fst)
-        visit(newPair.snd)
         createAndSetGraphNode(newPair)
+        visit(newPair.fst)
+        newPair.getGraphNode().addNeighbourTwoWay(newPair.fst.getGraphNode())
+        visit(newPair.snd)
+        newPair.getGraphNode().addNeighbourTwoWay(newPair.snd.getGraphNode())
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
