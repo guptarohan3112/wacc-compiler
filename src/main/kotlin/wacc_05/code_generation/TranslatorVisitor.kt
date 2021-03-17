@@ -446,7 +446,8 @@ open class TranslatorVisitor(
 
         when {
             lhs.ident != null -> {
-                val lhsLocation = graph.findNode(lhs.ident.value)!!.getRegister()
+                val lhsLocation =
+                    (assign.st().lookupAll(lhs.ident.value)!! as VariableIdentifier).getGraphNode().getRegister()
 
                 if (!lhsLocation.equals(InterferenceGraph.DefaultReg)) {
                     if (lhsLocation != dest) {
