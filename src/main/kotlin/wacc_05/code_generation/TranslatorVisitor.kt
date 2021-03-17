@@ -975,7 +975,7 @@ open class TranslatorVisitor(
 
             tempRegRestore(destReg, dest as AddressingMode.AddressingMode2)
         } else {
-            negHelper(exprDest, exprDestReg, destReg, exprDestReg)
+            negHelper(exprDest, exprDestReg, destReg, destReg)
         }
 
         representation.addMainInstr(
