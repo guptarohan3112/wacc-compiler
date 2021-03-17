@@ -37,7 +37,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
             decl.getGraphNode().setIdentifier(decl.varName)
         }
 
-        val identifier: VariableIdentifier = decl.st().lookUpAllAndCheckAllocation(decl.varName) as VariableIdentifier
+        val identifier: VariableIdentifier = decl.st().lookupAll(decl.varName) as VariableIdentifier
         identifier.setGraphNode(decl.getGraphNode())
     }
 
@@ -68,6 +68,12 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
             }
         }
 
+    }
+
+    override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
+        visit(whileStat.loopExpr)
+        WhileExprVisitor().visitWhile(whileStat)
+        visit(whileStat.body)
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
