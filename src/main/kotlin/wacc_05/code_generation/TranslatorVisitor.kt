@@ -1083,7 +1083,7 @@ open class TranslatorVisitor(
                 checkOverflow(Condition.LVS)
             }
             "*" -> {
-                representation.addMainInstr(SMultiplyInstruction(reg, expr1Reg, expr2Reg))
+                representation.addMainInstr(MultiplyInstruction(reg, expr1Reg, expr2Reg))
                 checkOverflow(Condition.LNE)
             }
         }
