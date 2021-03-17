@@ -976,7 +976,7 @@ open class TranslatorVisitor(
 
             tempRegRestore(destReg, dest as AddressingMode.AddressingMode2)
         } else {
-            negHelper(exprDest, exprDestReg, destReg, exprDestReg)
+            negHelper(exprDest, exprDestReg, destReg, destReg)
         }
 
         representation.addMainInstr(
@@ -1027,8 +1027,13 @@ open class TranslatorVisitor(
             visit(binop.expr1)
             visitBinOpStack(binop)
         } else {
-            visit(binop.expr1)
-            visit(binop.expr2)
+            if (binop.expr1 !is ExprAST.BinOpAST && binop.expr2 is ExprAST.BinOpAST) {
+                visit(binop.expr2)
+                visit(binop.expr1)
+            } else {
+                visit(binop.expr1)
+                visit(binop.expr2)
+            }
             visitBinOp(binop)
         }
     }
@@ -1084,7 +1089,7 @@ open class TranslatorVisitor(
                 checkOverflow(Condition.LVS)
             }
             "*" -> {
-                representation.addMainInstr(SMultiplyInstruction(reg, expr1Reg, expr2Reg))
+                representation.addMainInstr(MultiplyInstruction(reg, expr1Reg, expr2Reg))
                 checkOverflow(Condition.LNE)
             }
         }

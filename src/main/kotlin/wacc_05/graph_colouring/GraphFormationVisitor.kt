@@ -176,6 +176,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
 
         if (unop.expr.getGraphNode().isVariable()) {
             createAndSetGraphNode(unop)
+            unop.getGraphNode().addNeighbourTwoWay(unop.expr.getGraphNode())
         } else {
             unop.setGraphNode(unop.expr.getGraphNode())
         }
