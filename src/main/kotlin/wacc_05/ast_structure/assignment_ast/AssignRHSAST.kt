@@ -15,6 +15,10 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
 
     private var addr: Int = -1
 
+    fun hasGraphNode(): Boolean {
+        return graphNode != null
+    }
+
     fun getOperand(): Operand {
         return if (!getDestReg().equals(InterferenceGraph.DefaultReg)) {
             getDestReg()

@@ -17,9 +17,11 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     }
 
     protected fun createAndSetGraphNode(node: AssignRHSAST) {
-        val graphNode = GraphNode(getLineNo(node.ctx))
-        node.setGraphNode(graphNode)
-        graph.addNode(graphNode)
+        if (!node.hasGraphNode()) {
+            val graphNode = GraphNode(getLineNo(node.ctx))
+            node.setGraphNode(graphNode)
+            graph.addNode(graphNode)
+        }
     }
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
@@ -37,16 +39,10 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
         // Do this, but every rhs needs to not override the graphnode if it has already been set
-        visit(assign.rhs)
         val graphNode = graph.findNode(assign.lhs.getStringValue())
         graphNode?.updateEndIndex(getLineNo(assign.ctx))
-    }
-
-    override fun visitAssignLHSAST(lhs: AssignLHSAST) {
-        val graphNode: GraphNode? = graph.findNode(lhs.getStringValue())
-        graphNode?.updateEndIndex(getLineNo(lhs.ctx))
-
-        lhs.setGraphNode(graphNode!!)
+        assign.rhs.setGraphNode(graphNode!!)
+        visit(assign.rhs)
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
@@ -90,13 +86,16 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     // result of a malloc - 1 register
     // another register - take values from literal and store at malloc address
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
+        createAndSetGraphNode(arrayLiter)
+
         for (elem in arrayLiter.elems) {
             visit(elem)
+            elem.getGraphNode().addNeighbourTwoWay(arrayLiter.getGraphNode())
         }
 
         arrayLiter.setSizeGraphNode(GraphNode(getLineNo(arrayLiter.ctx), ""))
-
-        createAndSetGraphNode(arrayLiter)
+        graph.addNode(arrayLiter.getSizeGraphNode())
+        arrayLiter.getSizeGraphNode().addNeighbourTwoWay(arrayLiter.getGraphNode())
     }
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
@@ -114,18 +113,14 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         visit(binop.expr2)
 
         // these registers have to be used at the same time so we manually add the conflict
-        binop.expr1.getGraphNode().addNeighbour(binop.expr2.getGraphNode())
-        binop.expr2.getGraphNode().addNeighbour(binop.expr1.getGraphNode())
+        binop.expr1.getGraphNode().addNeighbourTwoWay(binop.expr2.getGraphNode())
 
         // without optimisations taking place we know that the result of the binop is always put in expr1 dest reg
         if (binop.expr1.getGraphNode().isVariable()) {
             if (binop.expr2.getGraphNode().isVariable()) {
                 createAndSetGraphNode(binop)
-                binop.getGraphNode().addNeighbour(binop.expr1.getGraphNode())
-                binop.expr1.getGraphNode().addNeighbour(binop.getGraphNode())
-
-                binop.getGraphNode().addNeighbour(binop.expr2.getGraphNode())
-                binop.expr2.getGraphNode().addNeighbour(binop.getGraphNode())
+                binop.getGraphNode().addNeighbourTwoWay(binop.expr1.getGraphNode())
+                binop.getGraphNode().addNeighbourTwoWay(binop.expr2.getGraphNode())
             } else {
                 binop.setGraphNode(binop.expr2.getGraphNode())
             }

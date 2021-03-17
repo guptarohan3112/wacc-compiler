@@ -449,7 +449,9 @@ open class TranslatorVisitor(
                 val lhsLocation = graph.findNode(lhs.ident.value)!!.getRegister()
 
                 if (!lhsLocation.equals(InterferenceGraph.DefaultReg)) {
-                    representation.addMainInstr(MoveInstruction(lhsLocation, dest))
+                    if (lhsLocation != dest) {
+                        representation.addMainInstr(MoveInstruction(lhsLocation, dest))
+                    }
                 } else {
                     val offset: Int = calculateIdentSpOffset(lhs.getStringValue(), assign, 0)
                     if (dest is AddressingMode) {
