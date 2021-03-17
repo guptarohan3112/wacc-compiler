@@ -163,6 +163,10 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         }
     }
 
+    override fun visitFuncCallAST(funcCall: FuncCallAST) {
+        createAndSetGraphNode(funcCall)
+    }
+
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         visit(unop.expr)
 
