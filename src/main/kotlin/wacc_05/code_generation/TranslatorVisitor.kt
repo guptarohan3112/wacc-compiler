@@ -266,6 +266,40 @@ open class TranslatorVisitor(
         representation.addMainInstr(PopInstruction(tempReg))
     }
 
+    private fun storeOrMove(expr: AssignRHSAST, reg: Register) {
+        val dest = expr.getOperand()
+        if (dest is AddressingMode) {
+            representation.addMainInstr(
+                getStoreInstruction(
+                    reg,
+                    dest as AddressingMode.AddressingMode2,
+                    expr.getType()
+                )
+            )
+        } else {
+            representation.addMainInstr(MoveInstruction(dest as Register, reg))
+        }
+    }
+
+    private fun pushRegisterAndLoad(reg: Register, exprDest: Operand, destReg: Register): Register {
+        return if (exprDest is AddressingMode) {
+            if (destReg != reg) {
+                representation.addMainInstr(PushInstruction(reg))
+            }
+
+            representation.addMainInstr(LoadInstruction(reg, exprDest))
+            reg
+        } else {
+            exprDest as Register
+        }
+    }
+
+    private fun popTempRegisterConditional(reg: Register, exprDest: Operand, destReg: Register) {
+        if (exprDest is AddressingMode && destReg != reg) {
+            representation.addMainInstr(PopInstruction(reg))
+        }
+    }
+
     /* MAIN VISIT METHODS (OVERIDDEN FROM THE BASE VISITOR CLASS)
        ---------------------------------------------------------
      */
@@ -1002,8 +1036,7 @@ open class TranslatorVisitor(
             "+", "-", "*" -> binopRegisterOrStack(binop)
             "/", "%" -> visitDivMod(binop)
             "&&", "||" -> visitAndOr(binop)
-            ">", ">=", "<", "<=" -> visitCompare(binop)
-            "==", "!=" -> visitEquality(binop)
+            ">", ">=", "<", "<=", "==", "!=" -> visitCompareEquals(binop)
         }
     }
 
@@ -1108,40 +1141,6 @@ open class TranslatorVisitor(
         }
     }
 
-    private fun storeOrMove(expr: AssignRHSAST, reg: Register) {
-        val dest = expr.getOperand()
-        if (dest is AddressingMode) {
-            representation.addMainInstr(
-                getStoreInstruction(
-                    reg,
-                    dest as AddressingMode.AddressingMode2,
-                    expr.getType()
-                )
-            )
-        } else {
-            representation.addMainInstr(MoveInstruction(dest as Register, reg))
-        }
-    }
-
-    private fun pushRegisterAndLoad(reg: Register, exprDest: Operand, destReg: Register): Register {
-        return if (exprDest is AddressingMode) {
-            if (destReg != reg) {
-                representation.addMainInstr(PushInstruction(reg))
-            }
-
-            representation.addMainInstr(LoadInstruction(reg, exprDest))
-            reg
-        } else {
-            exprDest as Register
-        }
-    }
-
-    private fun popTempRegisterConditional(reg: Register, exprDest: Operand, destReg: Register) {
-        if (exprDest is AddressingMode && destReg != reg) {
-            representation.addMainInstr(PopInstruction(reg))
-        }
-    }
-
     private fun visitAndOr(binop: ExprAST.BinOpAST) {
 
         val dest: Operand = binop.getOperand()
@@ -1197,130 +1196,93 @@ open class TranslatorVisitor(
         }
     }
 
-    private fun visitCompare(binop: ExprAST.BinOpAST) {
-        val dest: Operand = binop.getOperand()
-        val destReg = if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r11))
-            Registers.r11
-        } else {
-            dest as Register
-        }
-        val expr1Dest: Operand = binop.expr1.getOperand()
-        val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, destReg)
-
+    private fun getCondition(binop: ExprAST.BinOpAST): Pair<Condition?, Condition?> {
         var cond1: Condition? = null
         var cond2: Condition? = null
+        if (binop.operator in arrayListOf("==", "!=")) {
+            when (binop.operator) {
+                "==" -> {
+                    cond1 = Condition.EQ
+                    cond2 = Condition.NE
+                }
+                else -> {
+                    cond1 = Condition.NE
+                    cond2 = Condition.EQ
 
-        when (binop.expr1.getType()) {
-            is TypeIdentifier.IntIdentifier -> {
-                representation.addMainInstr(
-                    CompareInstruction(
-                        expr1Reg,
-                        binop.expr2.getOperand()
-                    )
-                )
-
-                when (binop.operator) {
-                    ">" -> {
-                        cond1 = Condition.GT
-                        cond2 = Condition.LE
-                    }
-                    ">=" -> {
-                        cond1 = Condition.GE
-                        cond2 = Condition.LT
-                    }
-                    "<" -> {
-                        cond1 = Condition.LT
-                        cond2 = Condition.GE
-                    }
-                    "<=" -> {
-                        cond1 = Condition.LE
-                        cond2 = Condition.GT
-                    }
                 }
             }
+        } else {
+            when (binop.expr1.getType()) {
+                is TypeIdentifier.IntIdentifier -> {
+                    when (binop.operator) {
+                        ">" -> {
+                            cond1 = Condition.GT
+                            cond2 = Condition.LE
+                        }
+                        ">=" -> {
+                            cond1 = Condition.GE
+                            cond2 = Condition.LT
+                        }
+                        "<" -> {
+                            cond1 = Condition.LT
+                            cond2 = Condition.GE
+                        }
+                        "<=" -> {
+                            cond1 = Condition.LE
+                            cond2 = Condition.GT
+                        }
+                    }
+                }
 
-            is TypeIdentifier.CharIdentifier -> {
-                representation.addMainInstr(
-                    CompareInstruction(
-                        expr1Reg,
-                        binop.expr2.getOperand()
-                    )
-                )
-
-                when (binop.operator) {
-                    ">" -> {
-                        cond1 = Condition.HI
-                        cond2 = Condition.LS
-                    }
-                    ">=" -> {
-                        cond1 = Condition.HS
-                        cond2 = Condition.LO
-                    }
-                    "<" -> {
-                        cond1 = Condition.LO
-                        cond2 = Condition.HS
-                    }
-                    "<=" -> {
-                        cond1 = Condition.LS
-                        cond2 = Condition.HI
+                is TypeIdentifier.CharIdentifier -> {
+                    when (binop.operator) {
+                        ">" -> {
+                            cond1 = Condition.HI
+                            cond2 = Condition.LS
+                        }
+                        ">=" -> {
+                            cond1 = Condition.HS
+                            cond2 = Condition.LO
+                        }
+                        "<" -> {
+                            cond1 = Condition.LO
+                            cond2 = Condition.HS
+                        }
+                        "<=" -> {
+                            cond1 = Condition.LS
+                            cond2 = Condition.HI
+                        }
                     }
                 }
             }
         }
 
-        representation.addMainInstr(
-            MoveInstruction(
-                destReg,
-                Immediate(1),
-                cond1
-            )
-        )
-
-        representation.addMainInstr(
-            MoveInstruction(
-                destReg,
-                Immediate(0),
-                cond2
-            )
-        )
-
-        popTempRegisterConditional(expr1Reg, expr1Dest, destReg)
-
-        if (destReg == Registers.r11) {
-            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(destReg))
-        }
+        return Pair(cond1, cond2)
     }
 
-    private fun visitEquality(binop: ExprAST.BinOpAST) {
+    private fun visitCompareEquals(binop: ExprAST.BinOpAST) {
         val dest: Operand = binop.getOperand()
-        val destReg = if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r11))
-            Registers.r11
-        } else {
-            dest as Register
+        val destReg = chooseRegisterFromOperand(dest, Registers.r11)
+        if (dest is AddressingMode) {
+            representation.addMainInstr(PushInstruction(destReg))
         }
         val expr1Dest: Operand = binop.expr1.getOperand()
         val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, destReg)
-
-        val cond1: Condition
-        val cond2: Condition
 
         representation.addMainInstr(CompareInstruction(expr1Reg, binop.expr2.getOperand()))
 
-        when (binop.operator) {
-            "==" -> {
-                cond1 = Condition.EQ
-                cond2 = Condition.NE
-            }
-            else -> {
-                cond1 = Condition.NE
-                cond2 = Condition.EQ
+        val pair: Pair<Condition?, Condition?> = getCondition(binop)
 
-            }
+        conditionalMove(destReg, pair.first, pair.second)
+
+        popTempRegisterConditional(expr1Reg, expr1Dest, destReg)
+
+        if (destReg == Registers.r11) {
+            tempRegRestore(destReg, dest as AddressingMode.AddressingMode2)
         }
+    }
 
+    private fun conditionalMove(destReg: Register, cond1: Condition?, cond2: Condition?) {
         representation.addMainInstr(
             MoveInstruction(
                 destReg,
@@ -1328,6 +1290,7 @@ open class TranslatorVisitor(
                 cond1
             )
         )
+
         representation.addMainInstr(
             MoveInstruction(
                 destReg,
@@ -1335,13 +1298,6 @@ open class TranslatorVisitor(
                 cond2
             )
         )
-
-        popTempRegisterConditional(expr1Reg, expr1Dest, destReg)
-
-        if (destReg == Registers.r11) {
-            representation.addMainInstr(StoreInstruction(destReg, dest as AddressingMode.AddressingMode2))
-            representation.addMainInstr(PopInstruction(destReg))
-        }
     }
 
     // types do not require any assembly code
