@@ -11,15 +11,6 @@ import wacc_05.ast_structure.StatementAST
 
 class IfWhileASTTests : StatSemanticTests() {
 
-    private val intLitContext: WaccParser.IntLitContext =
-        WaccParser.IntLitContext(WaccParser.StatContext(), 0)
-
-    private val charLitContext: WaccParser.CharLitContext =
-        WaccParser.CharLitContext(WaccParser.StatContext(), 0)
-
-    private val boolLitContext: WaccParser.BoolLitContext =
-        WaccParser.BoolLitContext(WaccParser.StatContext(), 0)
-
     @Test
     fun ifASTValidCheck() {
         // the most basic of if statements as a check
