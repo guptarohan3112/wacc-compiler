@@ -1026,8 +1026,13 @@ open class TranslatorVisitor(
             visit(binop.expr1)
             visitBinOpStack(binop)
         } else {
-            visit(binop.expr1)
-            visit(binop.expr2)
+            if (binop.expr1 !is ExprAST.BinOpAST && binop.expr2 is ExprAST.BinOpAST) {
+                visit(binop.expr2)
+                visit(binop.expr1)
+            } else {
+                visit(binop.expr1)
+                visit(binop.expr2)
+            }
             visitBinOp(binop)
         }
     }
