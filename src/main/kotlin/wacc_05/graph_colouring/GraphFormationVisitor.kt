@@ -59,6 +59,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
                 val graphNode = graph.findNode(assign.lhs.getStringValue())!!
                 graphNode.updateEndIndex(getLineNo(assign.ctx))
                 assign.rhs.setGraphNode(graphNode)
+                visit(assign.rhs)
             }
         }
 
@@ -68,6 +69,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         createAndSetGraphNode(pairElem)
 
         visit(pairElem.elem)
+        println("HERE")
         val graphNode: GraphNode = pairElem.elem.getGraphNode()
         pairElem.setPairLocation(graphNode)
         graphNode.updateEndIndex(getLineNo(pairElem.ctx))
