@@ -36,7 +36,6 @@ open class TranslatorVisitor(
     private fun calculateStackSize(bodyInScope: StatementAST): Int {
         // Calculate stack size for scope and decrement the stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor(graph)
-//        val stackSize: Int = 16
         stackSizeCalculator.visit(bodyInScope)
         val stackSize: Int = stackSizeCalculator.getStackSize()
         decrementAssemblySP(stackSize)
@@ -130,6 +129,7 @@ open class TranslatorVisitor(
         restoreStackPointer(innerScope, stackSize)
     }
 
+    // A method that gives the location for an ast node to be loaded/moved into
     private fun operandAllocation(ast: AssignRHSAST): Operand {
         return if (ast.hasGraphNode() && ast.getDestReg() != Register(-1)) {
             ast.getDestReg()
@@ -230,6 +230,7 @@ open class TranslatorVisitor(
 
     // Helper method to determines whether the input operand is a register, and assigns a temporary
     // register if not
+    // TODO: Use this method for temporary register allocation
     private fun chooseRegisterFromOperand(operand: Operand, tempReg: Register): Register {
         return if (operand is AddressingMode) {
             tempReg
@@ -252,9 +253,9 @@ open class TranslatorVisitor(
         val dest: Operand = elem.getOperand()
 
         val reg: Register = chooseRegisterFromOperand(dest, Registers.r11)
-        if (dest is AddressingMode) {
+//        if (dest is AddressingMode) {
 //            representation.addMainInstr(PushInstruction(reg))
-        }
+//        }
 
         representation.addMainInstr(MoveInstruction(reg, location))
 
@@ -267,6 +268,8 @@ open class TranslatorVisitor(
 //        representation.addMainInstr(PopInstruction(tempReg))
     }
 
+    // A method that puts some output into its correct location depending on whether the location
+    // is on the stack or in a register
     private fun storeOrMove(expr: AssignRHSAST, reg: Register) {
         val dest = expr.getOperand()
         if (dest is AddressingMode) {
@@ -282,11 +285,12 @@ open class TranslatorVisitor(
         }
     }
 
+    // A method that loads a value on the stack into a temporary register
     private fun pushRegisterAndLoad(reg: Register, exprDest: Operand, destReg: Register): Register {
         return if (exprDest is AddressingMode) {
-            if (destReg != reg) {
+//            if (destReg != reg) {
 //                representation.addMainInstr(PushInstruction(reg))
-            }
+//            }
 
             representation.addMainInstr(LoadInstruction(reg, exprDest))
             reg
@@ -425,7 +429,6 @@ open class TranslatorVisitor(
                 }
 
                 decl.setAddr(decl.getStackPtr() + offset)
-
                 decl.updatePtrOffset(size)
 
                 mode
@@ -462,25 +465,6 @@ open class TranslatorVisitor(
 
         }
 
-        // set the operand on the decl ast
-
-        // Store the value at an available register
-//        val mode = if (currOffset == 0) {
-//            AddressingMode.AddressingMode2(Registers.sp)
-//        } else {
-//            AddressingMode.AddressingMode2(Registers.sp, Immediate(currOffset))
-//        }
-
-//        representation.addMainInstr(
-//            getStoreInstruction(
-//                dest,
-//                mode,
-//                decl.assignment.getType()
-//            )
-//        )
-
-        // Set the absolute stack address of the variable in the corresponding variable identifier
-
         if (dest is AddressingMode) {
             val boundaryAddr = scope.getStackPtr()
             val varObj: VariableIdentifier = scope.lookupAll(decl.varName) as VariableIdentifier
@@ -489,14 +473,6 @@ open class TranslatorVisitor(
             // Indicate that the variable identifier has now been allocated
             varObj.allocatedNow()
         }
-//
-//        varObj.setAddr(boundaryAddr + currOffset)
-//
-
-//
-//        // Update the amount of space taken up on the stack relative to the boundary and the current stack frame
-//        val size = decl.type.getStackSize()
-//        scope.updatePtrOffset(size)
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
@@ -604,7 +580,6 @@ open class TranslatorVisitor(
         // Evaluate the exiting instruction and get destination register
         visit(exit.expr)
         val dest: Operand = exit.expr.getOperand()
-//        val dest: Operand = operandAllocation(exit.expr.getDestReg(), exit.expr)
 
         // Move contents of the register in r0 for calling exit
         moveOrLoadinR0(dest)
@@ -971,6 +946,7 @@ open class TranslatorVisitor(
             "-" -> visitNeg(unop.getOperand(), unop.expr.getOperand())
             "!" -> visitNot(unop.getOperand(), unop.expr.getOperand())
             "len" -> visitLen(unop.getOperand(), unop.expr.getOperand())
+            else -> unop.setOperand(unop.expr.getOperand())
         }
     }
 
@@ -1149,9 +1125,9 @@ open class TranslatorVisitor(
             }
         }
 
-        if (expr2Dest is AddressingMode) {
+//        if (expr2Dest is AddressingMode) {
 //            representation.addMainInstr(PopInstruction(Registers.r12))
-        }
+//        }
 
         if (dest is AddressingMode) {
             representation.addMainInstr(
@@ -1163,9 +1139,9 @@ open class TranslatorVisitor(
             )
         }
 
-        if (dest is AddressingMode || expr1Dest is AddressingMode) {
+//        if (dest is AddressingMode || expr1Dest is AddressingMode) {
 //            representation.addMainInstr(PopInstruction(Registers.r11))
-        }
+//        }
     }
 
     private fun checkOverflow(cond: Condition) {
@@ -1226,9 +1202,9 @@ open class TranslatorVisitor(
 
         if (expr1Dest is AddressingMode) {
             if (expr2Dest is AddressingMode) {
-                if (destReg != Registers.r11) {
+//                if (destReg != Registers.r11) {
 //                    representation.addMainInstr(PushInstruction(Registers.r11))
-                }
+//                }
 
                 reg = Registers.r11
                 operand = expr2Dest
@@ -1258,9 +1234,9 @@ open class TranslatorVisitor(
             )
         }
 
-        if (destReg == Registers.r11 || reg == Registers.r11) {
+//        if (destReg == Registers.r11 || reg == Registers.r11) {
 //            representation.addMainInstr(PopInstruction(Registers.r11))
-        }
+//        }
     }
 
     private fun getCondition(binop: ExprAST.BinOpAST): Pair<Condition?, Condition?> {
@@ -1410,9 +1386,9 @@ open class TranslatorVisitor(
         // store the array address in an allocated register
         val arrLocation: Operand = arrayLiter.getOperand()
         val reg: Register = chooseRegisterFromOperand(arrLocation, Registers.r11)
-        if (reg == Registers.r11) {
+//        if (reg == Registers.r11) {
 //            representation.addMainInstr(PushInstruction(reg))
-        }
+//        }
 
         representation.addMainInstr(MoveInstruction(reg, Registers.r0))
 
@@ -1437,9 +1413,9 @@ open class TranslatorVisitor(
                 )
             )
 
-            if (elemReg == Registers.r12) {
+//            if (elemReg == Registers.r12) {
 //                representation.addMainInstr(PopInstruction(elemReg))
-            }
+//            }
 
             arrIndex += elemsSize
         }
@@ -1559,9 +1535,9 @@ open class TranslatorVisitor(
 
         val pairLocation = newPair.getOperand()
         val reg: Register = chooseRegisterFromOperand(pairLocation, Registers.r11)
-        if (reg == Registers.r11) {
+//        if (reg == Registers.r11) {
 //            representation.addMainInstr(PushInstruction(Registers.r11))
-        }
+//        }
 
         representation.addMainInstr(MoveInstruction(reg, Registers.r0))
 
@@ -1616,9 +1592,9 @@ open class TranslatorVisitor(
             )
         )
 
-        if (reg == Registers.r12) {
+//        if (reg == Registers.r12) {
 //            representation.addMainInstr(PopInstruction(reg))
-        }
+//        }
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
