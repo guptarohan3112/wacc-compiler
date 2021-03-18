@@ -2,8 +2,8 @@ package wacc_05.code_generation.utilities
 
 class Register(private val number: Int) : Operand(), Comparable<Register> {
 
-    private var hasBeenPushed: Boolean = false
-    private var inUse: Boolean = false
+    private var noOfPushes: Int = 0
+    private var noOfUses: Int = 0
 
     override fun toString(): String {
         return when (number) {
@@ -15,27 +15,27 @@ class Register(private val number: Int) : Operand(), Comparable<Register> {
     }
 
     fun pushedNow() {
-        this.hasBeenPushed = true
+        noOfPushes++
     }
 
     fun poppedNow() {
-        this.hasBeenPushed = false
+        noOfPushes--
     }
 
     fun hasBeenPushed(): Boolean {
-        return hasBeenPushed
-    }
-
-    fun inUse(): Boolean {
-        return inUse()
+        return noOfPushes != 0
     }
 
     fun occupiedNow() {
-        this.inUse = true
+        noOfUses++
     }
 
     fun freedNow() {
-        this.inUse = false
+        noOfUses--
+    }
+
+    fun inUse(): Boolean {
+        return noOfUses != 0
     }
 
     override fun compareTo(other: Register): Int {

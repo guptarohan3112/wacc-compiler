@@ -287,7 +287,11 @@ open class TranslatorVisitor(
     // Stores the result held in a temporary register back onto the stack and pops the temporary register
     private fun tempRegRestore(tempReg: Register, dest: AddressingMode.AddressingMode2) {
         representation.addMainInstr(StoreInstruction(tempReg, dest))
-//        representation.addMainInstr(PopInstruction(tempReg))
+        if (tempReg.hasBeenPushed()) {
+            representation.addMainInstr(PopInstruction(tempReg))
+            tempReg.poppedNow()
+            tempReg.freedNow()
+        }
     }
 
     // A method that puts some output into its correct location depending on whether the location
