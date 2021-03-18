@@ -286,7 +286,7 @@ open class TranslatorVisitor(
     private fun pushRegisterAndLoad(reg: Register, exprDest: Operand, destReg: Register): Register {
         return if (exprDest is AddressingMode) {
             if (destReg != reg) {
-                representation.addMainInstr(PushInstruction(reg))
+//                representation.addMainInstr(PushInstruction(reg))
             }
 
             representation.addMainInstr(LoadInstruction(reg, exprDest))
@@ -938,7 +938,7 @@ open class TranslatorVisitor(
                 FOUR_BYTES -> {
                     if (exprDest is AddressingMode) {
                         val temp: Register = Registers.r12
-                        representation.addMainInstr(PushInstruction(temp))
+//                        representation.addMainInstr(PushInstruction(temp))
                         representation.addMainInstr(MoveInstruction(temp, exprDest))
                         representation.addMainInstr(
                             AddInstruction(
@@ -1007,7 +1007,7 @@ open class TranslatorVisitor(
         val source: AddressingMode = chooseAddressingMode(exprDest)
 
         if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(destReg))
+//            representation.addMainInstr(PushInstruction(destReg))
 
             representation.addMainInstr(LoadInstruction(destReg, source))
             representation.addMainInstr(EorInstruction(destReg, destReg, Immediate(1)))
@@ -1045,7 +1045,7 @@ open class TranslatorVisitor(
         }
 
         if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(destReg))
+//            representation.addMainInstr(PushInstruction(destReg))
 
             negHelper(exprDest, exprDestReg, destReg, destReg)
 
