@@ -11,17 +11,22 @@ build:
     script:
         - make clean && make
 
-testlocal:
+testSemantic:
     script:
         - make
         - ./gradlew semanticTests
 
-test:
+testError:
     script:
         - make
         - ./gradlew errorTests
 
-testExecution:
+testGraphs:
+    script:
+        - make
+        - ./gradlew graphTests
+
+test:
     script:
         - make
         - ./gradlew executionTests
