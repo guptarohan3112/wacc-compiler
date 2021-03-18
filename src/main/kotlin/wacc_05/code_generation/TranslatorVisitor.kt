@@ -1129,29 +1129,13 @@ open class TranslatorVisitor(
         val dest: Operand = binop.getOperand()
         val expr1Dest: Operand = binop.expr1.getOperand()
         val expr2Dest: Operand = binop.expr2.getOperand()
-//        var expr1Dest: Operand = binop.getDestReg()
-//        if (expr1Dest == Register(-1)) {
-//            val offset: Int = binop.expr1.getAddr() - binop.expr1.getStackPtr()
-//            expr1Dest = if (binop.expr1.getStackSize() > 1) {
-//                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
-//            } else {
-//                AddressingMode.AddressingMode3(Registers.sp, Immediate(offset))
-//            }
-//        }
 
-        val reg: Register = if (dest is AddressingMode) {
-//            representation.addMainInstr(PushInstruction(Registers.r11))
-            Registers.r11
-        } else {
-            dest as Register
-        }
+        val reg: Register = chooseRegisterFromOperand(dest, Registers.r11)
+
         val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, reg)
-        val expr2Reg: Register = if (expr2Dest is AddressingMode) {
-//            representation.addMainInstr(PushInstruction(Registers.r12))
+        val expr2Reg: Register = chooseRegisterFromOperand(expr2Dest, Registers.r12)
+        if (expr2Dest is AddressingMode) {
             representation.addMainInstr(LoadInstruction(Registers.r12, expr2Dest))
-            Registers.r12
-        } else {
-            expr2Dest as Register
         }
 
         when (binop.operator) {
@@ -1171,7 +1155,7 @@ open class TranslatorVisitor(
                 checkOverflow(Condition.LVS)
             }
             "*" -> {
-                representation.addMainInstr(MultiplyInstruction(reg, expr1Reg, expr2Reg))
+                representation.addMainInstr(SMultiplyInstruction(reg, expr1Reg, expr2Reg))
                 checkOverflow(Condition.LNE)
             }
         }
