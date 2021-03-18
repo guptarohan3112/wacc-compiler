@@ -230,7 +230,29 @@ open class TranslatorVisitor(
 
     // Helper method to determines whether the input operand is a register, and assigns a temporary
     // register if not
-    // TODO: Use this method for temporary register allocation
+    private fun chooseRegisterFromOperand2(operand: Operand): Register {
+        if (operand !is AddressingMode) {
+            return operand as Register
+        } else {
+            val r11 = Registers.r11
+            val r12 = Registers.r12
+            return if (r11.inUse()) {
+                if (r12.inUse()) {
+                    representation.addMainInstr(PushInstruction(r11))
+                    r11.pushedNow()
+                    r11.occupiedNow()
+                    r11
+                } else {
+                    r12.occupiedNow()
+                    r12
+                }
+            } else {
+                r11.occupiedNow()
+                r11
+            }
+        }
+    }
+
     private fun chooseRegisterFromOperand(operand: Operand, tempReg: Register): Register {
         return if (operand is AddressingMode) {
             tempReg
