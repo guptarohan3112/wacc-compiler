@@ -21,7 +21,21 @@ sealed class StatementAST : AST() {
         val assignment: AssignRHSAST
     ) : StatementAST() {
 
+        private var addr: Int = -1
+
         private var graphNode: GraphNode? = null
+
+        fun getStackSize(): Int {
+            return type.getStackSize()
+        }
+
+        fun setAddr(addr: Int) {
+            this.addr = addr
+        }
+
+        fun getAddr(): Int {
+            return addr
+        }
 
         fun setGraphNode(node: GraphNode) {
             this.graphNode = node

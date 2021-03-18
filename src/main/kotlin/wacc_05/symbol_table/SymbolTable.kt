@@ -129,6 +129,18 @@ open class SymbolTable(private val parentST: SymbolTable?) {
         paramOffset = 0
     }
 
+    fun lookupAllAndCheckVisited(name: String): IdentifierObject? {
+        return lookupAndCheckVisited(name) ?: parentST?.lookupAllAndCheckVisited(name)
+    }
+
+    private fun lookupAndCheckVisited(name: String): IdentifierObject? {
+        val ident: IdentifierObject? = map.getOrDefault(name, null)
+        if (ident is VariableIdentifier && !ident.hasBeenVisited()) {
+            return null
+        }
+        return ident
+    }
+
     companion object {
         /* Function: makeTopLevel()
          * ------------------------

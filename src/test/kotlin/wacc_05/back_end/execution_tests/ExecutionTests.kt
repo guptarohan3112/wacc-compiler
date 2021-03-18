@@ -19,7 +19,7 @@ class ExecutionTests(
 ) {
 
     companion object {
-        private val DIRECTORY_PATH = "src/test/test_cases/valid"
+        private val DIRECTORY_PATH = "src/test/test_cases/valid/function"
 
         // we have to ignore these tests as our test program cannot run command line inputs
         private val READ_TESTS = hashSetOf(
@@ -48,7 +48,6 @@ class ExecutionTests(
         }
     }
 
-
     @Test
     fun runValidTests() {
         val it: File = file
@@ -56,7 +55,6 @@ class ExecutionTests(
         Registers.freeAll()
         LabelInstruction.reset()
         MessageLabelInstruction.reset()
-        ExprAST.PairLiterAST.clear()
 
         Thread.sleep(300)
         assertTrue(testPassed, "Failed Valid Program Checker Tests")
@@ -78,7 +76,7 @@ class ExecutionTests(
             try {
                 println(it.absolutePath)
                 // Run the compiler- this should generate the assembly file (to be executed)
-                WaccCompiler.runCompiler(it.absolutePath, 1, debug = false, validOnly = false)
+                WaccCompiler.runCompiler(it.absolutePath, 0, debug = false, validOnly = false)
 
 
                 val assemblyName = it.nameWithoutExtension + ".s"

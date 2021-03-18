@@ -2,10 +2,13 @@ package wacc_05.ast_structure
 
 import antlr.WaccParser
 import wacc_05.ast_structure.assignment_ast.ArrayLiterAST
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
+import wacc_05.code_generation.utilities.*
+import wacc_05.graph_colouring.GraphNode
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-sealed class ExprAST : AssignRHSAST() {
+sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
 
     /* This is a helper function for evaluating binary operator expressions
      * it determines if the binary operator can be evaluated to a single value
@@ -27,7 +30,7 @@ sealed class ExprAST : AssignRHSAST() {
         return Long.MAX_VALUE
     }
 
-    data class IntLiterAST(val sign: String, val value: String) : ExprAST() {
+    class IntLiterAST(ctx: WaccParser.IntLitContext, val sign: String, val value: String) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
@@ -50,7 +53,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class BoolLiterAST(val value: String) : ExprAST() {
+    class BoolLiterAST(ctx: WaccParser.BoolLitContext, val value: String) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.BOOL_TYPE
@@ -76,7 +79,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class CharLiterAST(val value: String) : ExprAST() {
+    class CharLiterAST(ctx: WaccParser.CharLitContext, val value: String) : ExprAST(ctx) {
 
         override fun canEvaluate(): Boolean {
             return true
@@ -99,7 +102,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class StrLiterAST(val value: String) : ExprAST() {
+    class StrLiterAST(ctx: WaccParser.StrLitContext, val value: String) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.StringIdentifier(value.length)
@@ -110,7 +113,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    object PairLiterAST : ExprAST() {
+    class PairLiterAST(ctx: WaccParser.ExprContext) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.PAIR_LIT_TYPE
@@ -126,7 +129,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class IdentAST(val ctx: WaccParser.IdentContext, val value: String) : ExprAST() {
+    class IdentAST(ctx: WaccParser.IdentContext, val value: String) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return when (val type = st().lookupAll(value)) {
@@ -144,11 +147,21 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class ArrayElemAST(
-        val ctx: WaccParser.ArrayElemContext,
+    class ArrayElemAST(
+        ctx: WaccParser.ArrayElemContext,
         val ident: String,
         val exprs: ArrayList<ExprAST>
-    ) : ExprAST() {
+    ) : ExprAST(ctx) {
+
+        private var arrLocation: GraphNode? = null
+
+        fun getArrayLocation(): GraphNode {
+            return arrLocation!!
+        }
+
+        fun setArrayLocation(arrLocation: GraphNode) {
+            this.arrLocation = arrLocation
+        }
 
         override fun getType(): TypeIdentifier {
             val type = st().lookupAll(ident)
@@ -173,7 +186,7 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class OperatorAST(val operator: String) : ExprAST() {
+    class OperatorAST(ctx: ParserRuleContext, val operator: String) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return when (operator) {
@@ -193,11 +206,11 @@ sealed class ExprAST : AssignRHSAST() {
 
     }
 
-    data class UnOpAST(
-        val ctx: WaccParser.UnaryOperContext,
+    class UnOpAST(
+        ctx: WaccParser.UnaryOperContext,
         val expr: ExprAST,
         val operator: OperatorAST
-    ) : ExprAST() {
+    ) : ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return when (operator.operator) {
@@ -233,12 +246,12 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class BinOpAST(
-        val ctx: WaccParser.ExprContext,
+    class BinOpAST(
+        ctx: WaccParser.ExprContext,
         val expr1: ExprAST,
         val expr2: ExprAST,
         val operator: String
-    ) : ExprAST() {
+    ) : ExprAST(ctx) {
 
         companion object {
             val intIntFunctions = hashSetOf("*", "/", "+", "-", "%")
@@ -289,11 +302,59 @@ sealed class ExprAST : AssignRHSAST() {
         }
     }
 
-    data class MapAST(
-        val ctx: WaccParser.ExprContext,
+    class MapAST(
+        ctx: WaccParser.ExprContext,
         val operator: OperatorAST,
         val assignRHS: AssignRHSAST
-    ) : ExprAST() {
+    ) : ExprAST(ctx) {
+
+        fun getOperand(graphNode: GraphNode?): Operand {
+            return if (graphNode != null && graphNode.getRegister() != Register(-1)) {
+                graphNode.getRegister()
+            } else {
+                if (graphNode != null) {
+                    val absAddr: Int? = graphNode.getAddr()
+                    if (absAddr == null) {
+                        graphNode.setAddr(this.getStackPtr() + this.getStackPtrOffset())
+                    }
+                    val offset: Int = graphNode.getAddr()!! - this.getStackPtr()
+                    AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+                } else {
+                    return AddressingMode.AddressingMode2(Registers.sp, Immediate(getStackPtrOffset()))
+                }
+            }
+        }
+
+        var lengthReg: GraphNode? = null
+            get() = field
+            set(value) {
+                field = value
+            }
+        var spaceReg: GraphNode? = null
+            get() = field
+            set(value) {
+                field = value
+            }
+        var arrLocation: GraphNode? = null
+            get() = field
+            set(value) {
+                field = value
+            }
+        var arrIndexReg: GraphNode? = null
+            get() = field
+            set(value) {
+                field = value
+            }
+        var arrayElemReg: GraphNode? = null
+            get() = field
+            set(value) {
+                field = value
+            }
+        var sizeDest: GraphNode? = null
+            get() = field
+            set(value) {
+                field = value
+            }
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.ArrayIdentifier(assignRHS.getType().getType().getType(), 0)

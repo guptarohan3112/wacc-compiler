@@ -1,26 +1,59 @@
 package wacc_05.ast_structure.assignment_ast
 
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.AST
-import wacc_05.code_generation.utilities.Operand
-import wacc_05.code_generation.utilities.Register
+import wacc_05.code_generation.utilities.*
 import wacc_05.graph_colouring.GraphNode
+import wacc_05.graph_colouring.InterferenceGraph
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
-abstract class AssignRHSAST : AST() {
+abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
 
     private var dest: Register? = null
 
     private var graphNode: GraphNode? = null
 
-    // set this on operandAllocation if the register is equal to the default register
-    private var operand: Operand? = null
+    private var addr: Int = -1
+
+    fun hasGraphNode(): Boolean {
+        return graphNode != null
+    }
 
     fun getOperand(): Operand {
-        return operand ?: getDestReg()
+        return if (hasGraphNode() && getDestReg() != Register(-1)) {
+            getDestReg()
+        } else {
+            if (graphNode != null) {
+                val absAddr: Int? = this.getGraphNode()?.getAddr()
+                if (absAddr == null) {
+                    this.getGraphNode()?.setAddr(this.getStackPtr() + this.getStackPtrOffset())
+                }
+                val offset: Int = this.getGraphNode()?.getAddr()!! - this.getStackPtr()
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+            } else {
+                return AddressingMode.AddressingMode2(Registers.sp, Immediate(getStackPtrOffset()))
+            }
+        }
     }
 
     fun setOperand(operand: Operand) {
-        this.operand = operand
+        val graphNode: GraphNode? = this.getGraphNode()
+        if (operand is Register) {
+            graphNode?.setRegister(operand)
+        } else {
+            val btmStackFrame: Int = this.getStackPtr()
+            val absAddr: Int = btmStackFrame + this.getStackPtrOffset()
+            setAddr(absAddr)
+        }
+    }
+
+    fun getAddr(): Int {
+        return addr
+    }
+
+    fun setAddr(addr: Int) {
+        this.addr = addr
+        this.getGraphNode()?.setAddr(addr)
     }
 
     abstract fun getType(): TypeIdentifier
@@ -41,8 +74,8 @@ abstract class AssignRHSAST : AST() {
         this.dest = null
     }
 
-    fun getGraphNode(): GraphNode {
-        return graphNode!!
+    fun getGraphNode(): GraphNode? {
+        return graphNode
     }
 
     fun setGraphNode(graphNode: GraphNode) {

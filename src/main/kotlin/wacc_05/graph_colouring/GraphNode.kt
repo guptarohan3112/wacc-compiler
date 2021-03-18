@@ -8,14 +8,27 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
     private var register: Register? = null
 
     // Start and end index which defines the live range for a graph node
-//    private var startIndex: Int = 0
     private var endIndex: Int = startIndex
 
     // neighbouring nodes in the graph
     private val neighbours: HashSet<GraphNode> = HashSet()
 
-    fun addNeighbour(neighbour: GraphNode) {
-        neighbours.add(neighbour)
+    private var addr: Int? = null
+
+    private var allocated: Boolean = false
+
+    fun getAddr(): Int? {
+        return addr
+    }
+
+    fun setAddr(addr: Int) {
+        this.addr = addr
+    }
+
+    fun addNeighbour(neighbour: GraphNode?) {
+        if (neighbour != null) {
+            neighbours.add(neighbour)
+        }
     }
 
     fun setIdentifier(identifier: String) {
@@ -50,6 +63,15 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
         return neighbours
     }
 
+    fun addNeighbourTwoWay(other: GraphNode?) {
+        addNeighbour(other)
+        other?.addNeighbour(this)
+    }
+
+    fun isVariable(): Boolean {
+        return ident != ""
+    }
+
     fun overlapsWith(node: GraphNode): Boolean {
         val thisStart: Int = this.startIndex
         val thatStart: Int = node.getStartIndex()
@@ -57,9 +79,21 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
         val thatEnd: Int = node.getEndIndex()
 
         return if (thisStart < thatStart) {
-            thisEnd >= thatStart
+            thisEnd > thatStart
         } else {
-            thatEnd >= thisStart
+            thatEnd > thisStart
         }
+    }
+
+    fun variableActive(lineNo: Int): Boolean {
+        return (lineNo in (startIndex + 1)..endIndex)
+    }
+
+    fun allocate() {
+        allocated = true
+    }
+
+    fun isAllocated(): Boolean {
+        return allocated
     }
 }

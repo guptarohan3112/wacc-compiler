@@ -11,6 +11,7 @@ import wacc_05.code_generation.TranslatorVisitor
 import wacc_05.front_end.*
 import wacc_05.graph_colouring.GraphFormationVisitor
 import wacc_05.graph_colouring.InterferenceGraph
+import wacc_05.graph_colouring.O1GraphFormationVisitor
 import wacc_05.symbol_table.FunctionST
 import wacc_05.symbol_table.SymbolTable
 import java.io.File
@@ -104,7 +105,11 @@ object WaccCompiler {
         if (!validOnly) {
             // interference graph formation and colouring
             val graph = InterferenceGraph()
-            val gfVisitor = GraphFormationVisitor(graph)
+            val gfVisitor = if (optimisation == 1) {
+                O1GraphFormationVisitor(graph)
+            } else {
+                GraphFormationVisitor(graph)
+            }
             gfVisitor.visit(ast)
             graph.formGraph()
             graph.colourGraph()

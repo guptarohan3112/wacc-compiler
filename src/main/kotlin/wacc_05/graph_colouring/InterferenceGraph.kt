@@ -1,6 +1,6 @@
 package wacc_05.graph_colouring
 
-import wacc_05.code_generation.utilities.Operand
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.code_generation.utilities.Register
 import wacc_05.code_generation.utilities.Registers
 
@@ -9,11 +9,6 @@ class InterferenceGraph {
     companion object DefaultReg{
         private val defaultReg: Register = Register(-1)
     }
-
-    // Index used to indicate live range of a graph node in this graph
-    // This is incremented every time you move onto the next line
-    // OR incremented every time you refer to or declare a new variable (we only care about variables)
-    private var index: Int = 0
 
     private val listOfNodes: ArrayList<GraphNode> = ArrayList()
 
@@ -72,11 +67,14 @@ class InterferenceGraph {
         }
     }
 
-    fun incrementIndex() {
-        index++
-    }
-
-    fun getIndex(): Int {
-        return index
+    fun regsInUse(ctx: ParserRuleContext): ArrayList<Register> {
+        val regsInUse: ArrayList<Register> = ArrayList()
+        val currentLineNo = ctx.getStart().line
+        for (gNode in listOfNodes) {
+            if (gNode.variableActive(currentLineNo)) {
+                regsInUse.add(gNode.getRegister())
+            }
+        }
+        return regsInUse
     }
 }

@@ -1,71 +1,127 @@
 package wacc_05.graph_colouring
 
-import wacc_05.ast_structure.AST
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.ASTBaseVisitor
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
-import wacc_05.ast_structure.assignment_ast.ArrayLiterAST
-import wacc_05.ast_structure.assignment_ast.AssignLHSAST
-import wacc_05.ast_structure.assignment_ast.AssignRHSAST
-import wacc_05.ast_structure.assignment_ast.PairElemAST
-import wacc_05.symbol_table.identifier_objects.TypeIdentifier
+import wacc_05.ast_structure.assignment_ast.*
+import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisitor() {
+open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisitor() {
     // Visitor class which will make the interference graph (make all necessary nodes and put them
     // in the list of nodes)
+
+    private fun getLineNo(ctx: ParserRuleContext): Int {
+        return ctx.getStart().line
+    }
+
+    protected fun createAndSetGraphNode(node: AssignRHSAST) {
+        if (!node.hasGraphNode()) {
+            val graphNode = GraphNode(getLineNo(node.ctx))
+            node.setGraphNode(graphNode)
+            graph.addNode(graphNode)
+        }
+    }
 
     override fun visitDeclAST(decl: StatementAST.DeclAST) {
         visit(decl.assignment)
 
-        if (decl.assignment.getGraphNode().getIdent() != "") {
-            val graphNode = GraphNode(graph.getIndex(), decl.varName)
+        if (decl.assignment.hasGraphNode() && decl.assignment.getGraphNode()!!.isVariable()) {
+            val graphNode = GraphNode(getLineNo(decl.ctx), decl.varName)
             decl.setGraphNode(graphNode)
             graph.addNode(graphNode)
+            graphNode.addNeighbourTwoWay(decl.assignment.getGraphNode())
         } else {
-            decl.setGraphNode(decl.assignment.getGraphNode())
+            decl.assignment.getGraphNode()?.let { decl.setGraphNode(it) }
             decl.getGraphNode().setIdentifier(decl.varName)
         }
 
-        graph.incrementIndex()
+        val identifier: VariableIdentifier = decl.st().lookupAll(decl.varName) as VariableIdentifier
+        identifier.setGraphNode(decl.getGraphNode())
+        identifier.visitedNow()
     }
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
-        visit(assign.rhs)
-        visit(assign.lhs)
+        when {
+            assign.lhs.arrElem != null -> {
+                visit(assign.lhs.arrElem!!)
+                visit(assign.rhs)
+                assign.rhs.getGraphNode()?.addNeighbourTwoWay(assign.lhs.arrElem!!.getGraphNode())
 
-        if(assign.rhs.getGraphNode().getIdent() != "") {
-            val graphNode = GraphNode(graph.getIndex(), assign.lhs.getStringValue())
+                for (elem in assign.lhs.arrElem!!.exprs) {
+                    elem.getGraphNode()?.addNeighbourTwoWay(assign.rhs.getGraphNode())
+                }
+            }
+            assign.lhs.pairElem != null -> {
+                visit(assign.lhs.pairElem!!)
+                visit(assign.rhs)
+                assign.rhs.getGraphNode()?.addNeighbourTwoWay(assign.lhs.pairElem!!.getGraphNode())
+                assign.rhs.getGraphNode()
+                    ?.addNeighbourTwoWay(assign.lhs.pairElem!!.getPairLocation())
+            }
+            else -> {
+                // Do this, but every rhs needs to not override the graphnode if it has already been set
+                val identifier = assign.lhs.st().lookupAllAndCheckVisited(assign.lhs.getStringValue())
+
+                if (identifier is VariableIdentifier) {
+                    val graphNode = identifier.getGraphNode()
+                    graphNode.updateEndIndex(getLineNo(assign.ctx))
+                    assign.rhs.setGraphNode(graphNode)
+                }
+                visit(assign.rhs)
+            }
         }
 
-        assign.setGraphNode(assign.rhs.getGraphNode())
-        assign.getGraphNode().setIdentifier(assign.lhs.getStringValue())
-        graph.incrementIndex()
     }
 
-    override fun visitAssignLHSAST(lhs: AssignLHSAST) {
-        val graphNode: GraphNode? = graph.findNode(lhs.getStringValue())
-        graphNode?.updateEndIndex(graph.getIndex())
-        graph.incrementIndex()
-
-        lhs.setGraphNode(graphNode!!)
+    override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
+        visit(whileStat.loopExpr)
+        visit(whileStat.body)
+        WhileExprVisitor().visitWhile(whileStat)
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
+        createAndSetGraphNode(pairElem)
+
         visit(pairElem.elem)
-        pairElem.setGraphNode(pairElem.elem.getGraphNode())
+        val graphNode: GraphNode? = pairElem.elem.getGraphNode()
+        if (graphNode != null) {
+            pairElem.setPairLocation(graphNode)
+        }
+        graphNode?.updateEndIndex(getLineNo(pairElem.ctx))
+
+        pairElem.getGraphNode()?.addNeighbourTwoWay(pairElem.elem.getGraphNode())
     }
 
-    // TODO: we have to update this when calculateIdentSpoffset changes
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         createAndSetGraphNode(arrayElem)
+
+        val identifier = arrayElem.st().lookupAll(arrayElem.ident)!!
+        if (identifier is VariableIdentifier) {
+            val graphNode: GraphNode = identifier.getGraphNode()
+            arrayElem.setArrayLocation(graphNode)
+            graphNode.updateEndIndex(getLineNo(arrayElem.ctx))
+
+            graphNode.addNeighbourTwoWay(arrayElem.getGraphNode())
+        }
+
+        for (elem in arrayElem.exprs) {
+            visit(elem)
+            elem.getGraphNode()?.addNeighbourTwoWay(arrayElem.getGraphNode())
+            arrayElem.getArrayLocation().addNeighbourTwoWay(elem.getGraphNode())
+        }
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
-        val graphNode: GraphNode? = graph.findNode(ident.value)
-        graphNode?.updateEndIndex(graph.getIndex())
-        graph.incrementIndex()
+        println("looking up: ${ident.value}")
+        val identifier = ident.st().lookupAll(ident.value)
+        if (identifier is VariableIdentifier) {
+            println("ident ${ident.value} was a variable identifier")
+            val graphNode: GraphNode = identifier.getGraphNode()
+            graphNode.updateEndIndex(getLineNo(ident.ctx))
 
-        ident.setGraphNode(graphNode!!)
+            ident.setGraphNode(graphNode)
+        }
     }
 
     override fun visitIntLiterAST(liter: ExprAST.IntLiterAST) {
@@ -87,18 +143,28 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
     // result of a malloc - 1 register
     // another register - take values from literal and store at malloc address
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
+        createAndSetGraphNode(arrayLiter)
+
         for (elem in arrayLiter.elems) {
             visit(elem)
-            graph.incrementIndex()
+            elem.getGraphNode()?.addNeighbourTwoWay(arrayLiter.getGraphNode())
         }
 
-        arrayLiter.setSizeGraphNode(GraphNode(graph.getIndex(), ""))
-
-        createAndSetGraphNode(arrayLiter)
+        arrayLiter.setSizeGraphNode(GraphNode(getLineNo(arrayLiter.ctx), ""))
+        graph.addNode(arrayLiter.getSizeGraphNode())
+        arrayLiter.getSizeGraphNode().addNeighbourTwoWay(arrayLiter.getGraphNode())
     }
 
     override fun visitStrLiterAST(liter: ExprAST.StrLiterAST) {
         createAndSetGraphNode(liter)
+    }
+
+    override fun visitNewPairAST(newPair: NewPairAST) {
+        createAndSetGraphNode(newPair)
+        visit(newPair.fst)
+        newPair.getGraphNode()?.addNeighbourTwoWay(newPair.fst.getGraphNode())
+        visit(newPair.snd)
+        newPair.getGraphNode()?.addNeighbourTwoWay(newPair.snd.getGraphNode())
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
@@ -106,39 +172,57 @@ class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisit
         visit(binop.expr2)
 
         // these registers have to be used at the same time so we manually add the conflict
-        binop.expr1.getGraphNode().addNeighbour(binop.expr2.getGraphNode())
-        binop.expr2.getGraphNode().addNeighbour(binop.expr1.getGraphNode())
+        binop.expr1.getGraphNode()?.addNeighbourTwoWay(binop.expr2.getGraphNode())
 
         // without optimisations taking place we know that the result of the binop is always put in expr1 dest reg
-        if (binop.expr1.getGraphNode().getIdent() != "") {
-            if (binop.expr2.getGraphNode().getIdent() != "") {
+        if (binop.expr1.hasGraphNode() && binop.expr1.getGraphNode()!!.isVariable()) {
+            if (binop.expr2.hasGraphNode() && binop.expr2.getGraphNode()!!.isVariable()) {
                 createAndSetGraphNode(binop)
-                binop.getGraphNode().addNeighbour(binop.expr1.getGraphNode())
-                binop.expr1.getGraphNode().addNeighbour(binop.getGraphNode())
-
-                binop.getGraphNode().addNeighbour(binop.expr2.getGraphNode())
-                binop.expr2.getGraphNode().addNeighbour(binop.getGraphNode())
+                binop.getGraphNode()?.addNeighbourTwoWay(binop.expr1.getGraphNode())
+                binop.getGraphNode()?.addNeighbourTwoWay(binop.expr2.getGraphNode())
             } else {
-                binop.setGraphNode(binop.expr2.getGraphNode())
+                binop.expr2.getGraphNode()?.let { binop.setGraphNode(it) }
             }
         } else {
-            binop.setGraphNode(binop.expr1.getGraphNode())
+            binop.expr1.getGraphNode()?.let { binop.setGraphNode(it) }
+        }
+    }
+
+    override fun visitFuncCallAST(funcCall: FuncCallAST) {
+        createAndSetGraphNode(funcCall)
+        for (expr in funcCall.args) {
+            visit(expr)
         }
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         visit(unop.expr)
 
-        if (unop.expr.getGraphNode().getIdent() != "") {
+        if (unop.expr.hasGraphNode() && unop.expr.getGraphNode()!!.isVariable()) {
             createAndSetGraphNode(unop)
+            unop.getGraphNode()?.addNeighbourTwoWay(unop.expr.getGraphNode())
         } else {
-            unop.setGraphNode(unop.expr.getGraphNode())
+            unop.expr.getGraphNode()?.let { unop.setGraphNode(it) }
         }
     }
 
-    private fun createAndSetGraphNode(node: AssignRHSAST) {
-        val graphNode = GraphNode(graph.getIndex())
-        node.setGraphNode(graphNode)
-        graph.addNode(graphNode)
+    override fun visitMapAST(mapAST: ExprAST.MapAST) {
+        mapAST.lengthReg = GraphNode(mapAST.ctx.getStart().line)
+        mapAST.spaceReg = GraphNode(mapAST.ctx.getStart().line)
+        mapAST.arrLocation = GraphNode(mapAST.ctx.getStart().line)
+        mapAST.arrIndexReg = GraphNode(mapAST.ctx.getStart().line)
+        mapAST.arrayElemReg = GraphNode(mapAST.ctx.getStart().line)
+        mapAST.sizeDest = GraphNode(mapAST.ctx.getStart().line)
+
+        mapAST.lengthReg?.addNeighbourTwoWay(mapAST.spaceReg)
+        mapAST.lengthReg?.addNeighbourTwoWay(mapAST.arrIndexReg)
+        mapAST.lengthReg?.addNeighbourTwoWay(mapAST.arrLocation)
+        mapAST.lengthReg?.addNeighbourTwoWay(mapAST.arrayElemReg)
+        mapAST.arrLocation?.addNeighbourTwoWay(mapAST.arrayElemReg)
+        mapAST.arrLocation?.addNeighbourTwoWay(mapAST.arrIndexReg)
+        mapAST.arrayElemReg?.addNeighbourTwoWay(mapAST.arrIndexReg)
+        mapAST.arrLocation?.addNeighbourTwoWay(mapAST.sizeDest)
+
+        mapAST.setGraphNode(mapAST.arrLocation!!)
     }
 }

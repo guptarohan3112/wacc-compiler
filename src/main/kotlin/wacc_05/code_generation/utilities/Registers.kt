@@ -22,7 +22,7 @@ object Registers {
     private val r9 = Register(9)
     val r10 = Register(10)
     val r11 = Register(11)
-    private val r12 = Register(12)
+    val r12 = Register(12)
     val sp = Register(13)
     val lr = Register(14)
     val pc = Register(15)

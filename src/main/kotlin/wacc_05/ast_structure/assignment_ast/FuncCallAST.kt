@@ -6,10 +6,10 @@ import wacc_05.ast_structure.ExprAST
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 class FuncCallAST(
-    val ctx: WaccParser.FuncCallContext,
+    ctx: WaccParser.FuncCallContext,
     val funcName: String,
     val args: ArrayList<ExprAST>
-) : AssignRHSAST() {
+) : AssignRHSAST(ctx) {
 
     override fun getType(): TypeIdentifier {
         return functionST?.lookupAll(funcName)!!.getReturnType()

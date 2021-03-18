@@ -389,7 +389,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
             )
             exitProcess(ErrorCode.SYNTAX_ERROR)
         }
-        return ExprAST.IntLiterAST(sign, ctx.INT_LIT().text)
+        return ExprAST.IntLiterAST(ctx, sign, ctx.INT_LIT().text)
     }
 
     /* Function: visitBoolLit()
@@ -397,7 +397,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
         Returns a BoolLiterAST node with the value of the literal as a string
      */
     override fun visitBoolLit(ctx: WaccParser.BoolLitContext): ExprAST.BoolLiterAST {
-        return ExprAST.BoolLiterAST(ctx.BOOL_LIT().text)
+        return ExprAST.BoolLiterAST(ctx, ctx.BOOL_LIT().text)
     }
 
     /* Function: visitCharLit()
@@ -407,9 +407,9 @@ class Visitor : WaccParserBaseVisitor<AST>() {
     override fun visitCharLit(ctx: WaccParser.CharLitContext): ExprAST.CharLiterAST {
         val string: String = ctx.CHAR_LIT().text
         if (string.contains("\\")) {
-            return ExprAST.CharLiterAST(string.substring(2, string.length))
+            return ExprAST.CharLiterAST(ctx, string.substring(2, string.length))
         }
-        return ExprAST.CharLiterAST(string.substring(1, string.length))
+        return ExprAST.CharLiterAST(ctx, string.substring(1, string.length))
     }
 
     /* Function: visitStrLot()
@@ -418,7 +418,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
      */
     override fun visitStrLit(ctx: WaccParser.StrLitContext): ExprAST.StrLiterAST {
         val string: String = ctx.STR_LIT().text
-        return ExprAST.StrLiterAST(string.substring(1, string.length - 1))
+        return ExprAST.StrLiterAST(ctx, string.substring(1, string.length - 1))
     }
 
     /* Function: visitNewPair()
@@ -427,7 +427,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
        two children exist.
      */
     override fun visitNewPair(ctx: WaccParser.NewPairContext): NewPairAST {
-        return NewPairAST(visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)))
+        return NewPairAST(ctx, visitExpr(ctx.expr(0)), visitExpr(ctx.expr(1)))
     }
 
     /* Function: visitPairElem()
@@ -506,7 +506,7 @@ class Visitor : WaccParserBaseVisitor<AST>() {
                 visitStrLit(ctx.strLit())
             }
             ctx.PAIR_LIT() != null -> {
-                ExprAST.PairLiterAST
+                ExprAST.PairLiterAST(ctx)
             }
             ctx.ident() != null -> {
                 visitIdent(ctx.ident())
@@ -515,18 +515,10 @@ class Visitor : WaccParserBaseVisitor<AST>() {
                 visitArrayElem(ctx.arrayElem())
             }
             ctx.MAP() != null -> {
-//                val unOps: ArrayList<ExprAST.UnOpAST> = ArrayList()
-//                val arrAST: ArrayLiterAST = visitArrayLit(ctx.arrayLit())
-//                val unOp = ctx.unaryOper()
-//
-//                for (expr in arrAST.elems){
-//                    unOps.add(ExprAST.UnOpAST(unOp, expr, unOp.text))
-//                }
-
-                ExprAST.MapAST(ctx, ExprAST.OperatorAST(ctx.unaryOper().text), visitAssignRHS(ctx.assignRHS()))
+                ExprAST.MapAST(ctx, ExprAST.OperatorAST(ctx, ctx.unaryOper().text), visitAssignRHS(ctx.assignRHS()))
             }
             ctx.unaryOper() != null -> {
-                ExprAST.UnOpAST(ctx.unaryOper(), visitExpr(ctx.expr(0)), ExprAST.OperatorAST(ctx.unaryOper().text))
+                ExprAST.UnOpAST(ctx.unaryOper(), visitExpr(ctx.expr(0)), ExprAST.OperatorAST(ctx, ctx.unaryOper().text))
             }
             ctx.OPEN_PARENTHESES() != null -> {
                 visitExpr(ctx.expr(0))
