@@ -1,0 +1,15 @@
+# Free statement is in place of where a declaration should be
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+begin
+  pair(int, char) example = newpair (10, "example");
+  for (free x, 5 < 9, example = newpair (5, "invalid")) do
+    println "No variable has been declared to loop over"
+  done
+end

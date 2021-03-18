@@ -15,6 +15,7 @@ src/main/java/antlr
 .idea
 # Ignore Gradle project-specific cache directory
 .gradle
+webapp/.gradle
 
 # Ignore all generated .s files
 *.s
@@ -24,3 +25,4 @@ src/main/java/antlr
 
 # Ignore Gradle build output directory
 build
+webapp/build

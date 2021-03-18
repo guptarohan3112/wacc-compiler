@@ -31,10 +31,11 @@ fun main(args: Array<String>) {
     val optimisation: Int = args[1].toInt()
     val debug: Boolean = args[2] == "true"
     val validOnly: Boolean = args[3] == "true"
+    val isFile: Boolean = args[4] == "true"
 
     val ret: Int
     val time = measureTimeMillis {
-        ret = WaccCompiler.runCompiler(filePath, optimisation, debug, validOnly)
+        ret = WaccCompiler.runCompiler(filePath, optimisation, debug, validOnly, isFile)
     }
 
     if (ret == ErrorCode.SUCCESS) {
@@ -51,11 +52,18 @@ fun main(args: Array<String>) {
 object WaccCompiler {
 
     @JvmStatic
-    fun runCompiler(filePath: String, optimisation: Int, debug: Boolean, validOnly: Boolean): Int {
-        val file = File(filePath)
-        val inputStream = file.inputStream()
-        val dir = file.parentFile.path
-        val waccString: String = addImports(inputStream, dir)
+    fun runCompiler(code: String, optimisation: Int, debug: Boolean, validOnly: Boolean, isFile: Boolean = true): Int {
+        var waccString = code
+        if (isFile){
+            val file = File(code)
+            val inputStream = file.inputStream()
+            val dir = file.parentFile.path
+            waccString = addImports(inputStream, dir)
+        }
+//        val file = File(filePath)
+//        val inputStream = file.inputStream()
+//        val dir = file.parentFile.path
+//        val waccString: String = addImports(inputStream, dir)
         val input = CharStreams.fromString(waccString)
         val lexer = WaccLexer(input)
         val errorListener = SyntaxErrorListener()
@@ -121,10 +129,13 @@ object WaccCompiler {
             }
 
             translatorVisitor.visit(ast)
-            val fileName = file.nameWithoutExtension
+            val fileName: String = if (isFile){
+                File(code).nameWithoutExtension
+            } else{
+                "result"
+            }
             println("Generating assembly file : $fileName.s")
             representation.buildAssembly(fileName)
-            println("Generation of assembly file complete")
         }
 
         if (debug) {

@@ -1,0 +1,15 @@
+# Looping variable is a character and not an integer
+
+# Output:
+# #semantic_error#
+
+# Exit:
+# 200
+
+# Program:
+
+begin
+  for (char c = 'a', c <= 'b', c = 'z') do
+    println "No integer declaration here"
+  done
+end
