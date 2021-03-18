@@ -5,6 +5,7 @@ import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.code_generation.instructions.*
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 import wacc_05.code_generation.utilities.*
+import wacc_05.graph_colouring.GraphNode
 import wacc_05.graph_colouring.InterferenceGraph
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
@@ -302,6 +303,14 @@ open class TranslatorVisitor(
         }
     }
 
+    private fun moveOrLoadinR0(operand: Operand) {
+        if (operand is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(Registers.r0, operand))
+        } else {
+            representation.addMainInstr(MoveInstruction(Registers.r0, operand))
+        }
+    }
+
     /* MAIN VISIT METHODS (OVERIDDEN FROM THE BASE VISITOR CLASS)
        ---------------------------------------------------------
      */
@@ -527,7 +536,7 @@ open class TranslatorVisitor(
         }
 
         // Move the value in the destination register into r0
-        representation.addMainInstr(MoveInstruction(Registers.r0, reg!!))
+        moveOrLoadinR0(reg!!)
 
         // Call the relevant primitive function (depending on the type)
         if (type == TypeIdentifier.INT_TYPE) {
@@ -545,7 +554,7 @@ open class TranslatorVisitor(
 //        val dest: Operand = operandAllocation(exit.expr.getDestReg(), exit.expr)
 
         // Move contents of the register in r0 for calling exit
-        representation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        moveOrLoadinR0(dest)
         representation.addMainInstr(BranchInstruction("exit", Condition.L))
     }
 
@@ -555,7 +564,7 @@ open class TranslatorVisitor(
         val dest: Operand = operandAllocation(free.expr.getDestReg(), free.expr)
 
         // Move the contents of the destination register into r0
-        representation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        moveOrLoadinR0(dest)
 
         // Add the primitive instruction corresponding to the type of the expression
         if (free.expr.getType() is TypeIdentifier.ArrayIdentifier) {
@@ -604,7 +613,7 @@ open class TranslatorVisitor(
         visit(print.expr)
         val reg: Operand = print.expr.getOperand()
 //        val reg: Operand = operandAllocation(print.expr.getDestReg(), print.expr)
-        representation.addMainInstr(MoveInstruction(Registers.r0, reg))
+        moveOrLoadinR0(reg)
 
         val type = if (print.expr is ExprAST.ArrayElemAST) {
             print.expr.getElemType()
@@ -644,7 +653,7 @@ open class TranslatorVisitor(
         val dest: Operand = operandAllocation(ret.expr.getDestReg(), ret.expr)
 
         // Move the value into r0 and pop the program counter
-        representation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        moveOrLoadinR0(dest)
 
         // Restore the stack pointer depending on how much stack space has been allocated thus far
         restoreStackPointer(ret, ret.getStackSizeAllocated())
