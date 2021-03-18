@@ -122,7 +122,6 @@ object WaccCompiler {
             }
             println("Generating assembly file : $fileName.s")
             representation.buildAssembly(fileName)
-            println("Generation of assembly file complete")
         }
 
         if (debug) {
