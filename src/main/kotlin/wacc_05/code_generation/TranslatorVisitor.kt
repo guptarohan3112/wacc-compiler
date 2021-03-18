@@ -906,17 +906,7 @@ open class TranslatorVisitor(
         // Move the start of the array into dest register
         val reg = moveLocation(arrayElem, arrLocation)
 
-        var i = 0
-        for (expr in arrayElem.exprs) {
-            if (i < arrayElem.exprs.size - 1) {
-                representation.addMainInstr(
-                    LoadInstruction(
-                        reg,
-                        AddressingMode.AddressingMode2(reg)
-                    )
-                )
-            }
-
+        for ((i, expr) in arrayElem.exprs.withIndex()) {
             visit(expr)
             val exprDest: Operand = expr.getOperand()
 
@@ -961,7 +951,15 @@ open class TranslatorVisitor(
                     representation.addMainInstr(AddInstruction(reg, reg, exprDest))
                 }
             }
-            i++
+
+            if (i < arrayElem.exprs.size - 1) {
+                representation.addMainInstr(
+                    LoadInstruction(
+                        reg,
+                        AddressingMode.AddressingMode2(reg)
+                    )
+                )
+            }
         }
     }
 
@@ -1774,8 +1772,6 @@ open class TranslatorVisitor(
         if (pairLocation is AddressingMode) {
             // do something
         }
-
-        println("Pair Location: $pairLocation")
 
         // set param and branch to check for null dereference
         representation.addMainInstr(MoveInstruction(Registers.r0, pairLocation))
