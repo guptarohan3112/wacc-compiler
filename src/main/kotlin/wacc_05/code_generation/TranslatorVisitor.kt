@@ -611,12 +611,8 @@ open class TranslatorVisitor(
     override fun visitPrintAST(print: StatementAST.PrintAST) {
         // Evaluate expression to be printed and obtain the register where the result is held
         visit(print.expr)
-        val reg: Operand =
-            if (print.expr is ExprAST.UnOpAST && (print.expr.operator == "ord" || print.expr.operator == "chr")) {
-                print.expr.expr.getOperand()
-            } else {
-                print.expr.getOperand()
-            }
+        val reg: Operand = print.expr.getOperand()
+
         moveOrLoadinR0(reg)
 
         val type = if (print.expr is ExprAST.ArrayElemAST) {
@@ -915,7 +911,6 @@ open class TranslatorVisitor(
         }
     }
 
-
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         // Evaluate the single operand and get the register holding the result
         visit(unop.expr)
@@ -924,6 +919,7 @@ open class TranslatorVisitor(
             "-" -> visitNeg(unop)
             "!" -> visitNot(unop)
             "len" -> visitLen(unop)
+            else -> unop.setOperand(unop.expr.getOperand())
         }
     }
 

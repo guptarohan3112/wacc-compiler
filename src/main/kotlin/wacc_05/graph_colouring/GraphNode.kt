@@ -32,7 +32,7 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
         this.ident = identifier
     }
 
-    fun setOperand(register: Register) {
+    fun setRegister(register: Register) {
         this.register = register
     }
 

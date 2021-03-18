@@ -36,6 +36,17 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
         }
     }
 
+    fun setOperand(operand: Operand) {
+        val graphNode: GraphNode = this.getGraphNode()
+        if (operand is Register) {
+            graphNode.setRegister(operand)
+        } else {
+            val btmStackFrame: Int = this.getStackPtr()
+            val absAddr: Int = btmStackFrame + this.getStackPtrOffset()
+            setAddr(absAddr)
+        }
+    }
+
     fun getAddr(): Int {
         return addr
     }
