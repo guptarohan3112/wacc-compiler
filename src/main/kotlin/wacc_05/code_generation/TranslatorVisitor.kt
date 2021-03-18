@@ -5,7 +5,6 @@ import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.code_generation.instructions.*
 import wacc_05.code_generation.instructions.LabelInstruction.Companion.getUniqueLabel
 import wacc_05.code_generation.utilities.*
-import wacc_05.graph_colouring.GraphNode
 import wacc_05.graph_colouring.InterferenceGraph
 import wacc_05.symbol_table.SymbolTable
 import wacc_05.symbol_table.identifier_objects.IdentifierObject
@@ -612,8 +611,12 @@ open class TranslatorVisitor(
     override fun visitPrintAST(print: StatementAST.PrintAST) {
         // Evaluate expression to be printed and obtain the register where the result is held
         visit(print.expr)
-        val reg: Operand = print.expr.getOperand()
-//        val reg: Operand = operandAllocation(print.expr.getDestReg(), print.expr)
+        val reg: Operand =
+            if (print.expr is ExprAST.UnOpAST && (print.expr.operator == "ord" || print.expr.operator == "chr")) {
+                print.expr.expr.getOperand()
+            } else {
+                print.expr.getOperand()
+            }
         moveOrLoadinR0(reg)
 
         val type = if (print.expr is ExprAST.ArrayElemAST) {
