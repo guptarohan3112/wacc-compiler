@@ -1645,14 +1645,20 @@ open class TranslatorVisitor(
         // (we don't free the dest register otherwise as it contains the value we want to use elsewhere)
     }
 
+    // Need to check this
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
 
         visit(mapAST.assignRHS)
-        val rhsDestReg: Operand = mapAST.assignRHS.getOperand()
+        // Have left out the push and pop, but allocation scheme for temporary registers is needed here
+        val rhsDest: Operand = mapAST.assignRHS.getOperand()
+        val rhsDestReg: Register = chooseRegisterFromOperand(rhsDest, Registers.r11)
         val elemsSize: Int = mapAST.assignRHS.getType().getStackSize()
 
         val lengthDest = mapAST.getOperand(mapAST.lengthReg)
         val spaceDest = mapAST.getOperand(mapAST.spaceReg)
+
+        val lengthReg: Register = chooseRegisterFromOperand(lengthDest, Registers.r11)
+        val spaceReg: Register = chooseRegisterFromOperand(spaceDest, Registers.r12)
 
         // store length of array in lengthReg
         representation.addMainInstr(
@@ -1672,7 +1678,6 @@ open class TranslatorVisitor(
             AddInstruction(spaceReg, spaceReg, Immediate(TypeIdentifier.INT_SIZE))
         )
 
-
         // load allocation into param register for malloc and branch
         representation.addMainInstr(
             MoveInstruction(
@@ -1685,23 +1690,27 @@ open class TranslatorVisitor(
 
         // store the array address in an allocated register
         val arrLocationDest = mapAST.getOperand(mapAST.arrLocation)
+        val arrLocation: Register = chooseRegisterFromOperand(arrLocationDest, Registers.r11)
         representation.addMainInstr(MoveInstruction(arrLocation, Registers.r0))
 
         // we start the index at +4 so we can store the size of the array at +0
         val arrIndexDest = mapAST.getOperand(mapAST.arrIndexReg)
+        val arrIndexReg: Register = chooseRegisterFromOperand(arrIndexDest, Registers.r12)
         representation.addMainInstr(MoveInstruction(arrIndexReg, Immediate(TypeIdentifier.INT_SIZE)))
 
         val arrayElemDest = mapAST.getOperand(mapAST.arrayElemReg)
-        val condLabel = LabelInstruction.getUniqueLabel()
+        val arrayElemReg: Register = chooseRegisterFromOperand(arrayElemDest, Registers.r12)
+        val condLabel = getUniqueLabel()
 
         representation.addMainInstr(condLabel)
         representation.addMainInstr(
             LoadInstruction(arrayElemReg, AddressingMode.AddressingMode2(rhsDestReg, arrIndexReg))
         )
+        // TODO: Talk about this
         when (mapAST.operator.operator) {
-            "-" -> visitNeg(arrayElemReg)
-            "!" -> visitNot(arrayElemReg)
-            "len" -> visitLen(arrayElemReg)
+            "-" -> visitNeg(arrayElemReg, arrayElemReg)
+            "!" -> visitNot(arrayElemReg, arrayElemReg)
+            "len" -> visitLen(arrayElemReg, arrayElemReg)
         }
 
         // store the value of elem at the current index
@@ -1730,9 +1739,10 @@ open class TranslatorVisitor(
 
         // store the length of the array at arrLocation +0
         val sizeDest = mapAST.getOperand(mapAST.sizeDest)
+        val sizeDestReg: Register = chooseRegisterFromOperand(sizeDest, Registers.r12)
         representation.addMainInstr(
             LoadInstruction(
-                sizeDest,
+                sizeDestReg,
                 AddressingMode.AddressingMode2(rhsDestReg)
             )
         )
@@ -1740,12 +1750,12 @@ open class TranslatorVisitor(
         // store the length of the array at the front of its allocated space
         representation.addMainInstr(
             StoreInstruction(
-                sizeDest,
+                sizeDestReg,
                 AddressingMode.AddressingMode2(arrLocation)
             )
         )
 
-        mapAST.setDestReg(arrLocation)
+//        mapAST.setDestReg(arrLocation)
     }
 
     override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {
