@@ -2,6 +2,9 @@ package wacc_05.code_generation.utilities
 
 class Register(private val number: Int) : Operand(), Comparable<Register> {
 
+    private var noOfPushes: Int = 0
+    private var noOfUses: Int = 0
+
     override fun toString(): String {
         return when (number) {
             13 -> "sp"
@@ -9,6 +12,30 @@ class Register(private val number: Int) : Operand(), Comparable<Register> {
             15 -> "pc"
             else -> "r$number"
         }
+    }
+
+    fun pushedNow() {
+        noOfPushes++
+    }
+
+    fun poppedNow() {
+        noOfPushes--
+    }
+
+    fun hasBeenPushed(): Boolean {
+        return noOfPushes != 0
+    }
+
+    fun occupiedNow() {
+        noOfUses++
+    }
+
+    fun freedNow() {
+        noOfUses--
+    }
+
+    fun inUse(): Boolean {
+        return noOfUses != 0
     }
 
     override fun compareTo(other: Register): Int {
