@@ -948,6 +948,7 @@ open class TranslatorVisitor(
             "-" -> visitNeg(unop.getOperand(), unop.expr.getOperand())
             "!" -> visitNot(unop.getOperand(), unop.expr.getOperand())
             "len" -> visitLen(unop.getOperand(), unop.expr.getOperand())
+            else -> unop.setOperand(unop.expr.getOperand())
         }
     }
 
