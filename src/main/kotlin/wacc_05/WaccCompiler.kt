@@ -115,7 +115,11 @@ object WaccCompiler {
             }
 
             translatorVisitor.visit(ast)
-            val fileName = "hi"
+            val fileName: String = if (isFile){
+                File(code).nameWithoutExtension
+            } else{
+                "result"
+            }
             println("Generating assembly file : $fileName.s")
             representation.buildAssembly(fileName)
             println("Generation of assembly file complete")
