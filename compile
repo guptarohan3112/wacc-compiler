@@ -3,6 +3,7 @@
 
 DEBUG_MODE='false'
 VALID_MODE='false'
+IS_FILE='true'
 OPTIMISATION='0'
 
 # get optional flags
