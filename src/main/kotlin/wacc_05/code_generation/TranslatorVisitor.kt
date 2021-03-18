@@ -15,7 +15,7 @@ import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 open class TranslatorVisitor(
     private val representation: AssemblyRepresentation,
     private val graph: InterferenceGraph
-): ASTBaseVisitor() {
+) : ASTBaseVisitor() {
 
     private val MAX_STACK_SIZE: Int = 1024
     private val START_OFFSET: Int = 4
@@ -150,7 +150,7 @@ open class TranslatorVisitor(
     private fun pushAndCompare(reg: AddressingMode, imm: Int) {
         val dest: Register = Registers.r11
 //        representation.addMainInstr(PushInstruction(dest))
-        representation.addMainInstr(MoveInstruction(dest, reg))
+        moveOrLoad(dest, reg)
         representation.addMainInstr(CompareInstruction(dest, Immediate(imm)))
 //        representation.addMainInstr(PopInstruction(dest))
     }
@@ -257,7 +257,7 @@ open class TranslatorVisitor(
 //            representation.addMainInstr(PushInstruction(reg))
 //        }
 
-        representation.addMainInstr(MoveInstruction(reg, location))
+        moveOrLoad(reg, location)
 
         return reg
     }
@@ -305,11 +305,11 @@ open class TranslatorVisitor(
         }
     }
 
-    private fun moveOrLoadinR0(operand: Operand) {
+    private fun moveOrLoad(register: Register, operand: Operand) {
         if (operand is AddressingMode) {
-            representation.addMainInstr(LoadInstruction(Registers.r0, operand))
+            representation.addMainInstr(LoadInstruction(register, operand))
         } else {
-            representation.addMainInstr(MoveInstruction(Registers.r0, operand))
+            representation.addMainInstr(MoveInstruction(register, operand))
         }
     }
 
@@ -565,7 +565,7 @@ open class TranslatorVisitor(
         }
 
         // Move the value in the destination register into r0
-        moveOrLoadinR0(reg!!)
+        moveOrLoad(Registers.r0, reg!!)
 
         // Call the relevant primitive function (depending on the type)
         if (type == TypeIdentifier.INT_TYPE) {
@@ -582,7 +582,7 @@ open class TranslatorVisitor(
         val dest: Operand = exit.expr.getOperand()
 
         // Move contents of the register in r0 for calling exit
-        moveOrLoadinR0(dest)
+        moveOrLoad(Registers.r0, dest)
         representation.addMainInstr(BranchInstruction("exit", Condition.L))
     }
 
@@ -592,7 +592,7 @@ open class TranslatorVisitor(
         val dest: Operand = operandAllocation(free.expr)
 
         // Move the contents of the destination register into r0
-        moveOrLoadinR0(dest)
+        moveOrLoad(Registers.r0, dest)
 
         // Add the primitive instruction corresponding to the type of the expression
         if (free.expr.getType() is TypeIdentifier.ArrayIdentifier) {
@@ -641,7 +641,7 @@ open class TranslatorVisitor(
         visit(print.expr)
         val reg: Operand = print.expr.getOperand()
 
-        moveOrLoadinR0(reg)
+        moveOrLoad(Registers.r0, reg)
 
         val type = if (print.expr is ExprAST.ArrayElemAST) {
             print.expr.getElemType()
@@ -681,7 +681,7 @@ open class TranslatorVisitor(
         val dest: Operand = operandAllocation(ret.expr)
 
         // Move the value into r0 and pop the program counter
-        moveOrLoadinR0(dest)
+        moveOrLoad(Registers.r0, dest)
 
         // Restore the stack pointer depending on how much stack space has been allocated thus far
         restoreStackPointer(ret, ret.getStackSizeAllocated())
@@ -879,13 +879,13 @@ open class TranslatorVisitor(
         }
 
         // Move the start of the array into dest register
-        val reg = moveLocation(arrayElem, arrLocation)
+        val reg: Register = moveLocation(arrayElem, arrLocation)
 
         for ((i, expr) in arrayElem.exprs.withIndex()) {
             visit(expr)
             val exprDest: Operand = expr.getOperand()
 
-            representation.addMainInstr(MoveInstruction(Registers.r0, exprDest))
+            moveOrLoad(Registers.r0, exprDest)
             representation.addMainInstr(MoveInstruction(Registers.r1, reg))
             representation.addPInstr(PInstruction.p_check_array_bounds(representation))
 
@@ -903,7 +903,8 @@ open class TranslatorVisitor(
                     if (exprDest is AddressingMode) {
                         val temp: Register = Registers.r12
 //                        representation.addMainInstr(PushInstruction(temp))
-                        representation.addMainInstr(MoveInstruction(temp, exprDest))
+
+                        moveOrLoad(temp, exprDest)
                         representation.addMainInstr(
                             AddInstruction(
                                 reg,
@@ -1159,10 +1160,10 @@ open class TranslatorVisitor(
         val expr2Dest: Operand = binop.expr2.getOperand()
 
         // get result from expr1 and move into param register 1
-        representation.addMainInstr(MoveInstruction(Registers.r0, expr1Dest))
+        moveOrLoad(Registers.r0, expr1Dest)
 
         // get result from expr2 and move into param register 2
-        representation.addMainInstr(MoveInstruction(Registers.r1, expr2Dest))
+        moveOrLoad(Registers.r1, expr2Dest)
 
         representation.addPInstr(PInstruction.p_check_divide_by_zero(representation))
         representation.addMainInstr(
@@ -1312,7 +1313,10 @@ open class TranslatorVisitor(
         val expr1Dest: Operand = binop.expr1.getOperand()
         val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, destReg)
 
-        representation.addMainInstr(CompareInstruction(expr1Reg, binop.expr2.getOperand()))
+        val expr2Dest: Operand = binop.expr2.getOperand()
+        val expr2Reg: Register = pushRegisterAndLoad(Registers.r12, expr2Dest, destReg)
+
+        representation.addMainInstr(CompareInstruction(expr1Reg, expr2Reg))
 
         val pair: Pair<Condition?, Condition?> = getCondition(binop)
 
@@ -1743,14 +1747,10 @@ open class TranslatorVisitor(
     private fun visitPairElemFstPhase(pairElem: PairElemAST) {
         visit(pairElem.elem)
         // location of the pair
-        val pairLocation: Operand = pairElem.getPairLocation().getRegister()
-
-        if (pairLocation is AddressingMode) {
-            // do something
-        }
+        val pairLocation: Operand = pairElem.elem.getOperand()
 
         // set param and branch to check for null dereference
-        representation.addMainInstr(MoveInstruction(Registers.r0, pairLocation))
+        moveOrLoad(Registers.r0, pairLocation)
         representation.addPInstr(PInstruction.p_check_null_pointer(representation))
 
         val reg: Register = moveLocation(pairElem, pairLocation)
