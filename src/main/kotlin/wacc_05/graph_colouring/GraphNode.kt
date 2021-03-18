@@ -1,6 +1,5 @@
 package wacc_05.graph_colouring
 
-import wacc_05.code_generation.utilities.Operand
 import wacc_05.code_generation.utilities.Register
 
 class GraphNode(private var startIndex: Int, private var ident: String = "") {
