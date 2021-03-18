@@ -23,8 +23,10 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
         this.addr = addr
     }
 
-    fun addNeighbour(neighbour: GraphNode) {
-        neighbours.add(neighbour)
+    fun addNeighbour(neighbour: GraphNode?) {
+        if (neighbour != null) {
+            neighbours.add(neighbour)
+        }
     }
 
     fun setIdentifier(identifier: String) {
@@ -59,9 +61,9 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
         return neighbours
     }
 
-    fun addNeighbourTwoWay(other: GraphNode) {
+    fun addNeighbourTwoWay(other: GraphNode?) {
         addNeighbour(other)
-        other.addNeighbour(this)
+        other?.addNeighbour(this)
     }
 
     fun isVariable(): Boolean {

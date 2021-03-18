@@ -20,26 +20,26 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
     }
 
     fun getOperand(): Operand {
-        return if (getDestReg() != Register(-1)) {
+        return if (hasGraphNode() && getDestReg() != Register(-1)) {
             getDestReg()
         } else {
-            val absAddr: Int? = this.getGraphNode().getAddr()
-            if (absAddr == null) {
-                this.getGraphNode().setAddr(this.getStackPtr() + this.getStackPtrOffset())
-            }
-            val offset: Int = this.getGraphNode().getAddr()!! - this.getStackPtr()
-            if (getStackSize() > 1) {
+            if (graphNode != null) {
+                val absAddr: Int? = this.getGraphNode()?.getAddr()
+                if (absAddr == null) {
+                    this.getGraphNode()?.setAddr(this.getStackPtr() + this.getStackPtrOffset())
+                }
+                val offset: Int = this.getGraphNode()?.getAddr()!! - this.getStackPtr()
                 AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
             } else {
-                AddressingMode.AddressingMode3(Registers.sp, Immediate(offset))
+                return AddressingMode.AddressingMode2(Registers.sp, Immediate(getStackPtrOffset()))
             }
         }
     }
 
     fun setOperand(operand: Operand) {
-        val graphNode: GraphNode = this.getGraphNode()
+        val graphNode: GraphNode? = this.getGraphNode()
         if (operand is Register) {
-            graphNode.setRegister(operand)
+            graphNode?.setRegister(operand)
         } else {
             val btmStackFrame: Int = this.getStackPtr()
             val absAddr: Int = btmStackFrame + this.getStackPtrOffset()
@@ -53,7 +53,7 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
 
     fun setAddr(addr: Int) {
         this.addr = addr
-        this.getGraphNode().setAddr(addr)
+        this.getGraphNode()?.setAddr(addr)
     }
 
     abstract fun getType(): TypeIdentifier
@@ -74,8 +74,8 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
         this.dest = null
     }
 
-    fun getGraphNode(): GraphNode {
-        return graphNode!!
+    fun getGraphNode(): GraphNode? {
+        return graphNode
     }
 
     fun setGraphNode(graphNode: GraphNode) {

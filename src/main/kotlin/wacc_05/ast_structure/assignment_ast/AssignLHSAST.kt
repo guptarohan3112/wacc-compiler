@@ -58,8 +58,8 @@ class AssignLHSAST(val ctx: WaccParser.AssignLHSContext, val ident: ExprAST.Iden
         }
     }
 
-    fun getGraphNode(): GraphNode {
-        return graphNode!!
+    fun getGraphNode(): GraphNode? {
+        return graphNode
     }
 
     fun setGraphNode(node: GraphNode) {
