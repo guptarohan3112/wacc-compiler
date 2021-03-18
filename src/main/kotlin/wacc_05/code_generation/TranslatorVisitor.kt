@@ -37,7 +37,8 @@ open class TranslatorVisitor(
     private fun calculateStackSize(bodyInScope: StatementAST): Int {
         // Calculate stack size for scope and decrement the stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor()
-        val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope, graph)
+        val stackSize: Int = 16
+//        val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope, graph)
         decrementAssemblySP(stackSize)
         return stackSize
     }
@@ -166,7 +167,7 @@ open class TranslatorVisitor(
     ) {
         if (destination is AddressingMode) {
             val reg: Register = Registers.r11
-            representation.addMainInstr(PushInstruction(reg))
+//            representation.addMainInstr(PushInstruction(reg))
             representation.addMainInstr(LoadInstruction(reg, mode))
             if (byteSize) {
                 representation.addMainInstr(
@@ -184,7 +185,7 @@ open class TranslatorVisitor(
                     )
                 )
             }
-            representation.addMainInstr(PopInstruction(reg))
+//            representation.addMainInstr(PopInstruction(reg))
         } else {
             representation.addMainInstr(LoadInstruction(destination as Register, mode))
         }
@@ -301,6 +302,14 @@ open class TranslatorVisitor(
     private fun popTempRegisterConditional(reg: Register, exprDest: Operand, destReg: Register) {
         if (exprDest is AddressingMode && destReg != reg) {
             representation.addMainInstr(PopInstruction(reg))
+        }
+    }
+
+    private fun moveOrLoadinR0(operand: Operand) {
+        if (operand is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(Registers.r0, operand))
+        } else {
+            representation.addMainInstr(MoveInstruction(Registers.r0, operand))
         }
     }
 
@@ -529,7 +538,7 @@ open class TranslatorVisitor(
         }
 
         // Move the value in the destination register into r0
-        representation.addMainInstr(MoveInstruction(Registers.r0, reg!!))
+        moveOrLoadinR0(reg!!)
 
         // Call the relevant primitive function (depending on the type)
         if (type == TypeIdentifier.INT_TYPE) {
@@ -547,7 +556,7 @@ open class TranslatorVisitor(
 //        val dest: Operand = operandAllocation(exit.expr.getDestReg(), exit.expr)
 
         // Move contents of the register in r0 for calling exit
-        representation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        moveOrLoadinR0(dest)
         representation.addMainInstr(BranchInstruction("exit", Condition.L))
     }
 
@@ -557,7 +566,7 @@ open class TranslatorVisitor(
         val dest: Operand = operandAllocation(free.expr.getDestReg(), free.expr)
 
         // Move the contents of the destination register into r0
-        representation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        moveOrLoadinR0(dest)
 
         // Add the primitive instruction corresponding to the type of the expression
         if (free.expr.getType() is TypeIdentifier.ArrayIdentifier) {
@@ -605,8 +614,8 @@ open class TranslatorVisitor(
         // Evaluate expression to be printed and obtain the register where the result is held
         visit(print.expr)
         val reg: Operand = print.expr.getOperand()
-//        val reg: Operand = operandAllocation(print.expr.getDestReg(), print.expr)
-        representation.addMainInstr(MoveInstruction(Registers.r0, reg))
+
+        moveOrLoadinR0(reg)
 
         val type = if (print.expr is ExprAST.ArrayElemAST) {
             print.expr.getElemType()
@@ -646,7 +655,7 @@ open class TranslatorVisitor(
         val dest: Operand = operandAllocation(ret.expr.getDestReg(), ret.expr)
 
         // Move the value into r0 and pop the program counter
-        representation.addMainInstr(MoveInstruction(Registers.r0, dest))
+        moveOrLoadinR0(dest)
 
         // Restore the stack pointer depending on how much stack space has been allocated thus far
         restoreStackPointer(ret, ret.getStackSizeAllocated())
@@ -902,7 +911,6 @@ open class TranslatorVisitor(
         }
     }
 
-
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         // Evaluate the single operand and get the register holding the result
         visit(unop.expr)
@@ -911,6 +919,7 @@ open class TranslatorVisitor(
             "-" -> visitNeg(unop)
             "!" -> visitNot(unop)
             "len" -> visitLen(unop)
+            else -> unop.setOperand(unop.expr.getOperand())
         }
     }
 
@@ -1078,14 +1087,14 @@ open class TranslatorVisitor(
 //        }
 
         val reg: Register = if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r11))
+//            representation.addMainInstr(PushInstruction(Registers.r11))
             Registers.r11
         } else {
             dest as Register
         }
         val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, reg)
         val expr2Reg: Register = if (expr2Dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r12))
+//            representation.addMainInstr(PushInstruction(Registers.r12))
             representation.addMainInstr(LoadInstruction(Registers.r12, expr2Dest))
             Registers.r12
         } else {
@@ -1115,7 +1124,7 @@ open class TranslatorVisitor(
         }
 
         if (expr2Dest is AddressingMode) {
-            representation.addMainInstr(PopInstruction(Registers.r12))
+//            representation.addMainInstr(PopInstruction(Registers.r12))
         }
 
         if (dest is AddressingMode) {
@@ -1129,7 +1138,7 @@ open class TranslatorVisitor(
         }
 
         if (dest is AddressingMode || expr1Dest is AddressingMode) {
-            representation.addMainInstr(PopInstruction(Registers.r11))
+//            representation.addMainInstr(PopInstruction(Registers.r11))
         }
     }
 

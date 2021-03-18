@@ -1,8 +1,6 @@
 package wacc_05.graph_colouring
 
 import org.antlr.v4.runtime.ParserRuleContext
-import wacc_05.ast_structure.AST
-import wacc_05.code_generation.utilities.Operand
 import wacc_05.code_generation.utilities.Register
 import wacc_05.code_generation.utilities.Registers
 
@@ -47,7 +45,7 @@ class InterferenceGraph {
         val allRegisters: ArrayList<Register> = Registers.allRegisters()
 
         for (node in listOfNodes) {
-            node.setOperand(defaultReg)
+            node.setRegister(defaultReg)
         }
 
         for (node in listOfNodes) {
@@ -65,7 +63,7 @@ class InterferenceGraph {
         val notInUse = allRegisters.subtract(opsInUse)
 
         if (notInUse.isNotEmpty()) {
-            node.setOperand(notInUse.elementAt(0))
+            node.setRegister(notInUse.elementAt(0))
         }
     }
 

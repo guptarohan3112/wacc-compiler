@@ -1,6 +1,5 @@
 package wacc_05.graph_colouring
 
-import wacc_05.code_generation.utilities.Operand
 import wacc_05.code_generation.utilities.Register
 
 class GraphNode(private var startIndex: Int, private var ident: String = "") {
@@ -14,7 +13,7 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
     // neighbouring nodes in the graph
     private val neighbours: HashSet<GraphNode> = HashSet()
 
-    private var addr: Int? = -1
+    private var addr: Int? = null
 
     fun getAddr(): Int? {
         return addr
@@ -32,7 +31,7 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
         this.ident = identifier
     }
 
-    fun setOperand(register: Register) {
+    fun setRegister(register: Register) {
         this.register = register
     }
 
