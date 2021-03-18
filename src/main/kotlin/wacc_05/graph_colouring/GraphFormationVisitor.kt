@@ -32,8 +32,14 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
             graph.addNode(graphNode)
             graphNode.addNeighbourTwoWay(decl.assignment.getGraphNode())
         } else {
-            decl.assignment.getGraphNode()?.let { decl.setGraphNode(it) }
-            decl.getGraphNode().setIdentifier(decl.varName)
+            val assignNode: GraphNode? = decl.assignment.getGraphNode()
+            if (assignNode != null) {
+                decl.setGraphNode(assignNode)
+                decl.getGraphNode().setIdentifier(decl.varName)
+            } else {
+                decl.setGraphNode(GraphNode(getLineNo(decl.ctx), decl.varName))
+                graph.addNode(decl.getGraphNode())
+            }
         }
 
         val identifier: VariableIdentifier = decl.st().lookupAll(decl.varName) as VariableIdentifier
