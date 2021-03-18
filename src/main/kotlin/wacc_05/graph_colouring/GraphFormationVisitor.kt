@@ -185,10 +185,20 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
                 binop.getGraphNode()?.addNeighbourTwoWay(binop.expr1.getGraphNode())
                 binop.getGraphNode()?.addNeighbourTwoWay(binop.expr2.getGraphNode())
             } else {
-                binop.expr2.getGraphNode()?.let { binop.setGraphNode(it) }
+                if (binop.expr2.hasGraphNode()) {
+                    binop.setGraphNode(binop.expr2.getGraphNode()!!)
+                } else {
+                    createAndSetGraphNode(binop)
+                    binop.getGraphNode()?.addNeighbourTwoWay(binop.expr1.getGraphNode())
+                }
             }
         } else {
-            binop.expr1.getGraphNode()?.let { binop.setGraphNode(it) }
+            if (binop.expr1.hasGraphNode()) {
+                binop.setGraphNode(binop.expr1.getGraphNode()!!)
+            } else {
+                createAndSetGraphNode(binop)
+                binop.getGraphNode()?.addNeighbourTwoWay(binop.expr2.getGraphNode())
+            }
         }
     }
 
@@ -206,7 +216,11 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
             createAndSetGraphNode(unop)
             unop.getGraphNode()?.addNeighbourTwoWay(unop.expr.getGraphNode())
         } else {
-            unop.expr.getGraphNode()?.let { unop.setGraphNode(it) }
+            if (unop.expr.hasGraphNode()) {
+                unop.setGraphNode(unop.expr.getGraphNode()!!)
+            } else {
+                createAndSetGraphNode(unop)
+            }
         }
     }
 

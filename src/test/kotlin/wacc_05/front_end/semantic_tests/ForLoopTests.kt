@@ -23,7 +23,7 @@ class ForLoopTests : StatSemanticTests() {
             WaccParser.BaseTypeContext(WaccParser.StatContext(), 0),
             "int"
         ), "i",
-        ExprAST.IntLiterAST("+", "0")
+        ExprAST.IntLiterAST(intLitContext, "+", "0")
     )
 
     private val loopVarIncrement = StatementAST.AssignAST(
@@ -35,7 +35,7 @@ class ForLoopTests : StatSemanticTests() {
         ExprAST.BinOpAST(
             WaccParser.ExprContext(WaccParser.StatContext(), 0),
             ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "i"),
-            ExprAST.IntLiterAST("+", "1"),
+            ExprAST.IntLiterAST(intLitContext, "+", "1"),
             "+"
         )
     )
@@ -49,7 +49,7 @@ class ForLoopTests : StatSemanticTests() {
             ExprAST.BinOpAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
                 ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "i"),
-                ExprAST.IntLiterAST("+", "5"),
+                ExprAST.IntLiterAST(intLitContext, "+", "5"),
                 "<"
             ),
             loopVarIncrement,
@@ -78,7 +78,7 @@ class ForLoopTests : StatSemanticTests() {
             ExprAST.BinOpAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
                 ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "i"),
-                ExprAST.IntLiterAST("+", "2"),
+                ExprAST.IntLiterAST(intLitContext, "+", "2"),
                 "<="
             ),
             loopVarIncrement,
@@ -112,12 +112,12 @@ class ForLoopTests : StatSemanticTests() {
                     WaccParser.BaseTypeContext(WaccParser.StatContext(), 0),
                     "char"
                 ), "c",
-                ExprAST.CharLiterAST("a")
+                ExprAST.CharLiterAST(charLitContext, "a")
             ),
             ExprAST.BinOpAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
                 ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "c"),
-                ExprAST.CharLiterAST("b"),
+                ExprAST.CharLiterAST(charLitContext, "b"),
                 "=="
             ),
             StatementAST.AssignAST(
@@ -126,7 +126,7 @@ class ForLoopTests : StatSemanticTests() {
                     WaccParser.AssignLHSContext(WaccParser.StatContext(), 0),
                     ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "c")
                 ),
-                ExprAST.CharLiterAST("b")
+                ExprAST.CharLiterAST(charLitContext, "b")
             ),
             StatementAST.SkipAST
         )
@@ -151,7 +151,7 @@ class ForLoopTests : StatSemanticTests() {
             ExprAST.BinOpAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
                 ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "i"),
-                ExprAST.IntLiterAST("+", "7"),
+                ExprAST.IntLiterAST(intLitContext, "+", "7"),
                 "+"
             ),
             loopVarIncrement,
@@ -178,11 +178,11 @@ class ForLoopTests : StatSemanticTests() {
             ExprAST.BinOpAST(
                 WaccParser.ExprContext(WaccParser.StatContext(), 0),
                 ExprAST.IdentAST(WaccParser.IdentContext(WaccParser.StatContext(), 0), "i"),
-                ExprAST.IntLiterAST("+", "5"),
+                ExprAST.IntLiterAST(intLitContext, "+", "5"),
                 "<"
             ),
             StatementAST.PrintAST(
-                ExprAST.StrLiterAST("This is not an assignment"),
+                ExprAST.StrLiterAST(WaccParser.StrLitContext(WaccParser.StatContext(), 0), "This is not an assignment"),
                 false
             ),
             StatementAST.SkipAST

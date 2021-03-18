@@ -616,7 +616,7 @@ open class TranslatorVisitor(
     override fun visitFreeAST(free: StatementAST.FreeAST) {
         // Evaluate the expression that you are freeing and obtain the destination register
         visit(free.expr)
-        val dest: Operand = operandAllocation(free.expr)
+        val dest: Operand = free.expr.getOperand()
 
         // Move the contents of the destination register into r0
         moveOrLoad(Registers.r0, dest)
@@ -705,7 +705,7 @@ open class TranslatorVisitor(
     override fun visitReturnAST(ret: StatementAST.ReturnAST) {
         // Evaluate the expression you want to return and access the register that holds the value
         visit(ret.expr)
-        val dest: Operand = operandAllocation(ret.expr)
+        val dest: Operand = ret.expr.getOperand()
 
         // Move the value into r0 and pop the program counter
         moveOrLoad(Registers.r0, dest)
