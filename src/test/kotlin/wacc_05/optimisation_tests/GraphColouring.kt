@@ -11,6 +11,8 @@ import wacc_05.code_generation.utilities.Register
 import wacc_05.front_end.*
 import wacc_05.graph_colouring.GraphFormationVisitor
 import wacc_05.graph_colouring.InterferenceGraph
+import wacc_05.symbol_table.FunctionST
+import wacc_05.symbol_table.SymbolTable
 import java.io.File
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -39,6 +41,14 @@ class GraphColouring {
         val visitor = Visitor()
         val ast: AST = visitor.visit(tree)
 
+        val st: SymbolTable = SymbolTable(null)
+        SymbolTable.makeTopLevel(st)
+        val functionST: FunctionST = FunctionST()
+        val seh: SemanticErrors = SemanticErrorHandler()
+
+        val semanticVisitor: SemanticVisitor = SemanticVisitor(st, functionST, seh)
+        semanticVisitor.visit(ast)
+
         // interference graph formation and colouring
         val gfVisitor = GraphFormationVisitor(graph)
         gfVisitor.visit(ast)
@@ -47,13 +57,13 @@ class GraphColouring {
 
     @Test
     fun graphTest1() {
-        runTest("src/test/test_cases/optimisation/graph_colouring/graphtest1.wacc")
+        runTest("src/test/test_cases/valid/graph_colouring/graphtest1.wacc")
         assertEquals(1, graph.getNodes().size)
     }
 
     @Test
     fun graphTest2() {
-        runTest("src/test/test_cases/optimisation/graph_colouring/graphtest2.wacc")
+        runTest("src/test/test_cases/valid/graph_colouring/graphtest2.wacc")
         assertEquals(2, graph.getNodes().size)
 
         val x = graph.findNode("x")!!
@@ -65,7 +75,7 @@ class GraphColouring {
 
     @Test
     fun graphTest3() {
-        runTest("src/test/test_cases/optimisation/graph_colouring/graphtest3.wacc")
+        runTest("src/test/test_cases/valid/graph_colouring/graphtest3.wacc")
         assertEquals(2, graph.getNodes().size)
 
         val x = graph.findNode("x")!!
@@ -81,7 +91,7 @@ class GraphColouring {
 
     @Test
     fun graphTestBinop1() {
-        runTest("src/test/test_cases/optimisation/graph_colouring/graphtestbinop1.wacc")
+        runTest("src/test/test_cases/valid/graph_colouring/graphtestbinop1.wacc")
         assertEquals(2, graph.getNodes().size)
 
         val x = graph.findNode("x")!!
@@ -93,14 +103,14 @@ class GraphColouring {
 
     @Test
     fun graphTestBinop2() {
-        runTest("src/test/test_cases/optimisation/graph_colouring/graphtestbinop2.wacc")
+        runTest("src/test/test_cases/valid/graph_colouring/graphtestbinop2.wacc")
         assertEquals(3, graph.getNodes().size)
 
     }
 
     @Test
     fun graphTestOverflow() {
-        runTest("src/test/test_cases/optimisation/graph_colouring/graphtestoverflow.wacc")
+        runTest("src/test/test_cases/valid/graph_colouring/graphtestoverflow.wacc")
         assertEquals(8, graph.getNodes().size)
 
         graph.colourGraph()

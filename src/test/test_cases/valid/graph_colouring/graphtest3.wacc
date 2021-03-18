@@ -1,3 +1,7 @@
+# Output:
+# 5
+# c
+
 begin
 int x = 5;
 println x;

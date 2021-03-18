@@ -1,3 +1,8 @@
+# Output:
+# 11
+# 4
+# 7
+
 begin
 int x = 4;
 int y = 7;

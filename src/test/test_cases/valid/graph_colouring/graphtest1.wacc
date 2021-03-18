@@ -1,0 +1,7 @@
+# Output:
+# 7
+
+begin
+int x = 7;
+println x
+end

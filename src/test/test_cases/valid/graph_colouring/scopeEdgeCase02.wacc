@@ -1,0 +1,11 @@
+# Output:
+# 6
+
+begin
+int x = 4;
+begin
+    x = 6;
+    int x = 9
+end;
+println x
+end

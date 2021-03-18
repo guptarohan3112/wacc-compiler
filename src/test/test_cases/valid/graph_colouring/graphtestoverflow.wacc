@@ -1,3 +1,13 @@
+# Output:
+# 4
+# 5
+# 6
+# 7
+# 8
+# 9
+# 10
+# true
+
 begin
 int a = 4;
 char b = '5';

@@ -120,8 +120,9 @@ task semanticTests(type: Test) {
         }
     }
 
-    exclude 'wacc_05/back_end/execution_tests/'
+    exclude 'wacc_05/back_end/execution_tests'
     exclude 'wacc_05/front_end/error_tests'
+    exclude 'wacc_05/optimisation_tests'
 }
 
 task errorTests(type: Test) {
@@ -141,8 +142,9 @@ task errorTests(type: Test) {
         }
     }
 
-    exclude 'wacc_05/back_end/execution_tests/'
+    exclude 'wacc_05/back_end/execution_tests'
     exclude 'wacc_05/front_end/semantic_tests/'
+    exclude 'wacc_05/optimisation_tests'
 }
 
 task executionTests(type: Test) {
@@ -162,7 +164,8 @@ task executionTests(type: Test) {
         }
     }
 
-    exclude 'wacc_05/front_end/'
+    exclude 'wacc_05/front_end'
+    exclude 'wacc_05/optimisation_tests'
 }
 
 task graphTests(type: Test) {
@@ -182,8 +185,8 @@ task graphTests(type: Test) {
         }
     }
 
-    exclude 'wacc_05/front_end/'
-    exclude 'wacc_05/execution_tests/'
+    exclude 'wacc_05/front_end'
+    exclude 'wacc_05/back_end/execution_tests'
 }
 
 /* THE BELOW CODE WAS TAKEN FROM
