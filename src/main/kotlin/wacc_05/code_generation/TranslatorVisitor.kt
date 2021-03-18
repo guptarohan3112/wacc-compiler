@@ -129,20 +129,22 @@ open class TranslatorVisitor(
         restoreStackPointer(innerScope, stackSize)
     }
 
-    fun operandAllocation(register: Register, ast: AssignRHSAST): Operand {
-        return if (!register.equals(InterferenceGraph.DefaultReg)) {
+    private fun operandAllocation(register: Register, ast: AssignRHSAST): Operand {
+        return if (register != Register(-1)) {
             register
         } else {
             val size = ast.getStackSize()
 
+            val offset = ast.getStackPtrOffset()
             val mode = if (size == 1) {
-                AddressingMode.AddressingMode3(Registers.sp, Immediate(ast.getStackPtrOffset()))
+                AddressingMode.AddressingMode3(Registers.sp, Immediate(offset))
             } else {
-                AddressingMode.AddressingMode2(Registers.sp, Immediate(ast.getStackPtrOffset()))
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
             }
 
+            ast.setAddr(ast.getStackPtr() + offset)
+
             ast.updatePtrOffset(size)
-//            ast.setOperand(mode)
 
             mode
         }
@@ -539,7 +541,8 @@ open class TranslatorVisitor(
     override fun visitExitAST(exit: StatementAST.ExitAST) {
         // Evaluate the exiting instruction and get destination register
         visit(exit.expr)
-        val dest: Operand = operandAllocation(exit.expr.getDestReg(), exit.expr)
+        val dest: Operand = exit.expr.getOperand()
+//        val dest: Operand = operandAllocation(exit.expr.getDestReg(), exit.expr)
 
         // Move contents of the register in r0 for calling exit
         representation.addMainInstr(MoveInstruction(Registers.r0, dest))
@@ -599,7 +602,8 @@ open class TranslatorVisitor(
     override fun visitPrintAST(print: StatementAST.PrintAST) {
         // Evaluate expression to be printed and obtain the register where the result is held
         visit(print.expr)
-        val reg: Operand = operandAllocation(print.expr.getDestReg(), print.expr)
+        val reg: Operand = print.expr.getOperand()
+//        val reg: Operand = operandAllocation(print.expr.getDestReg(), print.expr)
         representation.addMainInstr(MoveInstruction(Registers.r0, reg))
 
         val type = if (print.expr is ExprAST.ArrayElemAST) {
@@ -1063,6 +1067,15 @@ open class TranslatorVisitor(
         val dest: Operand = binop.getOperand()
         val expr1Dest: Operand = binop.expr1.getOperand()
         val expr2Dest: Operand = binop.expr2.getOperand()
+//        var expr1Dest: Operand = binop.getDestReg()
+//        if (expr1Dest == Register(-1)) {
+//            val offset: Int = binop.expr1.getAddr() - binop.expr1.getStackPtr()
+//            expr1Dest = if (binop.expr1.getStackSize() > 1) {
+//                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+//            } else {
+//                AddressingMode.AddressingMode3(Registers.sp, Immediate(offset))
+//            }
+//        }
 
         val reg: Register = if (dest is AddressingMode) {
             representation.addMainInstr(PushInstruction(Registers.r11))

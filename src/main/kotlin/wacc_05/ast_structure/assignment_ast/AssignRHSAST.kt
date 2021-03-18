@@ -23,7 +23,7 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
         return if (getDestReg() != Register(-1)) {
             getDestReg()
         } else {
-            val offset: Int = addr - st().getStackPtr()
+            val offset: Int = this.getGraphNode().getAddr()!! - getStackPtr()
             if (getStackSize() > 1) {
                 AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
             } else {
@@ -32,16 +32,13 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
         }
     }
 
-    fun setAddr() {
-        this.addr = st().getStackPtr() + st().getStackPtrOffset()
-    }
-
     fun getAddr(): Int {
         return addr
     }
 
     fun setAddr(addr: Int) {
         this.addr = addr
+        this.getGraphNode().setAddr(addr)
     }
 
     abstract fun getType(): TypeIdentifier
