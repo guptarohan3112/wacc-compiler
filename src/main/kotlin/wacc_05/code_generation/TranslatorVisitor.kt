@@ -209,17 +209,19 @@ open class TranslatorVisitor(
             representation.addMainInstr(PushInstruction(destReg))
             representation.addMainInstr(LoadInstruction(destReg, dest))
             representation.addMainInstr(
-                StoreInstruction(
+                getStoreInstruction(
                     destReg,
-                    AddressingMode.AddressingMode2(structureDestReg)
+                    AddressingMode.AddressingMode2(structureDestReg),
+                    structure.getType()
                 )
             )
             representation.addMainInstr(PopInstruction(destReg))
         } else {
             representation.addMainInstr(
-                StoreInstruction(
+                getStoreInstruction(
                     destReg,
-                    AddressingMode.AddressingMode2(structureDestReg)
+                    AddressingMode.AddressingMode2(structureDestReg),
+                    structure.getType()
                 )
             )
         }
