@@ -31,7 +31,7 @@ class StackSizeVisitor {
     private fun incrementStackSizeIfNecessary(stat: StatementAST.DeclAST, graph: InterferenceGraph) {
         val size: Int = stat.type.getType().getStackSize()
         val correctNode: GraphNode? = graph.findNode(stat.varName)
-        if (correctNode != null && !(correctNode.getRegister()).equals(InterferenceGraph.DefaultReg)) {
+        if (correctNode != null && (correctNode.getRegister()) != Register(-1)) {
             return
         } else {
             stackSize += size

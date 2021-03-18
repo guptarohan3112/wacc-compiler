@@ -20,7 +20,7 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
     }
 
     fun getOperand(): Operand {
-        return if (!getDestReg().equals(InterferenceGraph.DefaultReg)) {
+        return if (getDestReg() != Register(-1)) {
             getDestReg()
         } else {
             val offset: Int = addr - st().getStackPtr()
