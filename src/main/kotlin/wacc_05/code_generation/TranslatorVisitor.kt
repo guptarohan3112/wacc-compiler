@@ -412,7 +412,59 @@ open class TranslatorVisitor(
         }
 
         // Obtain the register where the evaluation of the right hand side lies
-        val dest: Operand = decl.assignment.getOperand()
+        val dest = decl.assignment.getOperand()
+
+        if (decl.assignment is ExprAST.IdentAST) {
+            // move ident location into decl destination
+            val destDecl = if (decl.getGraphNode().getRegister() != Register(-1)) {
+                decl.getGraphNode().getRegister()
+            } else {
+                val size = decl.getStackSize()
+
+                val offset = decl.getStackPtrOffset()
+                val mode = if (size == 1) {
+                    AddressingMode.AddressingMode3(Registers.sp, Immediate(offset))
+                } else {
+                    AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+                }
+
+                decl.setAddr(decl.getStackPtr() + offset)
+
+                decl.updatePtrOffset(size)
+
+                mode
+            }
+
+            if (dest is AddressingMode) {
+                if (destDecl is AddressingMode) {
+                    // representation.addMaininstr(PushInstruction(Registers.r11))
+                    representation.addMainInstr(LoadInstruction(Registers.r11, dest))
+                    representation.addMainInstr(
+                        getStoreInstruction(
+                            Registers.r11,
+                            destDecl as AddressingMode.AddressingMode2,
+                            decl.assignment.getType()
+                        )
+                    )
+                    // representation.addMainINstr(PopInstruction(Registers.r11))
+                } else {
+                    representation.addMainInstr(LoadInstruction(destDecl as Register, dest))
+                }
+            } else {
+                if (destDecl is AddressingMode) {
+                    representation.addMainInstr(
+                        getStoreInstruction(
+                            dest as Register,
+                            destDecl as AddressingMode.AddressingMode2,
+                            decl.assignment.getType()
+                        )
+                    )
+                } else {
+                    representation.addMainInstr(MoveInstruction(destDecl as Register, dest as Register))
+                }
+            }
+
+        }
 
         // set the operand on the decl ast
 
@@ -854,7 +906,17 @@ open class TranslatorVisitor(
         // Move the start of the array into dest register
         val reg = moveLocation(arrayElem, arrLocation)
 
-        for ((i, expr) in arrayElem.exprs.withIndex()) {
+        var i = 0
+        for (expr in arrayElem.exprs) {
+            if (i < arrayElem.exprs.size - 1) {
+                representation.addMainInstr(
+                    LoadInstruction(
+                        reg,
+                        AddressingMode.AddressingMode2(reg)
+                    )
+                )
+            }
+
             visit(expr)
             val exprDest: Operand = expr.getOperand()
 
@@ -899,15 +961,7 @@ open class TranslatorVisitor(
                     representation.addMainInstr(AddInstruction(reg, reg, exprDest))
                 }
             }
-
-            if (i < arrayElem.exprs.size - 1) {
-                representation.addMainInstr(
-                    LoadInstruction(
-                        reg,
-                        AddressingMode.AddressingMode2(reg)
-                    )
-                )
-            }
+            i++
         }
     }
 
@@ -1625,6 +1679,12 @@ open class TranslatorVisitor(
         visit(pairElem.elem)
         // location of the pair
         val pairLocation: Operand = pairElem.getPairLocation().getRegister()
+
+        if (pairLocation is AddressingMode) {
+            // do something
+        }
+
+        println("Pair Location: $pairLocation")
 
         // set param and branch to check for null dereference
         representation.addMainInstr(MoveInstruction(Registers.r0, pairLocation))

@@ -30,6 +30,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
             val graphNode = GraphNode(getLineNo(decl.ctx), decl.varName)
             decl.setGraphNode(graphNode)
             graph.addNode(graphNode)
+            graphNode.addNeighbourTwoWay(decl.assignment.getGraphNode())
         } else {
             decl.setGraphNode(decl.assignment.getGraphNode())
             decl.getGraphNode().setIdentifier(decl.varName)
