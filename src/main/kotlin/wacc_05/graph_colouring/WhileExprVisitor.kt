@@ -25,8 +25,10 @@ class WhileExprVisitor {
             }
 
             is ExprAST.IdentAST -> {
-                val ident = expr.st().lookupAll(expr.value) as VariableIdentifier
-                ident.getGraphNode().updateEndIndex(endLineOfWhile)
+                val ident = expr.st().lookupAll(expr.value)
+                if(ident is VariableIdentifier) {
+                    ident.getGraphNode().updateEndIndex(endLineOfWhile)
+                }
             }
 
             else -> {

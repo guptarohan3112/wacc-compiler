@@ -15,6 +15,8 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
 
     private var addr: Int? = null
 
+    private var allocated: Boolean = false
+
     fun getAddr(): Int? {
         return addr
     }
@@ -85,5 +87,13 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
 
     fun variableActive(lineNo: Int): Boolean {
         return (lineNo in (startIndex + 1)..endIndex)
+    }
+
+    fun allocate() {
+        allocated = true
+    }
+
+    fun isAllocated(): Boolean {
+        return allocated
     }
 }

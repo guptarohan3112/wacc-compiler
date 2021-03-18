@@ -113,8 +113,10 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     }
 
     override fun visitIdentAST(ident: ExprAST.IdentAST) {
+        println("looking up: ${ident.value}")
         val identifier = ident.st().lookupAll(ident.value)
         if (identifier is VariableIdentifier) {
+            println("ident ${ident.value} was a variable identifier")
             val graphNode: GraphNode = identifier.getGraphNode()
             graphNode.updateEndIndex(getLineNo(ident.ctx))
 
@@ -188,6 +190,9 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
         createAndSetGraphNode(funcCall)
+        for(expr in funcCall.args) {
+            visit(expr)
+        }
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {

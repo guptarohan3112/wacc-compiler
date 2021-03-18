@@ -36,9 +36,10 @@ open class TranslatorVisitor(
     // Uses a stackSizeVisitor to calculate the space needed on the stack
     private fun calculateStackSize(bodyInScope: StatementAST): Int {
         // Calculate stack size for scope and decrement the stack pointer accordingly
-        val stackSizeCalculator = StackSizeVisitor()
-        val stackSize: Int = 16
-//        val stackSize: Int = stackSizeCalculator.getStackSize(bodyInScope, graph)
+        val stackSizeCalculator = StackSizeVisitor(graph)
+//        val stackSize: Int = 16
+        stackSizeCalculator.visit(bodyInScope)
+        val stackSize: Int = stackSizeCalculator.getStackSize()
         decrementAssemblySP(stackSize)
         return stackSize
     }
@@ -759,8 +760,9 @@ open class TranslatorVisitor(
         body.setStackPtr(body.getStackPtr() + currSp)
 
         // Allocate stack space for all of the local variables and looping variable. Update stack pointer accordingly
-        val stackSizeCalculator = StackSizeVisitor()
-        val stackSize: Int = stackSizeCalculator.getStackSize(body, graph)
+        val stackSizeCalculator = StackSizeVisitor(graph)
+        stackSizeCalculator.visit(forLoop)
+        val stackSize: Int = stackSizeCalculator.getStackSize()
         val updatedStackSize: Int = stackSize + FOUR_BYTES
         decrementAssemblySP(updatedStackSize)
         body.setStackPtr(body.getStackPtr() - updatedStackSize)
