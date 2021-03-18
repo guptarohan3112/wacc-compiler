@@ -23,7 +23,11 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
         return if (getDestReg() != Register(-1)) {
             getDestReg()
         } else {
-            val offset: Int = this.getGraphNode().getAddr()!! - getStackPtr()
+            val absAddr: Int? = this.getGraphNode().getAddr()
+            if (absAddr == null) {
+                this.getGraphNode().setAddr(this.getStackPtr() + this.getStackPtrOffset())
+            }
+            val offset: Int = this.getGraphNode().getAddr()!! - this.getStackPtr()
             if (getStackSize() > 1) {
                 AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
             } else {

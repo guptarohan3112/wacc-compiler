@@ -14,7 +14,7 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
     // neighbouring nodes in the graph
     private val neighbours: HashSet<GraphNode> = HashSet()
 
-    private var addr: Int? = -1
+    private var addr: Int? = null
 
     fun getAddr(): Int? {
         return addr
