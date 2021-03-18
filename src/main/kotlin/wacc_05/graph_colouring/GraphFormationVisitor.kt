@@ -72,8 +72,8 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
 
     override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
         visit(whileStat.loopExpr)
-        WhileExprVisitor().visitWhile(whileStat)
         visit(whileStat.body)
+        WhileExprVisitor().visitWhile(whileStat)
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
