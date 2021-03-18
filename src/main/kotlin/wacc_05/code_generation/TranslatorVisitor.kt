@@ -512,13 +512,17 @@ open class TranslatorVisitor(
 
         when {
             lhs.ident != null -> {
-                val lhsLocation =
-                    (assign.st().lookupAll(lhs.ident.value)!! as VariableIdentifier).getGraphNode()
-                        .getRegister()
+                val identifier = assign.st().lookupAll(lhs.ident.value)!!
 
-                if (!lhsLocation.equals(InterferenceGraph.DefaultReg)) {
+                val lhsLocation: Operand = if (identifier is VariableIdentifier) {
+                    identifier.getGraphNode().getRegister()
+                } else {
+                    AddressingMode.AddressingMode2(Registers.sp, Immediate((identifier as ParamIdentifier).getOffset()))
+                }
+
+                if (lhsLocation is Register && !lhsLocation.equals(InterferenceGraph.DefaultReg)) {
                     if (lhsLocation != dest) {
-                        representation.addMainInstr(MoveInstruction(lhsLocation, dest))
+                        representation.addMainInstr(MoveInstruction(lhsLocation as Register, dest))
                     }
                 } else {
                     val offset: Int = calculateIdentSpOffset(lhs.getStringValue(), assign, 0)
@@ -537,7 +541,7 @@ open class TranslatorVisitor(
                         representation.addMainInstr(
                             StoreInstruction(
                                 dest as Register,
-                                AddressingMode.AddressingMode2(lhsLocation)
+                                lhsLocation as AddressingMode.AddressingMode2
                             )
                         )
                     }
