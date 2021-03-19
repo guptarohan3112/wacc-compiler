@@ -243,7 +243,6 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         val leftHand: AssignLHSAST = read.lhs
         val leftHandIdent: ExprAST.IdentAST? = leftHand.ident
         val leftHandPairElem: PairElemAST? = leftHand.pairElem
-        val leftHandArrElem: ExprAST.ArrayElemAST? = leftHand.arrElem
 
         if (leftHandIdent != null) {
             visitIdentAST(leftHandIdent)
@@ -269,14 +268,19 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         graph.addNode(mapAST.arrayElemReg!!)
         graph.addNode(mapAST.sizeDest!!)
 
+        mapAST.spaceReg?.addNeighbourTwoWay(mapAST.assignRHS.getGraphNode())
         mapAST.lengthReg?.addNeighbourTwoWay(mapAST.spaceReg)
-        mapAST.lengthReg?.addNeighbourTwoWay(mapAST.arrIndexReg)
         mapAST.lengthReg?.addNeighbourTwoWay(mapAST.arrLocation)
+        mapAST.lengthReg?.addNeighbourTwoWay(mapAST.arrIndexReg)
         mapAST.lengthReg?.addNeighbourTwoWay(mapAST.arrayElemReg)
-        mapAST.arrLocation?.addNeighbourTwoWay(mapAST.arrayElemReg)
+        mapAST.lengthReg?.addNeighbourTwoWay(mapAST.assignRHS.getGraphNode())
         mapAST.arrLocation?.addNeighbourTwoWay(mapAST.arrIndexReg)
-        mapAST.arrayElemReg?.addNeighbourTwoWay(mapAST.arrIndexReg)
+        mapAST.arrLocation?.addNeighbourTwoWay(mapAST.arrayElemReg)
         mapAST.arrLocation?.addNeighbourTwoWay(mapAST.sizeDest)
+        mapAST.arrLocation?.addNeighbourTwoWay(mapAST.assignRHS.getGraphNode())
+        mapAST.arrayElemReg?.addNeighbourTwoWay(mapAST.assignRHS.getGraphNode())
+        mapAST.arrayElemReg?.addNeighbourTwoWay(mapAST.arrIndexReg)
+        mapAST.arrIndexReg?.addNeighbourTwoWay(mapAST.assignRHS.getGraphNode())
 
         mapAST.setGraphNode(mapAST.arrLocation!!)
     }
