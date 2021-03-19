@@ -175,26 +175,33 @@ open class TranslatorVisitor(
         if (operand !is AddressingMode) {
             return operand as Register
         } else {
+            val r10 = Registers.r10
             val r11 = Registers.r11
             val r12 = Registers.r12
-            return if (r11.inUse()) {
-                if (r12.inUse()) {
-                    val reg: Register = if (r11.getNoOfUses() > r12.getNoOfUses()) {
-                        r12
+            if (r10.inUse()) {
+                if (r11.inUse()) {
+                    if (r12.inUse()) {
+                        val r10Uses = r10.getNoOfUses()
+                        val r11Uses = r11.getNoOfUses()
+                        val r12Uses = r12.getNoOfUses()
+                        val reg: Register = if (r10Uses > r11Uses) {
+                            r11
+                        } else if (r10Uses == r11Uses && r11Uses > r12Uses) {
+                            r12
+                        } else {
+                            r10
+                        }
+                        representation.addMainInstr(PushInstruction(reg))
+                        reg.pushedNow()
+                        return reg.occupiedNow()
                     } else {
-                        r11
+                        return r12.occupiedNow()
                     }
-                    representation.addMainInstr(PushInstruction(reg))
-                    reg.pushedNow()
-                    reg.occupiedNow()
-                    reg
                 } else {
-                    r12.occupiedNow()
-                    r12
+                    return r11.occupiedNow()
                 }
             } else {
-                r11.occupiedNow()
-                r11
+                return r10.occupiedNow()
             }
         }
     }
@@ -1152,7 +1159,11 @@ open class TranslatorVisitor(
 
         val reg: Register = chooseRegisterFromOperand(dest)
 
-        val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, reg)
+        val expr1Reg: Register = chooseRegisterFromOperand(expr1Dest)
+        if (expr1Dest is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(expr1Reg, expr1Dest))
+        }
+//        val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, reg)
         val expr2Reg: Register = chooseRegisterFromOperand(expr2Dest)
         if (expr2Dest is AddressingMode) {
             representation.addMainInstr(LoadInstruction(expr2Reg, expr2Dest))
@@ -1205,8 +1216,12 @@ open class TranslatorVisitor(
             )
         }
 
-        if (dest is AddressingMode || expr1Dest is AddressingMode) {
-            popIfNecessary(Registers.r11)
+        if (dest is AddressingMode) {
+            popIfNecessary(reg)
+        }
+
+        if (expr1Dest is AddressingMode) {
+            popIfNecessary(expr1Reg)
         }
     }
 
