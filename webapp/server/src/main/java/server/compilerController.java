@@ -23,9 +23,6 @@ public class compilerController {
     private Response compile(String code, int optimise) {
         Response res = new Response();
 
-        code = code.replaceAll("\"", "\\\\\"");
-        System.out.println(code);
-
         // create .s file
         ProcessBuilder pb = new ProcessBuilder("java", "-jar", "../../build/libs/wacc_05.jar", code, String.valueOf(optimise), "false", "false", "false");
         pb.redirectErrorStream(true);
@@ -37,7 +34,6 @@ public class compilerController {
             BufferedReader br = new BufferedReader(new InputStreamReader(exec.getInputStream()));
             result = br.lines().collect(Collectors.joining(System.lineSeparator()));
             int errorCode = exec.waitFor();
-            System.out.println("Process exited with " + errorCode);
             res.setErrorCode(errorCode == 0 ? 1 : 0);
             res.setErrorMsg(result);
         } catch (IOException | InterruptedException e) {
@@ -72,8 +68,6 @@ public class compilerController {
             BufferedReader br = new BufferedReader(new InputStreamReader(exec.getInputStream()));
             result = br.lines().collect(Collectors.joining(System.lineSeparator()));
             int errorCode = exec.waitFor();
-            System.out.println("Process exited with " + errorCode);
-            System.out.println("result of qemu " + result);
             res.setOutput(result);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
@@ -82,7 +76,6 @@ public class compilerController {
         try {
             // default StandardCharsets.UTF_8
             String content = Files.readString(Paths.get(path));
-//            System.out.println(content);
             res.setAssembly(content);
         } catch (IOException e) {
             e.printStackTrace();
