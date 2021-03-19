@@ -16,6 +16,7 @@ class LoopBodyVisitor(private val loop: StatementAST, private val endLine: Int) 
 
     override fun visitAssignAST(assign: StatementAST.AssignAST) {
         visitAssignLHSAST(assign.lhs)
+        visit(assign.rhs)
     }
 
     override fun visitAssignLHSAST(lhs: AssignLHSAST) {
