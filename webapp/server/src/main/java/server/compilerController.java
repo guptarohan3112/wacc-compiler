@@ -15,19 +15,19 @@ import java.util.stream.Collectors;
 public class compilerController {
 
     @CrossOrigin
-    @PostMapping(value = "/compile", produces = "application/json")
-    public Response greeting(@RequestBody String code) {
-        return compile(code);
+    @PostMapping(value = "/compile", consumes = "application/json", produces = "application/json")
+    public Response greeting(@RequestBody Request request) {
+        return compile(request.getCode(), request.getOptimise());
     }
 
-    private Response compile(String code) {
+    private Response compile(String code, int optimise) {
         Response res = new Response();
 
-        code = code.replaceAll("\"","\\\\\"");
+        code = code.replaceAll("\"", "\\\\\"");
         System.out.println(code);
 
         // create .s file
-        ProcessBuilder pb = new ProcessBuilder("java", "-jar", "build/libs/wacc_05.jar", code, "0", "false", "false", "false");
+        ProcessBuilder pb = new ProcessBuilder("java", "-jar", "../../build/libs/wacc_05.jar", code, String.valueOf(optimise), "false", "false", "false");
         pb.redirectErrorStream(true);
         String result = "";
 
@@ -39,36 +39,89 @@ public class compilerController {
             int errorCode = exec.waitFor();
             System.out.println("Process exited with " + errorCode);
             res.setErrorCode(errorCode == 0 ? 1 : 0);
+            res.setErrorMsg(result);
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 
-        // read assembly from file
         String path = "result.s";
 
-        if (res.getErrorCode() != 0) {
-            try {
-                // default StandardCharsets.UTF_8
-                String content = Files.readString(Paths.get(path));
-                System.out.println(content);
-                res.setAssembly(content);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            new File("result.s").delete();
+        // read assembly from file
+        if (res.getErrorCode() == 0) {
+            return res;
         }
 
-        res.setErrorMsg(result);
+        // run arm-linux-gnueabi
+        pb = new ProcessBuilder("arm-linux-gnueabi-gcc", "-o", "result", "-mcpu=arm1176jzf-s", "-mtune=arm1176jz-s", path);
+        // get error message from terminal output
+        try {
+            Process exec = pb.start();
+            int errorCode = exec.waitFor();
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
 
+        // run qemu-arm
+        pb = new ProcessBuilder("qemu-arm", "-L", "/usr/arm-linux-gnueabi/", "result");
+        pb.redirectErrorStream(true);
+        result = "";
+
+        // get output from terminal output
+        try {
+            Process exec = pb.start();
+            BufferedReader br = new BufferedReader(new InputStreamReader(exec.getInputStream()));
+            result = br.lines().collect(Collectors.joining(System.lineSeparator()));
+            int errorCode = exec.waitFor();
+            System.out.println("Process exited with " + errorCode);
+            System.out.println("result of qemu " + result);
+            res.setOutput(result);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            // default StandardCharsets.UTF_8
+            String content = Files.readString(Paths.get(path));
+//            System.out.println(content);
+            res.setAssembly(content);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        new File("result.s").delete();
+        new File("result").delete();
         return res;
     }
 
+}
+
+class Request {
+    private String code;
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    private int optimise;
+
+    public int getOptimise() {
+        return optimise;
+    }
+
+    public void setOptimise(int optimise) {
+        this.optimise = optimise;
+    }
 }
 
 class Response {
 
     private String assembly = "";
     private String errorMsg;
+    private String output;
     private int errorCode;
 
     public int getErrorCode() {
@@ -93,5 +146,13 @@ class Response {
 
     public void setAssembly(String assembly) {
         this.assembly = assembly;
+    }
+
+    public String getOutput() {
+        return output;
+    }
+
+    public void setOutput(String output) {
+        this.output = output;
     }
 }
