@@ -230,12 +230,21 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     }
 
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
+        visit(mapAST.assignRHS)
+
         mapAST.lengthReg = GraphNode(mapAST.ctx.getStart().line)
         mapAST.spaceReg = GraphNode(mapAST.ctx.getStart().line)
         mapAST.arrLocation = GraphNode(mapAST.ctx.getStart().line)
         mapAST.arrIndexReg = GraphNode(mapAST.ctx.getStart().line)
         mapAST.arrayElemReg = GraphNode(mapAST.ctx.getStart().line)
         mapAST.sizeDest = GraphNode(mapAST.ctx.getStart().line)
+
+        graph.addNode(mapAST.lengthReg!!)
+        graph.addNode(mapAST.spaceReg!!)
+        graph.addNode(mapAST.arrLocation!!)
+        graph.addNode(mapAST.arrIndexReg!!)
+        graph.addNode(mapAST.arrayElemReg!!)
+        graph.addNode(mapAST.sizeDest!!)
 
         mapAST.lengthReg?.addNeighbourTwoWay(mapAST.spaceReg)
         mapAST.lengthReg?.addNeighbourTwoWay(mapAST.arrIndexReg)
