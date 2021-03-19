@@ -119,7 +119,7 @@ open class TranslatorVisitor(
     }
 
     // Helper method that visits anything that requires making a new inner scope
-    private fun visitInnerScope(stat: StatementAST, innerScope: StatementAST) {
+    protected fun visitInnerScope(stat: StatementAST, innerScope: StatementAST) {
         val stackSize = setUpInnerScope(stat, innerScope)
 
         // Indicate how much stack space has been allocated and visit the branch
@@ -150,7 +150,7 @@ open class TranslatorVisitor(
 
     // Helper method to determines whether the input operand is a register, and assigns a temporary
     // register if not
-    private fun chooseRegisterFromOperand(operand: Operand): Register {
+    fun chooseRegisterFromOperand(operand: Operand): Register {
         if (operand !is AddressingMode) {
             return operand as Register
         } else {
@@ -269,7 +269,7 @@ open class TranslatorVisitor(
         return reg
     }
 
-    private fun popIfNecessary(tempReg: Register) {
+    fun popIfNecessary(tempReg: Register) {
         tempReg.freedNow()
         if (tempReg.hasBeenPushed()) {
             representation.addMainInstr(PopInstruction(tempReg))

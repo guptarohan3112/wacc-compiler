@@ -17,11 +17,10 @@ class O1TranslatorVisitor(private val representation: AssemblyRepresentation, pr
 
             val eval = condition.evaluate()
             if (eval == 1.toLong()) {
-                visit(ifStat.thenStat)
+                visitInnerScope(ifStat, ifStat.thenStat)
             } else {
-                visit(ifStat.elseStat)
+                visitInnerScope(ifStat, ifStat.elseStat)
             }
-
         } else {
             super.visitIfAST(ifStat)
         }
@@ -47,18 +46,11 @@ class O1TranslatorVisitor(private val representation: AssemblyRepresentation, pr
     }
 
     private fun storeValue(dest: Operand, value: String) {
-        val destReg: Register = if (dest is AddressingMode) {
-            representation.addMainInstr(PushInstruction(Registers.r11))
-            Registers.r11
-        } else {
-            dest as Register
-        }
+        val destReg: Register = chooseRegisterFromOperand(dest)
 
         representation.addMainInstr(LoadInstruction(destReg, AddressingMode.AddressingLabel(value)))
 
-        if (dest is AddressingMode) {
-            representation.addMainInstr(PopInstruction(Registers.r11))
-        }
+        popIfNecessary(destReg)
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
