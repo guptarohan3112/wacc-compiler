@@ -660,16 +660,20 @@ open class TranslatorVisitor(
     }
 
     override fun visitIfAST(ifStat: StatementAST.IfAST) {
-        // Evaluation of the condition expression
+        // Evaluation of the condition expression and condition checking
         val condition: ExprAST = ifStat.condExpr
         visit(condition)
-
-        // Condition checking
         val destination: Operand = condition.getOperand()
+        val destReg: Register = chooseRegisterFromOperand(destination)
+
         if (destination is AddressingMode) {
-            pushAndCompare(destination, 0)
-        } else {
-            representation.addMainInstr(CompareInstruction(destination as Register, Immediate(0)))
+            representation.addMainInstr(LoadInstruction(destReg, destination))
+        }
+
+        representation.addMainInstr(CompareInstruction(destReg, Immediate(0)))
+
+        if (destination is AddressingMode) {
+            popIfNecessary(destReg)
         }
 
         // Branch off to the 'else' body if the condition evaluated to false
@@ -685,7 +689,6 @@ open class TranslatorVisitor(
 
         // Label and assembly for the 'else' body, starting with updating stack pointer and allocating any stack space
         representation.addMainInstr(elseLabel)
-        // Visit the 'else' branch
         visitInnerScope(ifStat, ifStat.elseStat)
 
         // Make label for whatever follows the if statement
@@ -742,7 +745,6 @@ open class TranslatorVisitor(
 
         // Restore the stack pointer depending on how much stack space has been allocated thus far
         restoreStackPointer(ret, ret.getStackSizeAllocated())
-//        representation.addMainInstr(PopInstruction(Registers.pc))
     }
 
     override fun visitSequentialAST(seq: StatementAST.SequentialAST) {
@@ -794,7 +796,7 @@ open class TranslatorVisitor(
         val currSp: Int = forLoop.getStackPtr()
         body.setStackPtr(body.getStackPtr() + currSp)
 
-        // Allocate stack space for all of the local variables and looping variable. Update stack pointer accordingly
+        // Allocate stack space for local variables that are not in registers. Update stack pointer accordingly
         val stackSizeCalculator = StackSizeVisitor(graph)
         stackSizeCalculator.visit(forLoop)
         val stackSize: Int = stackSizeCalculator.getStackSize()
@@ -813,17 +815,21 @@ open class TranslatorVisitor(
         representation.addMainInstr(condLabel)
 
         visit(forLoop.loopExpr)
-        val reg: Operand = forLoop.loopExpr.getOperand()
+        val operand: Operand = forLoop.loopExpr.getOperand()
+        val reg: Register = chooseRegisterFromOperand(operand)
+        if (operand is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(reg, operand))
+        }
 
-        if (reg is AddressingMode) {
-            pushAndCompare(reg, 0)
-        } else {
-            representation.addMainInstr(
-                CompareInstruction(
-                    reg as Register,
-                    Immediate(0)
-                )
+        representation.addMainInstr(
+            CompareInstruction(
+                reg,
+                Immediate(0)
             )
+        )
+
+        if (operand is AddressingMode) {
+            popIfNecessary(reg)
         }
 
         val nextLabel: LabelInstruction = getUniqueLabel()
