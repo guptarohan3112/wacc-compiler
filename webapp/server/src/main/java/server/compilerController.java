@@ -56,7 +56,8 @@ public class compilerController {
         // get error message from terminal output
         try {
             Process exec = pb.start();
-        } catch (IOException e) {
+            int errorCode = exec.waitFor();
+        } catch (IOException | InterruptedException e) {
             e.printStackTrace();
         }
 

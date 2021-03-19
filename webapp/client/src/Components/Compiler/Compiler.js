@@ -59,6 +59,7 @@ export default function Compiler() {
   const [display, setDisplay] = useState("");
 
   const switchOptimise = (event) => {
+    console.log(assembly)
     setOptimise(event.target.checked);
   };
 
@@ -110,18 +111,14 @@ export default function Compiler() {
   };
 
   const compile = async (event) => {
-    console.log("about to send request")
-    runCode()
-    console.log(assembly)
-    setDisplay(assembly)
+    runCode("c")
   };
 
   const execute = async (event) => {
-    runCode()
-    setDisplay(output)
+    runCode("e")
   };
 
-  const runCode = async () => {
+  const runCode = async (option) => {
     const config = {
       method: "post",
       url: "http://localhost:8080/compile",
@@ -134,9 +131,19 @@ export default function Compiler() {
     try {
       const response = await axios(config);
       updateAssembly(response.data.assembly);
+      updateOutput(response.data.output);
       updateErrorCode(response.data.errorCode);
       updateErrorMsg(response.data.errorMsg);
-      updateOutput(response.data.output);
+      if (option === "c") {
+        setDisplay(response.data.assembly)
+      } else {
+        if (response.data.output === ""){
+          setDisplay("No output produced.")
+        }
+        else{
+          setDisplay(response.data.output)
+        }
+      }
       console.log("request done");
     } catch (error) {
       console.warn(error);
@@ -144,9 +151,9 @@ export default function Compiler() {
   };
 
   useEffect(() => {}, [text]);
-  useEffect(() => {}, [assembly]);
-  useEffect(() => {}, [output]);
-  useEffect(() => {}, [display]);
+  // useEffect(() => {}, [assembly]);
+  // useEffect(() => {}, [output]);
+  // useEffect(() => {}, [display]);
 
   return (
     <div className={classes.root}>
