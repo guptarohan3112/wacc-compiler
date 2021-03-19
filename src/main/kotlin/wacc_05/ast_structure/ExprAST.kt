@@ -1,11 +1,11 @@
 package wacc_05.ast_structure
 
 import antlr.WaccParser
-import wacc_05.ast_structure.assignment_ast.ArrayLiterAST
 import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.assignment_ast.AssignRHSAST
 import wacc_05.code_generation.utilities.*
 import wacc_05.graph_colouring.GraphNode
+import wacc_05.symbol_table.identifier_objects.ParamIdentifier
 import wacc_05.symbol_table.identifier_objects.TypeIdentifier
 
 sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
@@ -30,7 +30,8 @@ sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
         return Long.MAX_VALUE
     }
 
-    class IntLiterAST(ctx: WaccParser.IntLitContext, val sign: String, val value: String) : ExprAST(ctx) {
+    class IntLiterAST(ctx: WaccParser.IntLitContext, val sign: String, val value: String) :
+        ExprAST(ctx) {
 
         override fun getType(): TypeIdentifier {
             return TypeIdentifier.INT_TYPE
@@ -253,12 +254,54 @@ sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
         val operator: String
     ) : ExprAST(ctx) {
 
+        private var graphNode2: GraphNode? = null
+
         companion object {
             val intIntFunctions = hashSetOf("*", "/", "+", "-", "%")
 
             val intCharFunctions = hashSetOf(">", ">=", "<", "<=")
 
             val boolBoolFunctions = hashSetOf("&&", "||")
+        }
+
+        fun getGraphNode2(): GraphNode {
+            return graphNode2!!
+        }
+
+        fun setGraphNode2(graphNode2: GraphNode) {
+            if (operator == "*") {
+                this.graphNode2 = graphNode2
+            }
+        }
+
+        fun setOperand2(operand: Operand) {
+            if (operand is Register) {
+                graphNode2?.setRegister(operand)
+            } else {
+                val btmStackFrame: Int = this.getStackPtr()
+                val absAddr: Int = btmStackFrame + this.getStackPtrOffset()
+                setAddr(absAddr)
+            }
+        }
+
+        fun getOperand2(): Operand {
+            return if (graphNode2 != null && graphNode2!!.getRegister() != Register(-1)) {
+                graphNode2!!.getRegister()
+            } else {
+                if (graphNode2 != null) {
+                    val absAddr: Int? = graphNode2?.getAddr()
+                    if (absAddr == null) {
+                        graphNode2?.setAddr(this.getStackPtr() + this.getStackPtrOffset())
+                    }
+                    val offset: Int = graphNode2?.getAddr()!! - this.getStackPtr()
+                    AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+                } else {
+                    // this case should never be fallen into
+                    val node = this as IdentAST
+                    val param = st().lookupAll(node.value) as ParamIdentifier
+                    return AddressingMode.AddressingMode2(Registers.sp, Immediate(param.getOffset()))
+                }
+            }
         }
 
         override fun getType(): TypeIdentifier {
@@ -320,7 +363,10 @@ sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
                     val offset: Int = graphNode.getAddr()!! - this.getStackPtr()
                     AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
                 } else {
-                    return AddressingMode.AddressingMode2(Registers.sp, Immediate(getStackPtrOffset()))
+                    return AddressingMode.AddressingMode2(
+                        Registers.sp,
+                        Immediate(getStackPtrOffset())
+                    )
                 }
             }
         }
