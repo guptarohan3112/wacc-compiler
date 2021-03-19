@@ -5,7 +5,6 @@ import org.junit.runner.RunWith
 import org.junit.runners.Parameterized
 
 import wacc_05.WaccCompiler
-import wacc_05.ast_structure.ExprAST
 import wacc_05.code_generation.utilities.Registers
 import wacc_05.code_generation.instructions.LabelInstruction
 import wacc_05.code_generation.instructions.MessageLabelInstruction
@@ -39,7 +38,7 @@ class ExecutionTests(
         @Parameterized.Parameters(name = "{0}")
         fun data(): Iterable<File> {
             val files: ArrayList<File> = ArrayList()
-            val testPath: File = File(DIRECTORY_PATH)
+            val testPath = File(DIRECTORY_PATH)
             for (file in testPath.walk()) {
                 if (file.extension == "wacc") {
                     files.add(file)
@@ -93,7 +92,7 @@ class ExecutionTests(
                     Runtime.getRuntime()
                         .exec("arm-linux-gnueabi-gcc -o $prog -mcpu=arm1176jzf-s -mtune=arm1176jz-s $assemblyName")
                         .waitFor()
-                    val emulate: String = "qemu-arm -L /usr/arm-linux-gnueabi/ $prog"
+                    val emulate = "qemu-arm -L /usr/arm-linux-gnueabi/ $prog"
                     val run = Runtime.getRuntime().exec(emulate)
                     val buf: InputStream = run.inputStream
                     var progOutput = buf.bufferedReader().use { it.readText() }

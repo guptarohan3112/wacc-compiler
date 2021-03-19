@@ -1692,7 +1692,6 @@ open class TranslatorVisitor(
 
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
         visit(mapAST.assignRHS)
-        // Have left out the push and pop, but allocation scheme for temporary registers is needed here
         val rhsDest: Operand = mapAST.assignRHS.getOperand()
         val rhsDestReg: Register = chooseRegisterFromOperand(rhsDest)
         val elemsSize: Int = mapAST.assignRHS.getType().getStackSize()

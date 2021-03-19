@@ -1,5 +1,6 @@
 package wacc_05.front_end
 
+import org.antlr.v4.runtime.ParserRuleContext
 import wacc_05.ast_structure.*
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.symbol_table.FunctionST
@@ -338,12 +339,26 @@ open class SemanticVisitor(
         val symTab: SymbolTable = unop.st()
         visitChild(symTab, unop.expr)
         val exprType = unop.expr.getType()
+        checkOperatorType(unop.operator.operator, exprType, unop.ctx)
+    }
 
-        when (unop.operator.operator) {
+    override fun visitMapAST(mapAST: ExprAST.MapAST) {
+        visitChild(mapAST.st(), mapAST.assignRHS)
+        val exprType = mapAST.assignRHS.getType().getType()
+
+        checkOperatorType(mapAST.operator.operator, exprType, mapAST.ctx)
+    }
+
+    override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {
+        return
+    }
+
+    private fun checkOperatorType(operator: String, exprType: TypeIdentifier, ctx: ParserRuleContext) {
+        when (operator) {
             "len" -> {
                 if (exprType !is TypeIdentifier.ArrayIdentifier) {
                     errorHandler.typeMismatch(
-                        unop.ctx,
+                        ctx,
                         TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0),
                         exprType
                     )
@@ -351,22 +366,22 @@ open class SemanticVisitor(
             }
             "ord" -> {
                 if (exprType !is TypeIdentifier.CharIdentifier) {
-                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.CHAR_TYPE, exprType)
+                    errorHandler.typeMismatch(ctx, TypeIdentifier.CHAR_TYPE, exprType)
                 }
             }
             "chr" -> {
                 if (exprType !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.INT_TYPE, exprType)
+                    errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, exprType)
                 }
             }
             "!" -> {
                 if (exprType !is TypeIdentifier.BoolIdentifier) {
-                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.BOOL_TYPE, exprType)
+                    errorHandler.typeMismatch(ctx, TypeIdentifier.BOOL_TYPE, exprType)
                 }
             }
             "-" -> {
                 if (exprType !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(unop.ctx, TypeIdentifier.INT_TYPE, exprType)
+                    errorHandler.typeMismatch(ctx, TypeIdentifier.INT_TYPE, exprType)
                 }
             }
             else -> {
@@ -574,53 +589,5 @@ open class SemanticVisitor(
         child.st = symTab
         child.functionST = functionST
         visit(child)
-    }
-
-    override fun visitMapAST(mapAST: ExprAST.MapAST) {
-        visitChild(mapAST.st(), mapAST.assignRHS)
-        val exprType = mapAST.assignRHS.getType().getType()
-
-        when (mapAST.operator.operator) {
-            "len" -> {
-                if (exprType !is TypeIdentifier.ArrayIdentifier) {
-                    errorHandler.typeMismatch(
-                        mapAST.ctx,
-                        TypeIdentifier.ArrayIdentifier(TypeIdentifier(), 0),
-                        exprType
-                    )
-                }
-            }
-            "ord" -> {
-                if (exprType !is TypeIdentifier.CharIdentifier) {
-                    errorHandler.typeMismatch(mapAST.ctx, TypeIdentifier.CHAR_TYPE, exprType)
-                }
-            }
-            "chr" -> {
-                if (exprType !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(mapAST.ctx, TypeIdentifier.INT_TYPE, exprType)
-                }
-            }
-            "!" -> {
-                if (exprType !is TypeIdentifier.BoolIdentifier) {
-                    errorHandler.typeMismatch(mapAST.ctx, TypeIdentifier.BOOL_TYPE, exprType)
-                }
-            }
-            "-" -> {
-                if (exprType !is TypeIdentifier.IntIdentifier) {
-                    errorHandler.typeMismatch(mapAST.ctx, TypeIdentifier.INT_TYPE, exprType)
-                }
-            }
-            else -> {
-                //do nothing
-            }
-        }
-//        visitChild(mapAST.st(), mapAST.arrayLit)
-//        for (unOp in mapAST.unaryOps) {
-//            visitChild(mapAST.st(), unOp)
-//        }
-    }
-
-    override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {
-        return
     }
 }
