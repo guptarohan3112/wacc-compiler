@@ -155,8 +155,8 @@ sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
 
         private var arrLocation: GraphNode? = null
 
-        fun getArrayLocation(): GraphNode {
-            return arrLocation!!
+        fun getArrayLocation(): GraphNode? {
+            return arrLocation
         }
 
         fun setArrayLocation(arrLocation: GraphNode) {

@@ -886,7 +886,12 @@ open class TranslatorVisitor(
     }
 
     private fun visitArrayElemFstPhase(arrayElem: ExprAST.ArrayElemAST) {
-        var arrLocation: Operand = arrayElem.getArrayLocation().getRegister()
+        var arrLocation: Operand = if (arrayElem.getArrayLocation() != null) {
+            arrayElem.getArrayLocation()!!.getRegister()
+        } else {
+            val ident = arrayElem.st().lookupAll(arrayElem.ident) as ParamIdentifier
+            AddressingMode.AddressingMode2(Registers.sp, Immediate(ident.getOffset()))
+        }
 
         if (arrLocation.equals(InterferenceGraph.DefaultReg)) {
             val offset = calculateIdentSpOffset(arrayElem.ident, arrayElem, 0)

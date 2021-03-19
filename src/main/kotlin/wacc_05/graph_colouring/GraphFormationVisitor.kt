@@ -83,7 +83,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     override fun visitWhileAST(whileStat: StatementAST.WhileAST) {
         visit(whileStat.loopExpr)
         visit(whileStat.body)
-        WhileExprVisitor().visitWhile(whileStat)
+        LoopExprVisitor().visitWhile(whileStat)
     }
 
     override fun visitPairElemAST(pairElem: PairElemAST) {
@@ -114,7 +114,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         for (elem in arrayElem.exprs) {
             visit(elem)
             elem.getGraphNode()?.addNeighbourTwoWay(arrayElem.getGraphNode())
-            arrayElem.getArrayLocation().addNeighbourTwoWay(elem.getGraphNode())
+            arrayElem.getArrayLocation()?.addNeighbourTwoWay(elem.getGraphNode())
         }
     }
 
@@ -207,6 +207,11 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         for (expr in funcCall.args) {
             visit(expr)
         }
+    }
+
+    override fun visitForAST(forLoop: StatementAST.ForAST) {
+        super.visitForAST(forLoop)
+        LoopExprVisitor().visitFor(forLoop)
     }
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
