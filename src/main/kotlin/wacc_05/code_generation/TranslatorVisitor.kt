@@ -152,6 +152,27 @@ open class TranslatorVisitor(
         restoreStackPointer(innerScope, stackSize)
     }
 
+    // Takes relevant steps when evaluating the condition expression for a loop
+    private fun loopConditionalTranslate(loopExpr: ExprAST) {
+        visit(loopExpr)
+        val operand: Operand = loopExpr.getOperand()
+        val reg: Register = chooseRegisterFromOperand(operand)
+        if (operand is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(reg, operand))
+        }
+
+        representation.addMainInstr(
+            CompareInstruction(
+                reg,
+                Immediate(0)
+            )
+        )
+
+        if (operand is AddressingMode) {
+            popIfNecessary(reg)
+        }
+    }
+
     // A method that gives the location for an ast node to be loaded/moved into
     private fun operandAllocation(ast: AssignRHSAST): Operand {
         return if (ast.hasGraphNode() && ast.getDestReg() != Register(-1)) {
@@ -766,25 +787,7 @@ open class TranslatorVisitor(
         // Label for condition checking
         representation.addMainInstr(condLabel)
 
-        // Evaluate the looping conditional expression
-        visit(whileStat.loopExpr)
-
-        val operand: Operand = whileStat.loopExpr.getOperand()
-        val reg: Register = chooseRegisterFromOperand(operand)
-        if (operand is AddressingMode) {
-            representation.addMainInstr(LoadInstruction(reg, operand))
-        }
-
-        representation.addMainInstr(
-            CompareInstruction(
-                reg,
-                Immediate(1)
-            )
-        )
-
-        if (operand is AddressingMode) {
-            popIfNecessary(reg)
-        }
+        loopConditionalTranslate(whileStat.loopExpr)
 
         representation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
@@ -812,25 +815,10 @@ open class TranslatorVisitor(
 
         // Testing of loop expression, branch off to whatever is next if there is failure
         val condLabel: LabelInstruction = getUniqueLabel()
+
         representation.addMainInstr(condLabel)
 
-        visit(forLoop.loopExpr)
-        val operand: Operand = forLoop.loopExpr.getOperand()
-        val reg: Register = chooseRegisterFromOperand(operand)
-        if (operand is AddressingMode) {
-            representation.addMainInstr(LoadInstruction(reg, operand))
-        }
-
-        representation.addMainInstr(
-            CompareInstruction(
-                reg,
-                Immediate(0)
-            )
-        )
-
-        if (operand is AddressingMode) {
-            popIfNecessary(reg)
-        }
+        loopConditionalTranslate(forLoop.loopExpr)
 
         val nextLabel: LabelInstruction = getUniqueLabel()
         representation.addMainInstr(BranchInstruction(nextLabel.getLabel(), Condition.EQ))
