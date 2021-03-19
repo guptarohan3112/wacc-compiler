@@ -303,9 +303,9 @@ open class TranslatorVisitor(
     // A method that loads a value on the stack into a temporary register
     private fun pushRegisterAndLoad(reg: Register, exprDest: Operand, destReg: Register): Register {
         return if (exprDest is AddressingMode) {
-            if (destReg != reg) {
-                representation.addMainInstr(PushInstruction(reg))
-            }
+//            if (destReg != reg) {
+//                representation.addMainInstr(PushInstruction(reg))
+//            }
 
             representation.addMainInstr(LoadInstruction(reg, exprDest))
             reg
