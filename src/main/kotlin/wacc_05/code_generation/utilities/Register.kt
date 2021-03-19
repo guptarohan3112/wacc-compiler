@@ -19,6 +19,10 @@ class Register(private val number: Int) : Operand(), Comparable<Register> {
         noOfPushes = 0
     }
 
+    fun getNoOfUses(): Int {
+        return noOfUses
+    }
+
     fun pushedNow() {
         noOfPushes++
     }
