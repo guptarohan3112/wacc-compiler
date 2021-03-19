@@ -79,7 +79,7 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
         val thatEnd: Int = node.getEndIndex()
 
         return if (thisStart < thatStart) {
-            thisEnd > thatStart
+            thisEnd >= thatStart
         } else {
             thatEnd > thisStart
         }
