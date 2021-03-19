@@ -8,7 +8,7 @@ import wacc_05.graph_colouring.GraphNode
 import wacc_05.graph_colouring.InterferenceGraph
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
-class StackSizeVisitor(val graph: InterferenceGraph): ASTBaseVisitor() {
+class StackSizeVisitor(val graph: InterferenceGraph) : ASTBaseVisitor() {
 
     private var stackSize: Int = 0
 
@@ -64,7 +64,7 @@ class StackSizeVisitor(val graph: InterferenceGraph): ASTBaseVisitor() {
     }
 
     override fun visitArrayLiterAST(arrayLiter: ArrayLiterAST) {
-        for(elem in arrayLiter.elems) {
+        for (elem in arrayLiter.elems) {
             visit(elem)
         }
         incrementStackSizeIfNecessary(arrayLiter)
@@ -75,16 +75,16 @@ class StackSizeVisitor(val graph: InterferenceGraph): ASTBaseVisitor() {
     }
 
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
-        for(elem in arrayElem.exprs) {
+        for (elem in arrayElem.exprs) {
             visit(elem)
         }
         incrementStackSizeIfNecessary(arrayElem)
     }
 
     override fun visitAssignLHSAST(lhs: AssignLHSAST) {
-        if(lhs.pairElem != null) {
+        if (lhs.pairElem != null) {
             visit(lhs.pairElem!!)
-        } else if(lhs.arrElem != null) {
+        } else if (lhs.arrElem != null) {
             visit(lhs.arrElem!!)
         } else {
             visit(lhs.ident!!)
@@ -93,9 +93,15 @@ class StackSizeVisitor(val graph: InterferenceGraph): ASTBaseVisitor() {
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {
         incrementStackSizeIfNecessary(funcCall)
-        for(arg in funcCall.args) {
+        for (arg in funcCall.args) {
             visit(arg)
         }
+    }
+
+    override fun visitReadAST(read: StatementAST.ReadAST) {
+        super.visitReadAST(read)
+
+        stackSize += read.lhs.getType(read.lhs.st()).getStackSize()
     }
 
     private fun incrementStackSizeIfNecessary(ast: AssignRHSAST) {

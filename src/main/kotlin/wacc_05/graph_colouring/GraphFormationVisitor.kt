@@ -229,6 +229,19 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         }
     }
 
+    override fun visitReadAST(read: StatementAST.ReadAST) {
+        val leftHand: AssignLHSAST = read.lhs
+        val leftHandIdent: ExprAST.IdentAST? = leftHand.ident
+        val leftHandPairElem: PairElemAST? = leftHand.pairElem
+        val leftHandArrElem: ExprAST.ArrayElemAST? = leftHand.arrElem
+
+        if (leftHandIdent != null) {
+            visitIdentAST(leftHandIdent)
+        } else if (leftHandPairElem != null) {
+            visitPairElemAST(leftHandPairElem)
+        }
+    }
+
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
         visit(mapAST.assignRHS)
 

@@ -562,7 +562,7 @@ open class TranslatorVisitor(
 
     override fun visitReadAST(read: StatementAST.ReadAST) {
         var type: TypeIdentifier? = TypeIdentifier()
-        var reg: Operand? = null
+        var operand: Operand? = null
 
         val leftHand: AssignLHSAST = read.lhs
         val leftHandIdent: ExprAST.IdentAST? = leftHand.ident
@@ -571,16 +571,18 @@ open class TranslatorVisitor(
         // Set the destination register and the type
         if (leftHandIdent != null) {
             visitIdentForRead(leftHandIdent)
-            reg = operandAllocation(leftHandIdent)
+            operand = leftHandIdent.getOperand()
             type = leftHandIdent.getType()
         } else if (leftHandPairElem != null) {
             visitPairElemAST(leftHandPairElem)
-            reg = operandAllocation(leftHandPairElem)
+            operand = leftHandPairElem.getOperand()
             type = leftHandPairElem.getType()
         }
 
+        val reg = chooseRegisterFromOperand(operand!!)
         // Move the value in the destination register into r0
-        moveOrLoad(Registers.r0, reg!!)
+        representation.addMainInstr(AddInstruction(reg, Registers.sp, Immediate(0)))
+        representation.addMainInstr(MoveInstruction(Registers.r0, reg))
 
         // Call the relevant primitive function (depending on the type)
         if (type == TypeIdentifier.INT_TYPE) {
@@ -589,6 +591,9 @@ open class TranslatorVisitor(
         if (type == TypeIdentifier.CHAR_TYPE) {
             representation.addPInstr(PInstruction.p_read_char(representation))
         }
+
+        representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingMode2(Registers.sp)))
+
     }
 
     override fun visitExitAST(exit: StatementAST.ExitAST) {
