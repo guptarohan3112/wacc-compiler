@@ -27,7 +27,7 @@ object Registers {
     val lr = Register(14)
     val pc = Register(15)
 
-    private val allRegisters: ArrayList<Register> = arrayListOf(r3, r4, r5, r6, r7, r8, r9)
+    private val allRegisters: ArrayList<Register> = arrayListOf(r4, r5, r6, r7, r8, r9)
 
     private val available: ArrayList<Register> = allRegisters
 
