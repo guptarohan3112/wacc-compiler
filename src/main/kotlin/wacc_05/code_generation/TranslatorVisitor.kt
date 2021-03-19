@@ -1127,7 +1127,7 @@ open class TranslatorVisitor(
                 representation.addMainInstr(SMultiplyInstruction(reg, reg2, expr1Reg, expr2Reg))
                 representation.addMainInstr(
                     CompareInstruction(
-                        expr2Reg,
+                        reg2,
                         ShiftOperand(reg, ShiftOperand.Shift.ASR, 31)
                     )
                 )
