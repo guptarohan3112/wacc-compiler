@@ -32,7 +32,7 @@ class ExecutionTests(
         private val IGNORE_TESTS = hashSetOf("fixedPointRealArithmetic", "print-carridge-return", "print-backspace")
 
         // tests that we now fail due to optimisations within the compiler
-        private val OUTDATED_TESTS = hashSetOf("divZero", "asciiTable")
+        private val OUTDATED_TESTS = hashSetOf("divZero")
 
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
