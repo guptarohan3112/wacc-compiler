@@ -474,7 +474,12 @@ open class TranslatorVisitor(
                         )
                     )
                 } else {
-                    representation.addMainInstr(MoveInstruction(destDecl as Register, dest as Register))
+                    representation.addMainInstr(
+                        MoveInstruction(
+                            destDecl as Register,
+                            dest as Register
+                        )
+                    )
                 }
             }
 
@@ -1118,6 +1123,12 @@ open class TranslatorVisitor(
             }
             "*" -> {
                 representation.addMainInstr(SMultiplyInstruction(reg, expr1Reg, expr2Reg))
+                representation.addMainInstr(
+                    CompareInstruction(
+                        expr2Reg,
+                        ShiftOperand(reg, ShiftOperand.Shift.ASR, 31)
+                    )
+                )
                 checkOverflow(Condition.LNE)
             }
         }
@@ -1649,7 +1660,12 @@ open class TranslatorVisitor(
         // we start the index at +4 so we can store the size of the array at +0
         val arrIndexDest = mapAST.getOperand(mapAST.arrIndexReg)
         val arrIndexReg: Register = chooseRegisterFromOperand(arrIndexDest)
-        representation.addMainInstr(MoveInstruction(arrIndexReg, Immediate(TypeIdentifier.INT_SIZE)))
+        representation.addMainInstr(
+            MoveInstruction(
+                arrIndexReg,
+                Immediate(TypeIdentifier.INT_SIZE)
+            )
+        )
 
         val arrayElemDest = mapAST.getOperand(mapAST.arrayElemReg)
         val arrayElemReg: Register = chooseRegisterFromOperand(arrayElemDest)
