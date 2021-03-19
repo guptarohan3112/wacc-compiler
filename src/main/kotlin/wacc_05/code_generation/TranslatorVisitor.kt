@@ -153,7 +153,7 @@ open class TranslatorVisitor(
     }
 
     // Takes relevant steps when evaluating the condition expression for a loop
-    private fun loopConditionalTranslate(loopExpr: ExprAST) {
+    private fun loopConditionalTranslate(loopExpr: ExprAST, comp: Int) {
         visit(loopExpr)
         val operand: Operand = loopExpr.getOperand()
         val reg: Register = chooseRegisterFromOperand(operand)
@@ -164,7 +164,7 @@ open class TranslatorVisitor(
         representation.addMainInstr(
             CompareInstruction(
                 reg,
-                Immediate(0)
+                Immediate(comp)
             )
         )
 
@@ -787,7 +787,7 @@ open class TranslatorVisitor(
         // Label for condition checking
         representation.addMainInstr(condLabel)
 
-        loopConditionalTranslate(whileStat.loopExpr)
+        loopConditionalTranslate(whileStat.loopExpr, 1)
 
         representation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
     }
@@ -818,7 +818,7 @@ open class TranslatorVisitor(
 
         representation.addMainInstr(condLabel)
 
-        loopConditionalTranslate(forLoop.loopExpr)
+        loopConditionalTranslate(forLoop.loopExpr, 0)
 
         val nextLabel: LabelInstruction = getUniqueLabel()
         representation.addMainInstr(BranchInstruction(nextLabel.getLabel(), Condition.EQ))
