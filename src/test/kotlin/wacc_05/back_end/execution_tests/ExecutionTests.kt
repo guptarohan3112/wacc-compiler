@@ -19,7 +19,7 @@ class ExecutionTests(
 ) {
 
     companion object {
-        private val DIRECTORY_PATH = "src/test/test_cases/valid"
+        private val DIRECTORY_PATH = "src/test/test_cases/valid/expressions/longSplitExpr.wacc"
 
         // we have to ignore these tests as our test program cannot run command line inputs
         private val READ_TESTS = hashSetOf(
@@ -76,7 +76,7 @@ class ExecutionTests(
             try {
                 println(it.absolutePath)
                 // Run the compiler- this should generate the assembly file (to be executed)
-                WaccCompiler.runCompiler(it.absolutePath, 1, debug = false, validOnly = false)
+                WaccCompiler.runCompiler(it.absolutePath, 0, debug = false, validOnly = false)
 
 
                 val assemblyName = it.nameWithoutExtension + ".s"

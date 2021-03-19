@@ -900,7 +900,7 @@ open class TranslatorVisitor(
             arrayElem.getArrayLocation()!!.getRegister()
         } else {
             val ident = arrayElem.st().lookupAll(arrayElem.ident) as ParamIdentifier
-            AddressingMode.AddressingMode2(Registers.sp, Immediate(ident.getOffset()))
+            AddressingMode.AddressingMode2(Registers.sp, Immediate(arrayElem.getStackSizeAllocated() + ident.getOffset()))
         }
 
         if (arrLocation.equals(InterferenceGraph.DefaultReg)) {
@@ -969,6 +969,16 @@ open class TranslatorVisitor(
         }
     }
 
+    // PUSH {r4}
+    // BL f_f
+    // POP {r4}
+
+    // STR r4, [sp, #-4]!
+    // params
+    // BL f_f
+    // LDR r4, [sp]
+    // ADD sp, sp, #4
+
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         // Evaluate the single operand and get the register holding the result
         visit(unop.expr)
@@ -990,6 +1000,11 @@ open class TranslatorVisitor(
         val source: AddressingMode = chooseAddressingMode(arrLocation)
 
         representation.addMainInstr(LoadInstruction(destReg, source))
+
+        if(arrLocation is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(destReg, AddressingMode.AddressingMode2(destReg)))
+        }
+
         if (dest is AddressingMode) {
             popIfNecessary(destReg)
         }
