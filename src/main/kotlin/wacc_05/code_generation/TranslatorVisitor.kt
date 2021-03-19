@@ -89,10 +89,27 @@ open class TranslatorVisitor(
         addr: AddressingMode.AddressingMode2,
         type: TypeIdentifier
     ): StoreInstruction {
-        return if (type.getStackSize() == 1) {
+        return getStoreInstruction(reg, addr, type.getStackSize())
+    }
+
+    // A helper method for adding "B" to "STR" if given
+    private fun getStoreInstruction(
+        reg: Register,
+        addr: AddressingMode.AddressingMode2,
+        size: Int
+    ): StoreInstruction {
+        return if (size == 1) {
             StoreInstruction(reg, addr, Condition.B)
         } else {
             StoreInstruction(reg, addr)
+        }
+    }
+
+    private fun getLoadInstruction(reg: Register, regN: Register, operand: Operand, size: Int): LoadInstruction {
+        return if (size == 1) {
+            LoadInstruction(reg, AddressingMode.AddressingMode3(regN, operand))
+        } else {
+            LoadInstruction(reg, AddressingMode.AddressingMode2(regN, operand))
         }
     }
 
@@ -138,7 +155,11 @@ open class TranslatorVisitor(
             val size = ast.getStackSize()
 
             val offset = ast.getStackPtrOffset()
-            val mode = AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+            val mode = if (ast.getStackSize() == 1) {
+                AddressingMode.AddressingMode3(Registers.sp, Immediate(offset))
+            } else {
+                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
+            }
 
             ast.setAddr(ast.getStackPtr() + offset)
 
@@ -195,7 +216,7 @@ open class TranslatorVisitor(
                 representation.addMainInstr(
                     StoreInstruction(
                         destReg,
-                        destination as AddressingMode.AddressingMode2,
+                        AddressingMode.AddressingMode2(destination.getDestReg(), destination.getOperand()),
                         Condition.B
                     )
                 )
@@ -203,7 +224,7 @@ open class TranslatorVisitor(
                 representation.addMainInstr(
                     StoreInstruction(
                         destReg,
-                        destination as AddressingMode.AddressingMode2
+                        AddressingMode.AddressingMode2(destination.getDestReg(), destination.getOperand())
                     )
                 )
             }
@@ -633,7 +654,7 @@ open class TranslatorVisitor(
         visit(condition)
 
         // Condition checking
-        val destination: Operand = operandAllocation(condition)
+        val destination: Operand = condition.getOperand()
         if (destination is AddressingMode) {
             pushAndCompare(destination, 0)
         } else {
@@ -734,7 +755,7 @@ open class TranslatorVisitor(
 
         // Evaluate the looping conditional expression
         visit(whileStat.loopExpr)
-        val reg: Operand = operandAllocation(whileStat.loopExpr)
+        val reg: Operand = whileStat.loopExpr.getOperand()
 
         if (reg is AddressingMode) {
             pushAndCompare(reg, 1)
@@ -777,7 +798,7 @@ open class TranslatorVisitor(
         representation.addMainInstr(condLabel)
 
         visit(forLoop.loopExpr)
-        val reg: Operand = operandAllocation(forLoop.loopExpr)
+        val reg: Operand = forLoop.loopExpr.getOperand()
 
         if (reg is AddressingMode) {
             pushAndCompare(reg, 0)
@@ -900,7 +921,10 @@ open class TranslatorVisitor(
             arrayElem.getArrayLocation()!!.getRegister()
         } else {
             val ident = arrayElem.st().lookupAll(arrayElem.ident) as ParamIdentifier
-            AddressingMode.AddressingMode2(Registers.sp, Immediate(arrayElem.getStackSizeAllocated() + ident.getOffset()))
+            AddressingMode.AddressingMode2(
+                Registers.sp,
+                Immediate(arrayElem.getStackSizeAllocated() + ident.getOffset())
+            )
         }
 
         if (arrLocation.equals(InterferenceGraph.DefaultReg)) {
@@ -1001,7 +1025,7 @@ open class TranslatorVisitor(
 
         representation.addMainInstr(LoadInstruction(destReg, source))
 
-        if(arrLocation is AddressingMode) {
+        if (arrLocation is AddressingMode) {
             representation.addMainInstr(LoadInstruction(destReg, AddressingMode.AddressingMode2(destReg)))
         }
 
@@ -1476,6 +1500,18 @@ open class TranslatorVisitor(
         var argsSize = 0
         val symTab: SymbolTable = funcCall.st()
 
+        // Find all registers that are in use at this point of time and push them on the stack
+        val regsInUse: ArrayList<Pair<Register, Int>> = graph.regsInUse(funcCall.ctx)
+        for (reg in regsInUse) {
+            representation.addMainInstr(
+                getStoreInstruction(
+                    reg.first,
+                    AddressingMode.AddressingMode2(Registers.sp, Immediate(-1 * reg.second), true),
+                    reg.second
+                )
+            )
+        }
+
         for (arg in funcCall.args.reversed()) {
             // Account for the number of bytes that already have been allocated
             arg.setParamOffset(arg.getParamOffset() + argsSize)
@@ -1513,12 +1549,6 @@ open class TranslatorVisitor(
         symTab.setParamOffset(0)
         symTab.updatePtrOffset(-1 * argsSize)
 
-        // Find all registers that are in use at this point of time and push them on the stack
-        val regsInUse: ArrayList<Register> = graph.regsInUse(funcCall.ctx)
-        for (reg in regsInUse) {
-            representation.addMainInstr(PushInstruction(reg))
-        }
-
         // Branch to the function label in the assembly code
         representation.addMainInstr(
             BranchInstruction(
@@ -1527,13 +1557,14 @@ open class TranslatorVisitor(
             )
         )
 
-        // Pop all of the registers that were pushed on the stack
-        for (reg in regsInUse.reversed()) {
-            representation.addMainInstr(PopInstruction(reg))
-        }
-
         // Restore the stack pointer
         restoreStackPointer(funcCall, argsSize)
+
+        // Pop all of the registers that were pushed on the stack
+        for (reg in regsInUse.reversed()) {
+            representation.addMainInstr(getLoadInstruction(reg.first, Registers.sp, Immediate(0), reg.second))
+            representation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(reg.second)))
+        }
 
         // Move the result of the function into the correct destination
         storeOrMove(funcCall, Registers.r0)
@@ -1581,7 +1612,7 @@ open class TranslatorVisitor(
 
         val reg: Register = chooseRegisterFromOperand(dest)
         if (dest is AddressingMode) {
-            representation.addMainInstr(LoadInstruction(reg, dest as AddressingMode))
+            representation.addMainInstr(LoadInstruction(reg, dest))
         }
 
         // do allocation - move size of elem into param register then branch into malloc

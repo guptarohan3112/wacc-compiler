@@ -5,6 +5,8 @@ import wacc_05.ast_structure.ASTBaseVisitor
 import wacc_05.ast_structure.ExprAST
 import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.*
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier.Companion.ADDR_SIZE
+import wacc_05.symbol_table.identifier_objects.TypeIdentifier.Companion.INT_SIZE
 import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBaseVisitor() {
@@ -17,7 +19,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
 
     protected fun createAndSetGraphNode(node: AssignRHSAST) {
         if (!node.hasGraphNode()) {
-            val graphNode = GraphNode(getLineNo(node.ctx))
+            val graphNode = GraphNode(getLineNo(node.ctx), "", node.getStackSize())
             node.setGraphNode(graphNode)
             graph.addNode(graphNode)
         }
@@ -27,7 +29,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         visit(decl.assignment)
 
         if (decl.assignment.hasGraphNode() && decl.assignment.getGraphNode()!!.isVariable()) {
-            val graphNode = GraphNode(getLineNo(decl.ctx), decl.varName)
+            val graphNode = GraphNode(getLineNo(decl.ctx), decl.varName, decl.getStackSize())
             decl.setGraphNode(graphNode)
             graph.addNode(graphNode)
             graphNode.addNeighbourTwoWay(decl.assignment.getGraphNode())
@@ -37,7 +39,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
                 decl.setGraphNode(assignNode)
                 decl.getGraphNode().setIdentifier(decl.varName)
             } else {
-                decl.setGraphNode(GraphNode(getLineNo(decl.ctx), decl.varName))
+                decl.setGraphNode(GraphNode(getLineNo(decl.ctx), decl.varName, decl.getStackSize()))
                 graph.addNode(decl.getGraphNode())
             }
         }
@@ -154,7 +156,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
             elem.getGraphNode()?.addNeighbourTwoWay(arrayLiter.getGraphNode())
         }
 
-        arrayLiter.setSizeGraphNode(GraphNode(getLineNo(arrayLiter.ctx), ""))
+        arrayLiter.setSizeGraphNode(GraphNode(getLineNo(arrayLiter.ctx), "", arrayLiter.getStackSize()))
         graph.addNode(arrayLiter.getSizeGraphNode())
         arrayLiter.getSizeGraphNode().addNeighbourTwoWay(arrayLiter.getGraphNode())
     }
@@ -202,7 +204,7 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
         }
 
         if (!binop.hasGraphNode2() && binop.operator == "*") {
-            val graphNode2 = GraphNode(getLineNo(binop.ctx))
+            val graphNode2 = GraphNode(getLineNo(binop.ctx), "", binop.getStackSize())
             binop.setGraphNode2(graphNode2)
             graph.addNode(graphNode2)
             graphNode2.addNeighbourTwoWay(binop.getGraphNode())
@@ -254,12 +256,12 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
     override fun visitMapAST(mapAST: ExprAST.MapAST) {
         visit(mapAST.assignRHS)
 
-        mapAST.lengthReg = GraphNode(mapAST.ctx.getStart().line)
-        mapAST.spaceReg = GraphNode(mapAST.ctx.getStart().line)
-        mapAST.arrLocation = GraphNode(mapAST.ctx.getStart().line)
-        mapAST.arrIndexReg = GraphNode(mapAST.ctx.getStart().line)
-        mapAST.arrayElemReg = GraphNode(mapAST.ctx.getStart().line)
-        mapAST.sizeDest = GraphNode(mapAST.ctx.getStart().line)
+        mapAST.lengthReg = GraphNode(mapAST.ctx.getStart().line, "", INT_SIZE)
+        mapAST.spaceReg = GraphNode(mapAST.ctx.getStart().line, "", INT_SIZE)
+        mapAST.arrLocation = GraphNode(mapAST.ctx.getStart().line, "", ADDR_SIZE)
+        mapAST.arrIndexReg = GraphNode(mapAST.ctx.getStart().line, "", INT_SIZE)
+        mapAST.arrayElemReg = GraphNode(mapAST.ctx.getStart().line, "", ADDR_SIZE)
+        mapAST.sizeDest = GraphNode(mapAST.ctx.getStart().line, "", INT_SIZE)
 
         graph.addNode(mapAST.lengthReg!!)
         graph.addNode(mapAST.spaceReg!!)

@@ -35,7 +35,17 @@ abstract class AssignRHSAST(val ctx: ParserRuleContext) : AST() {
                 // this ast is a param
                 val node = this as ExprAST.IdentAST
                 val param = st().lookupAll(node.value) as ParamIdentifier
-                return AddressingMode.AddressingMode2(Registers.sp, Immediate(st().getStackSizeAllocated() + param.getOffset()))
+                return if (getStackSize() == 1) {
+                    AddressingMode.AddressingMode3(
+                        Registers.sp,
+                        Immediate(st().getStackSizeAllocated() + param.getOffset())
+                    )
+                } else {
+                    AddressingMode.AddressingMode2(
+                        Registers.sp,
+                        Immediate(st().getStackSizeAllocated() + param.getOffset())
+                    )
+                }
             }
         }
     }

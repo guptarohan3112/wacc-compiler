@@ -2,7 +2,19 @@ package wacc_05.code_generation.utilities
 
 sealed class AddressingMode : Operand() {
 
+    abstract fun getDestReg(): Register
+
+    abstract fun getOperand(): Operand?
+
     data class AddressingLabel(private val label: String) : AddressingMode() {
+        override fun getDestReg(): Register {
+            return Register(-1)
+        }
+
+        override fun getOperand(): Operand? {
+            return null
+        }
+
         override fun toString(): String {
             return "=$label"
         }
@@ -20,6 +32,13 @@ sealed class AddressingMode : Operand() {
         private val operand: Operand? = null,
         private val decrement: Boolean = false
     ) : AddressingMode() {
+        override fun getDestReg(): Register {
+            return regN
+        }
+
+        override fun getOperand(): Operand? {
+            return operand
+        }
 
         override fun toString(): String {
             val dec = if (decrement) {
@@ -42,6 +61,13 @@ sealed class AddressingMode : Operand() {
      */
     data class AddressingMode3(private val regN: Register, private val operand: Operand) :
         AddressingMode() {
+        override fun getDestReg(): Register {
+            return regN
+        }
+
+        override fun getOperand(): Operand? {
+            return operand
+        }
 
         override fun toString(): String {
             if (operand is Immediate && operand.getValue() == 0) {

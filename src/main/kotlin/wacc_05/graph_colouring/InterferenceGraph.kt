@@ -6,7 +6,7 @@ import wacc_05.code_generation.utilities.Registers
 
 class InterferenceGraph {
 
-    companion object DefaultReg{
+    companion object DefaultReg {
         private val defaultReg: Register = Register(-1)
     }
 
@@ -67,12 +67,12 @@ class InterferenceGraph {
         }
     }
 
-    fun regsInUse(ctx: ParserRuleContext): ArrayList<Register> {
-        val regsInUse: ArrayList<Register> = ArrayList()
+    fun regsInUse(ctx: ParserRuleContext): ArrayList<Pair<Register, Int>> {
+        val regsInUse: ArrayList<Pair<Register, Int>> = ArrayList()
         val currentLineNo = ctx.getStart().line
         for (gNode in listOfNodes) {
             if (gNode.variableActive(currentLineNo)) {
-                regsInUse.add(gNode.getRegister())
+                regsInUse.add(Pair(gNode.getRegister(), gNode.getStackSize()))
             }
         }
         return regsInUse
