@@ -35,8 +35,9 @@ class Register(private val number: Int) : Operand(), Comparable<Register> {
         return noOfPushes != 0
     }
 
-    fun occupiedNow() {
+    fun occupiedNow(): Register {
         noOfUses++
+        return this
     }
 
     fun freedNow() {
