@@ -899,9 +899,6 @@ open class TranslatorVisitor(
         val operand: Operand = arrayElem.getOperand()
         val dest: Register = chooseRegisterFromOperand(operand)
 
-        // load the value at the address into the destination register
-        val type: TypeIdentifier = arrayElem.getElemType()
-
         representation.addMainInstr(
             LoadInstruction(
                 dest,
@@ -950,30 +947,23 @@ open class TranslatorVisitor(
             )
 
             val type: TypeIdentifier = arrayElem.getElemType()
+            val exprDestReg: Register = chooseRegisterFromOperand(exprDest)
             when (type.getStackSize()) {
                 FOUR_BYTES -> {
                     if (exprDest is AddressingMode) {
-                        val temp: Register = Registers.r12
-//                        representation.addMainInstr(PushInstruction(temp))
-
-                        moveOrLoad(temp, exprDest)
-                        representation.addMainInstr(
-                            AddInstruction(
-                                reg,
-                                reg,
-                                ShiftOperand(temp, ShiftOperand.Shift.LSL, 2)
-                            )
-                        )
-//                        representation.addMainInstr(PopInstruction(temp))
-                    } else {
-                        representation.addMainInstr(
-                            AddInstruction(
-                                reg,
-                                reg,
-                                ShiftOperand(exprDest as Register, ShiftOperand.Shift.LSL, 2)
-                            )
-                        )
+                        moveOrLoad(exprDestReg, exprDest)
                     }
+                    representation.addMainInstr(
+                        AddInstruction(
+                            reg,
+                            reg,
+                            ShiftOperand(exprDestReg, ShiftOperand.Shift.LSL, 2)
+                        )
+                    )
+                    if (exprDest is AddressingMode) {
+                        popIfNecessary(exprDestReg)
+                    }
+
                 }
                 else -> {
                     representation.addMainInstr(AddInstruction(reg, reg, exprDest))
@@ -987,6 +977,10 @@ open class TranslatorVisitor(
                         AddressingMode.AddressingMode2(reg)
                     )
                 )
+            }
+
+            if (arrayElem.getOperand() is AddressingMode) {
+                popIfNecessary(reg)
             }
         }
     }
