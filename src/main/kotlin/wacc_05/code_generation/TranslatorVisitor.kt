@@ -179,10 +179,15 @@ open class TranslatorVisitor(
             val r12 = Registers.r12
             return if (r11.inUse()) {
                 if (r12.inUse()) {
-                    representation.addMainInstr(PushInstruction(r11))
-                    r11.pushedNow()
-                    r11.occupiedNow()
-                    r11
+                    val reg: Register = if (r11.getNoOfUses() > r12.getNoOfUses()) {
+                        r12
+                    } else {
+                        r11
+                    }
+                    representation.addMainInstr(PushInstruction(reg))
+                    reg.pushedNow()
+                    reg.occupiedNow()
+                    reg
                 } else {
                     r12.occupiedNow()
                     r12

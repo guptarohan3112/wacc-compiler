@@ -86,6 +86,8 @@ object Registers {
                 available.insert(reg)
             }
         }
+        r11.reset()
+        r12.reset()
     }
 
     private fun ArrayList<Register>.insert(reg: Register) {
