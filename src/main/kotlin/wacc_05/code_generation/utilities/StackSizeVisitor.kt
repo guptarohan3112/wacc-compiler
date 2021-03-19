@@ -19,7 +19,6 @@ class StackSizeVisitor(val graph: InterferenceGraph) : ASTBaseVisitor() {
         visit(decl.assignment)
 
         val size: Int = decl.getStackSize()
-//        stackSize += size
         val correctNode: GraphNode? = decl.getGraphNode()
         if (correctNode != null) {
             if (correctNode.getRegister() != Register(-1) || correctNode.isAllocated()) {

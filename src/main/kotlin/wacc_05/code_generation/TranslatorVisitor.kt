@@ -19,7 +19,6 @@ open class TranslatorVisitor(
 
     private val MAX_STACK_SIZE: Int = 1024
     private val START_OFFSET: Int = 4
-    private val ONE_BYTE: Int = 1
     private val FOUR_BYTES: Int = 4
 
     /* UTILITY METHODS USED BY DIFFERENT VISIT METHODS IN THIS VISITOR
@@ -119,7 +118,7 @@ open class TranslatorVisitor(
     }
 
     // Calculate the stack pointer to find an identifier
-    private fun calculateIdentSpOffset(identValue: String, scope: AST, paramOffset: Int): Int {
+    private fun calculateIdentSpOffset(identValue: String, scope: AST): Int {
         val identObj: IdentifierObject = scope.st().lookUpAllAndCheckAllocation(identValue)!!
 
         var spOffset = 0
@@ -128,7 +127,7 @@ open class TranslatorVisitor(
             val sp: Int = scope.getStackPtr()
             spOffset = identOffset - sp
         } else if (identObj is ParamIdentifier) {
-            spOffset = identObj.getOffset() + scope.getStackSizeAllocated() + paramOffset
+            spOffset = identObj.getOffset() + scope.getStackSizeAllocated()
         }
 
         return spOffset
@@ -195,7 +194,7 @@ open class TranslatorVisitor(
         }
     }
 
-    fun tempRegAllocation(): Register {
+    private fun tempRegAllocation(): Register {
         val r10 = Registers.r10
         val r11 = Registers.r11
         val r12 = Registers.r12
@@ -229,20 +228,11 @@ open class TranslatorVisitor(
     // Helper method to determines whether the input operand is a register, and assigns a temporary
     // register if not
     fun chooseRegisterFromOperand(operand: Operand): Register {
-        if (operand !is AddressingMode) {
-            return operand as Register
+        return if (operand !is AddressingMode) {
+            operand as Register
         } else {
-            return tempRegAllocation()
+            tempRegAllocation()
         }
-    }
-
-    // Not sure about this method
-    private fun pushAndCompare(reg: AddressingMode, imm: Int) {
-        val dest: Register = Registers.r11
-//        representation.addMainInstr(PushInstruction(dest))
-        moveOrLoad(dest, reg)
-        representation.addMainInstr(CompareInstruction(dest, Immediate(imm)))
-//        representation.addMainInstr(PopInstruction(dest))
     }
 
     // Loads the addressing mode into a register or in a temporary register to then put on the stack
@@ -571,7 +561,7 @@ open class TranslatorVisitor(
                         representation.addMainInstr(MoveInstruction(lhsLocation as Register, dest))
                     }
                 } else {
-                    val offset: Int = calculateIdentSpOffset(lhs.getStringValue(), assign, 0)
+                    val offset: Int = calculateIdentSpOffset(lhs.getStringValue(), assign)
                     val destReg: Register = chooseRegisterFromOperand(dest)
                     if (dest is AddressingMode) {
                         representation.addMainInstr(MoveInstruction(destReg, dest))
@@ -623,7 +613,6 @@ open class TranslatorVisitor(
 
         // Set the destination register and the type
         if (leftHandIdent != null) {
-            visitIdentForRead(leftHandIdent)
             operand = leftHandIdent.getOperand()
             type = leftHandIdent.getType()
         } else if (leftHandPairElem != null) {
@@ -881,18 +870,6 @@ open class TranslatorVisitor(
         placeInRegisterOrStack(dest, AddressingMode.AddressingLabel("0"), false)
     }
 
-    private fun visitIdentForRead(ident: ExprAST.IdentAST) {
-        visitIdentGeneral(ident, true)
-    }
-
-    override fun visitIdentAST(ident: ExprAST.IdentAST) {
-        visitIdentGeneral(ident, false)
-    }
-
-    private fun visitIdentGeneral(ident: ExprAST.IdentAST, read: Boolean) {
-        return
-    }
-
     override fun visitArrayElemAST(arrayElem: ExprAST.ArrayElemAST) {
         // load the address of the array elem
         visitArrayElemFstPhase(arrayElem)
@@ -923,7 +900,7 @@ open class TranslatorVisitor(
         }
 
         if (arrLocation.equals(InterferenceGraph.DefaultReg)) {
-            val offset = calculateIdentSpOffset(arrayElem.ident, arrayElem, 0)
+            val offset = calculateIdentSpOffset(arrayElem.ident, arrayElem)
             arrLocation = AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
         }
 
@@ -1051,7 +1028,7 @@ open class TranslatorVisitor(
         val destReg: Register = chooseRegisterFromOperand(dest)
         val exprDestReg: Register = chooseRegisterFromOperand(exprDest)
 
-        negHelper(exprDest, exprDestReg, destReg, destReg)
+        negHelper(exprDest, exprDestReg, destReg)
         if (dest is AddressingMode) {
             tempRegRestore(destReg, dest as AddressingMode.AddressingMode2)
         }
@@ -1068,8 +1045,7 @@ open class TranslatorVisitor(
     private fun negHelper(
         exprDest: Operand,
         exprDestReg: Register,
-        destReg: Register,
-        regToLoad: Register
+        destReg: Register
     ) {
         if (exprDest is AddressingMode) {
             representation.addMainInstr(PushInstruction(exprDestReg))
@@ -1830,10 +1806,6 @@ open class TranslatorVisitor(
             popIfNecessary(sizeDestReg)
         }
 
-    }
-
-    override fun visitOperatorAST(operatorAST: ExprAST.OperatorAST) {
-        return
     }
 
 }
