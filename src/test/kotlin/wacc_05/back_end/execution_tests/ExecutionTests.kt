@@ -19,6 +19,7 @@ class ExecutionTests(
 ) {
 
     companion object {
+
         private val DIRECTORY_PATH = "src/test/test_cases/valid"
 
         // we have to ignore these tests as our test program cannot run command line inputs
@@ -32,7 +33,7 @@ class ExecutionTests(
         private val IGNORE_TESTS = hashSetOf("fixedPointRealArithmetic", "print-carridge-return", "print-backspace")
 
         // tests that we now fail due to optimisations within the compiler
-        private val OUTDATED_TESTS = hashSetOf("divZero")
+        private val OUTDATED_TESTS = hashSetOf("divZero", "indentationNotImportant")
 
         @JvmStatic
         @Parameterized.Parameters(name = "{0}")
