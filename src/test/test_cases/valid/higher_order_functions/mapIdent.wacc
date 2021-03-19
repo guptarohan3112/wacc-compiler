@@ -1,0 +1,12 @@
+# Output:
+# false
+# true
+
+# Program:
+
+begin
+    bool[] a = [true, false];
+    bool[] b = map ! a ;
+    println b[0];
+    println b[1]
+end

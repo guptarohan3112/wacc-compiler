@@ -904,24 +904,13 @@ open class TranslatorVisitor(
 
         // load the value at the address into the destination register
         val type: TypeIdentifier = arrayElem.getElemType()
-        when (type.getStackSize()) {
-            ONE_BYTE -> {
-                representation.addMainInstr(
-                    LoadInstruction(
-                        dest,
-                        AddressingMode.AddressingMode3(dest, Immediate(0))
-                    )
-                )
-            }
-            else -> {
-                representation.addMainInstr(
-                    LoadInstruction(
-                        dest,
-                        AddressingMode.AddressingMode2(dest)
-                    )
-                )
-            }
-        }
+
+        representation.addMainInstr(
+            LoadInstruction(
+                dest,
+                AddressingMode.AddressingMode2(dest)
+            )
+        )
 
         if (operand is AddressingMode) {
             popIfNecessary(dest)
@@ -1004,16 +993,6 @@ open class TranslatorVisitor(
             }
         }
     }
-
-    // PUSH {r4}
-    // BL f_f
-    // POP {r4}
-
-    // STR r4, [sp, #-4]!
-    // params
-    // BL f_f
-    // LDR r4, [sp]
-    // ADD sp, sp, #4
 
     override fun visitUnOpAST(unop: ExprAST.UnOpAST) {
         // Evaluate the single operand and get the register holding the result
@@ -1105,12 +1084,12 @@ open class TranslatorVisitor(
     }
 
     private fun negation(regToLoad: Register, destReg: Register, exprDestReg: Register) {
-        representation.addMainInstr(
-            LoadInstruction(
-                regToLoad,
-                AddressingMode.AddressingMode2(Registers.sp)
-            )
-        )
+//        representation.addMainInstr(
+//            LoadInstruction(
+//                regToLoad,
+//                AddressingMode.AddressingMode2(Registers.sp)
+//            )
+//        )
         representation.addMainInstr(
             ReverseSubtractInstruction(
                 destReg,
@@ -1803,6 +1782,10 @@ open class TranslatorVisitor(
                 AddressingMode.AddressingMode2(arrLocation)
             )
         )
+
+        if (sizeDest is AddressingMode) {
+            popIfNecessary(sizeDestReg)
+        }
 
 //        mapAST.setDestReg(arrLocation)
     }
