@@ -1,9 +1,12 @@
 # Output:
-# #addrs#
+# -1
+# 2
 
 # Program:
 
 begin
     int[] a = [1, -2] ;
-    println map - a
+    int[] b = map - a ;
+    println b[0];
+    println b[1]
 end

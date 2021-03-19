@@ -1,9 +1,11 @@
 # Output:
-# #addrs#
+# false
+# true
 
 # Program:
 
 begin
-   # bool[] a = [true, false] ;
-    println map ! [true, false]
+    bool[] a = map ! [true, false] ;
+    println a[0];
+    println a[1]
 end
