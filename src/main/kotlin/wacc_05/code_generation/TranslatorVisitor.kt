@@ -996,7 +996,9 @@ open class TranslatorVisitor(
             else -> {
                 val unopReg: Register = chooseRegisterFromOperand(unop.getOperand())
                 moveOrLoad(unopReg, unop.expr.getOperand())
-                popIfNecessary(unopReg)
+                if (unop.getOperand() is AddressingMode) {
+                    popIfNecessary(unopReg)
+                }
             }
         }
     }
@@ -1072,20 +1074,14 @@ open class TranslatorVisitor(
         if (exprDest is AddressingMode) {
             representation.addMainInstr(PushInstruction(exprDestReg))
             representation.addMainInstr(LoadInstruction(exprDestReg, exprDest))
-            negation(regToLoad, destReg, exprDestReg)
+            negation(destReg, exprDestReg)
             popIfNecessary(exprDestReg)
         } else {
-            negation(regToLoad, destReg, exprDestReg)
+            negation(destReg, exprDestReg)
         }
     }
 
-    private fun negation(regToLoad: Register, destReg: Register, exprDestReg: Register) {
-//        representation.addMainInstr(
-//            LoadInstruction(
-//                regToLoad,
-//                AddressingMode.AddressingMode2(Registers.sp)
-//            )
-//        )
+    private fun negation(destReg: Register, exprDestReg: Register) {
         representation.addMainInstr(
             ReverseSubtractInstruction(
                 destReg,
