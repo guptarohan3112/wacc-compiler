@@ -1,9 +1,0 @@
-begin
-int f(int x) is
-    x = x + 1;
-    return 1
-end
-int y = 0;
-int z = call f(y);
-println y
-end
