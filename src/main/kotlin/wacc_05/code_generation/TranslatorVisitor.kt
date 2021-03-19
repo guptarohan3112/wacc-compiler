@@ -270,10 +270,10 @@ open class TranslatorVisitor(
     }
 
     private fun popIfNecessary(tempReg: Register) {
+        tempReg.freedNow()
         if (tempReg.hasBeenPushed()) {
             representation.addMainInstr(PopInstruction(tempReg))
             tempReg.poppedNow()
-            tempReg.freedNow()
         }
     }
 
@@ -1118,7 +1118,7 @@ open class TranslatorVisitor(
         }
 
         if (expr2Dest is AddressingMode) {
-            representation.addMainInstr(PopInstruction(expr2Reg))
+            popIfNecessary(expr2Reg)
         }
 
         if (dest is AddressingMode) {
