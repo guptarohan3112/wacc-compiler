@@ -746,18 +746,22 @@ open class TranslatorVisitor(
 
         // Evaluate the looping conditional expression
         visit(whileStat.loopExpr)
-        val reg: Operand = operandAllocation(whileStat.loopExpr)
+        val operand: Operand = whileStat.loopExpr.getOperand()
+//        val reg: Operand = operandAllocation(whileStat.loopExpr)
+        val reg: Register = chooseRegisterFromOperand(operand)
+        if (operand is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(reg, operand))
+        }
 
-        if (reg is AddressingMode) {
-            pushAndCompare(reg, 1)
-        } else {
-            // Comparison and jump if equal
-            representation.addMainInstr(
-                CompareInstruction(
-                    reg as Register,
-                    Immediate(1)
-                )
+        representation.addMainInstr(
+            CompareInstruction(
+                reg,
+                Immediate(1)
             )
+        )
+
+        if (operand is AddressingMode) {
+            popIfNecessary(reg)
         }
 
         representation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
