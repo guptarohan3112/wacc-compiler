@@ -169,40 +169,44 @@ open class TranslatorVisitor(
         }
     }
 
+    fun tempRegAllocation(): Register {
+        val r10 = Registers.r10
+        val r11 = Registers.r11
+        val r12 = Registers.r12
+        if (r10.inUse()) {
+            if (r11.inUse()) {
+                if (r12.inUse()) {
+                    val r10Uses = r10.getNoOfUses()
+                    val r11Uses = r11.getNoOfUses()
+                    val r12Uses = r12.getNoOfUses()
+                    val reg: Register = if (r10Uses > r11Uses) {
+                        r11
+                    } else if (r10Uses == r11Uses && r11Uses > r12Uses) {
+                        r12
+                    } else {
+                        r10
+                    }
+                    representation.addMainInstr(PushInstruction(reg))
+                    reg.pushedNow()
+                    return reg.occupiedNow()
+                } else {
+                    return r12.occupiedNow()
+                }
+            } else {
+                return r11.occupiedNow()
+            }
+        } else {
+            return r10.occupiedNow()
+        }
+    }
+
     // Helper method to determines whether the input operand is a register, and assigns a temporary
     // register if not
     fun chooseRegisterFromOperand(operand: Operand): Register {
         if (operand !is AddressingMode) {
             return operand as Register
         } else {
-            val r10 = Registers.r10
-            val r11 = Registers.r11
-            val r12 = Registers.r12
-            if (r10.inUse()) {
-                if (r11.inUse()) {
-                    if (r12.inUse()) {
-                        val r10Uses = r10.getNoOfUses()
-                        val r11Uses = r11.getNoOfUses()
-                        val r12Uses = r12.getNoOfUses()
-                        val reg: Register = if (r10Uses > r11Uses) {
-                            r11
-                        } else if (r10Uses == r11Uses && r11Uses > r12Uses) {
-                            r12
-                        } else {
-                            r10
-                        }
-                        representation.addMainInstr(PushInstruction(reg))
-                        reg.pushedNow()
-                        return reg.occupiedNow()
-                    } else {
-                        return r12.occupiedNow()
-                    }
-                } else {
-                    return r11.occupiedNow()
-                }
-            } else {
-                return r10.occupiedNow()
-            }
+            return tempRegAllocation()
         }
     }
 
@@ -767,18 +771,22 @@ open class TranslatorVisitor(
 
         // Evaluate the looping conditional expression
         visit(whileStat.loopExpr)
-        val reg: Operand = whileStat.loopExpr.getOperand()
 
-        if (reg is AddressingMode) {
-            pushAndCompare(reg, 1)
-        } else {
-            // Comparison and jump if equal
-            representation.addMainInstr(
-                CompareInstruction(
-                    reg as Register,
-                    Immediate(1)
-                )
+        val operand: Operand = whileStat.loopExpr.getOperand()
+        val reg: Register = chooseRegisterFromOperand(operand)
+        if (operand is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(reg, operand))
+        }
+
+        representation.addMainInstr(
+            CompareInstruction(
+                reg,
+                Immediate(1)
             )
+        )
+
+        if (operand is AddressingMode) {
+            popIfNecessary(reg)
         }
 
         representation.addMainInstr(BranchInstruction(bodyLabel.getLabel(), Condition.EQ))
@@ -1358,10 +1366,18 @@ open class TranslatorVisitor(
         val dest: Operand = binop.getOperand()
         val destReg = chooseRegisterFromOperand(dest)
         val expr1Dest: Operand = binop.expr1.getOperand()
-        val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, destReg)
+        // expr1Reg
+//        val expr1Reg: Register = pushRegisterAndLoad(Registers.r11, expr1Dest, destReg)
+        val expr1Reg: Register = chooseRegisterFromOperand(expr1Dest)
+        if (expr1Dest is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(expr1Reg, expr1Dest))
+        }
 
         val expr2Dest: Operand = binop.expr2.getOperand()
-        val expr2Reg: Register = pushRegisterAndLoad(Registers.r12, expr2Dest, destReg)
+        val expr2Reg: Register = chooseRegisterFromOperand(expr2Dest)
+        if (expr2Dest is AddressingMode) {
+            representation.addMainInstr(LoadInstruction(expr2Reg, expr2Dest))
+        }
 
         representation.addMainInstr(CompareInstruction(expr1Reg, expr2Reg))
 
@@ -1467,7 +1483,10 @@ open class TranslatorVisitor(
             arrIndex += elemsSize
         }
 
-        val sizeRegister: Register = arrayLiter.getSizeGraphNode().getRegister()
+        var sizeRegister: Register = arrayLiter.getSizeGraphNode().getRegister()
+        if (sizeRegister == Register(-1)) {
+            sizeRegister = tempRegAllocation()
+        }
         // store the length of the array at arrLocation +0
         representation.addMainInstr(
             LoadInstruction(
