@@ -200,6 +200,15 @@ open class GraphFormationVisitor(private var graph: InterferenceGraph) : ASTBase
                 binop.getGraphNode()?.addNeighbourTwoWay(binop.expr2.getGraphNode())
             }
         }
+
+        if (!binop.hasGraphNode2() && binop.operator == "*") {
+            val graphNode2 = GraphNode(getLineNo(binop.ctx))
+            binop.setGraphNode2(graphNode2)
+            graph.addNode(graphNode2)
+            graphNode2.addNeighbourTwoWay(binop.getGraphNode())
+            graphNode2.addNeighbourTwoWay(binop.expr1.getGraphNode())
+            binop.getGraphNode()?.addNeighbourTwoWay(binop.expr1.getGraphNode())
+        }
     }
 
     override fun visitFuncCallAST(funcCall: FuncCallAST) {

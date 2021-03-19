@@ -264,6 +264,10 @@ sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
             val boolBoolFunctions = hashSetOf("&&", "||")
         }
 
+        fun hasGraphNode2(): Boolean {
+            return graphNode2 != null
+        }
+
         fun getGraphNode2(): GraphNode {
             return graphNode2!!
         }
@@ -275,12 +279,14 @@ sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
         }
 
         fun setOperand2(operand: Operand) {
-            if (operand is Register) {
-                graphNode2?.setRegister(operand)
-            } else {
-                val btmStackFrame: Int = this.getStackPtr()
-                val absAddr: Int = btmStackFrame + this.getStackPtrOffset()
-                setAddr(absAddr)
+            if (operator == "*") {
+                if (operand is Register) {
+                    graphNode2?.setRegister(operand)
+                } else {
+                    val btmStackFrame: Int = this.getStackPtr()
+                    val absAddr: Int = btmStackFrame + this.getStackPtrOffset()
+                    setAddr(absAddr)
+                }
             }
         }
 
@@ -299,7 +305,10 @@ sealed class ExprAST(ctx: ParserRuleContext) : AssignRHSAST(ctx) {
                     // this case should never be fallen into
                     val node = this as IdentAST
                     val param = st().lookupAll(node.value) as ParamIdentifier
-                    return AddressingMode.AddressingMode2(Registers.sp, Immediate(param.getOffset()))
+                    return AddressingMode.AddressingMode2(
+                        Registers.sp,
+                        Immediate(param.getOffset())
+                    )
                 }
             }
         }
