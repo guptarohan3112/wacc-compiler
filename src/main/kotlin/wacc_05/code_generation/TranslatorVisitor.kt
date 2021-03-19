@@ -453,7 +453,7 @@ open class TranslatorVisitor(
         val dest = decl.assignment.getOperand()
 
         if (decl.assignment is ExprAST.IdentAST) {
-            // move ident location into decl destination
+            // Move location of the identifier in the destination of the declaration
             val destDecl = if (decl.getGraphNode().getRegister() != Register(-1)) {
                 decl.getGraphNode().getRegister()
             } else {
@@ -472,26 +472,26 @@ open class TranslatorVisitor(
                 mode
             }
 
+            val destReg = chooseRegisterFromOperand(dest)
+            val destDeclReg = chooseRegisterFromOperand(destDecl)
+
             if (dest is AddressingMode) {
+                representation.addMainInstr(LoadInstruction(destDeclReg, dest))
                 if (destDecl is AddressingMode) {
-                    // representation.addMaininstr(PushInstruction(Registers.r11))
-                    representation.addMainInstr(LoadInstruction(Registers.r11, dest))
                     representation.addMainInstr(
                         getStoreInstruction(
-                            Registers.r11,
+                            destDeclReg,
                             destDecl as AddressingMode.AddressingMode2,
                             decl.assignment.getType()
                         )
                     )
-                    // representation.addMainINstr(PopInstruction(Registers.r11))
-                } else {
-                    representation.addMainInstr(LoadInstruction(destDecl as Register, dest))
+                    popIfNecessary(destDeclReg)
                 }
             } else {
                 if (destDecl is AddressingMode) {
                     representation.addMainInstr(
                         getStoreInstruction(
-                            dest as Register,
+                            destReg,
                             destDecl as AddressingMode.AddressingMode2,
                             decl.assignment.getType()
                         )
@@ -499,8 +499,8 @@ open class TranslatorVisitor(
                 } else {
                     representation.addMainInstr(
                         MoveInstruction(
-                            destDecl as Register,
-                            dest as Register
+                            destDeclReg,
+                            destReg
                         )
                     )
                 }
