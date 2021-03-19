@@ -105,7 +105,12 @@ open class TranslatorVisitor(
         }
     }
 
-    private fun getLoadInstruction(reg: Register, regN: Register, operand: Operand, size: Int): LoadInstruction {
+    private fun getLoadInstruction(
+        reg: Register,
+        regN: Register,
+        operand: Operand,
+        size: Int
+    ): LoadInstruction {
         return if (size == 1) {
             LoadInstruction(reg, AddressingMode.AddressingMode3(regN, operand))
         } else {
@@ -232,7 +237,10 @@ open class TranslatorVisitor(
                 representation.addMainInstr(
                     StoreInstruction(
                         destReg,
-                        AddressingMode.AddressingMode2(destination.getDestReg(), destination.getOperand()),
+                        AddressingMode.AddressingMode2(
+                            destination.getDestReg(),
+                            destination.getOperand()
+                        ),
                         Condition.B
                     )
                 )
@@ -240,7 +248,10 @@ open class TranslatorVisitor(
                 representation.addMainInstr(
                     StoreInstruction(
                         destReg,
-                        AddressingMode.AddressingMode2(destination.getDestReg(), destination.getOperand())
+                        AddressingMode.AddressingMode2(
+                            destination.getDestReg(),
+                            destination.getOperand()
+                        )
                     )
                 )
             }
@@ -540,24 +551,20 @@ open class TranslatorVisitor(
                     }
                 } else {
                     val offset: Int = calculateIdentSpOffset(lhs.getStringValue(), assign, 0)
+                    val destReg: Register = chooseRegisterFromOperand(dest)
                     if (dest is AddressingMode) {
-//                        representation.addMainInstr(PushInstruction(Registers.r11))
-                        representation.addMainInstr(MoveInstruction(Registers.r11, dest))
-                        // TODO: Update to check for size of lhs
-                        representation.addMainInstr(
-                            StoreInstruction(
-                                Registers.r11,
-                                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
-                            )
+                        representation.addMainInstr(MoveInstruction(destReg, dest))
+                    }
+
+                    representation.addMainInstr(
+                        StoreInstruction(
+                            destReg,
+                            AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
                         )
-//                        representation.addMainInstr(PopInstruction(Registers.r11))
-                    } else {
-                        representation.addMainInstr(
-                            StoreInstruction(
-                                dest as Register,
-                                AddressingMode.AddressingMode2(Registers.sp, Immediate(offset))
-                            )
-                        )
+                    )
+
+                    if (dest is AddressingMode) {
+                        popIfNecessary(destReg)
                     }
                 }
             }
@@ -577,9 +584,6 @@ open class TranslatorVisitor(
                 visitPairElemFstPhase(pairElem)
 
                 storeValueInAddress(dest, pairElem)
-            }
-            else -> {
-                // Do nothing
             }
         }
     }
@@ -620,7 +624,12 @@ open class TranslatorVisitor(
             representation.addPInstr(PInstruction.p_read_char(representation))
         }
 
-        representation.addMainInstr(LoadInstruction(reg, AddressingMode.AddressingMode2(Registers.sp)))
+        representation.addMainInstr(
+            LoadInstruction(
+                reg,
+                AddressingMode.AddressingMode2(Registers.sp)
+            )
+        )
 
     }
 
@@ -1011,7 +1020,12 @@ open class TranslatorVisitor(
         representation.addMainInstr(LoadInstruction(destReg, source))
 
         if (arrLocation is AddressingMode) {
-            representation.addMainInstr(LoadInstruction(destReg, AddressingMode.AddressingMode2(destReg)))
+            representation.addMainInstr(
+                LoadInstruction(
+                    destReg,
+                    AddressingMode.AddressingMode2(destReg)
+                )
+            )
         }
 
         if (dest is AddressingMode) {
@@ -1570,8 +1584,21 @@ open class TranslatorVisitor(
 
         // Pop all of the registers that were pushed on the stack
         for (reg in regsInUse.reversed()) {
-            representation.addMainInstr(getLoadInstruction(reg.first, Registers.sp, Immediate(0), reg.second))
-            representation.addMainInstr(AddInstruction(Registers.sp, Registers.sp, Immediate(reg.second)))
+            representation.addMainInstr(
+                getLoadInstruction(
+                    reg.first,
+                    Registers.sp,
+                    Immediate(0),
+                    reg.second
+                )
+            )
+            representation.addMainInstr(
+                AddInstruction(
+                    Registers.sp,
+                    Registers.sp,
+                    Immediate(reg.second)
+                )
+            )
         }
 
         // Move the result of the function into the correct destination
