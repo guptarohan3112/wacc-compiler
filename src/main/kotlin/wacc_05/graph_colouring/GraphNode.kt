@@ -81,7 +81,7 @@ class GraphNode(private var startIndex: Int, private var ident: String = "") {
         return if (thisStart < thatStart) {
             thisEnd >= thatStart
         } else {
-            thatEnd > thisStart
+            thatEnd >= thisStart
         }
     }
 

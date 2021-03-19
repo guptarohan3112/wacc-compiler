@@ -76,7 +76,7 @@ class ExecutionTests(
             try {
                 println(it.absolutePath)
                 // Run the compiler- this should generate the assembly file (to be executed)
-                WaccCompiler.runCompiler(it.absolutePath, 1, debug = false, validOnly = false)
+                WaccCompiler.runCompiler(it.absolutePath, 0, debug = false, validOnly = false)
 
 
                 val assemblyName = it.nameWithoutExtension + ".s"
