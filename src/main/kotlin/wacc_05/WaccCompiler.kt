@@ -60,10 +60,6 @@ object WaccCompiler {
             val dir = file.parentFile.path
             waccString = addImports(inputStream, dir)
         }
-//        val file = File(filePath)
-//        val inputStream = file.inputStream()
-//        val dir = file.parentFile.path
-//        val waccString: String = addImports(inputStream, dir)
         val input = CharStreams.fromString(waccString)
         val lexer = WaccLexer(input)
         val errorListener = SyntaxErrorListener()

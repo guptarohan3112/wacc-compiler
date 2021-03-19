@@ -79,6 +79,28 @@ open class SymbolTable(private val parentST: SymbolTable?) {
         return lookUpAndCheckAllocation(name) ?: parentST?.lookUpAllAndCheckAllocation(name)
     }
 
+    /* Function: lookUpAndCheckAllocation()
+     * --------------------
+     * Look up of the hashmap that also checks that the identifier has been visited in the
+     * GraphFormationVisitor
+     */
+    open fun lookupAndCheckVisited(name: String): IdentifierObject? {
+        val ident: IdentifierObject? = map.getOrDefault(name, null)
+        if (ident is VariableIdentifier && !ident.hasBeenVisited()) {
+            return null
+        }
+        return ident
+    }
+
+    /* Function: lookUpAndCheckAllocation()
+     * --------------------
+     * Look for an identifier that has been visited by the GraphFormationVisitor in current scope
+     * Look in parent scope if not found
+     */
+    open fun lookupAllAndCheckVisited(name: String): IdentifierObject? {
+        return lookupAndCheckVisited(name) ?: parentST?.lookupAllAndCheckVisited(name)
+    }
+
     // Getter and setter for the first element of the pair
     fun getStackPtr(): Int {
         return spAndOffset.first
@@ -120,25 +142,6 @@ open class SymbolTable(private val parentST: SymbolTable?) {
 
     fun isMain(): Boolean {
         return parentST == null
-    }
-
-    fun clear() {
-        map.clear()
-        spAndOffset = Pair(0, 0)
-        stackSizeAllocated = 0
-        paramOffset = 0
-    }
-
-    fun lookupAllAndCheckVisited(name: String): IdentifierObject? {
-        return lookupAndCheckVisited(name) ?: parentST?.lookupAllAndCheckVisited(name)
-    }
-
-    private fun lookupAndCheckVisited(name: String): IdentifierObject? {
-        val ident: IdentifierObject? = map.getOrDefault(name, null)
-        if (ident is VariableIdentifier && !ident.hasBeenVisited()) {
-            return null
-        }
-        return ident
     }
 
     companion object {
