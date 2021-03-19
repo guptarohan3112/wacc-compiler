@@ -6,7 +6,6 @@ import wacc_05.ast_structure.StatementAST
 import wacc_05.ast_structure.assignment_ast.*
 import wacc_05.graph_colouring.GraphNode
 import wacc_05.graph_colouring.InterferenceGraph
-import wacc_05.symbol_table.identifier_objects.VariableIdentifier
 
 class StackSizeVisitor(val graph: InterferenceGraph) : ASTBaseVisitor() {
 
@@ -20,13 +19,15 @@ class StackSizeVisitor(val graph: InterferenceGraph) : ASTBaseVisitor() {
         visit(decl.assignment)
 
         val size: Int = decl.getStackSize()
+//        stackSize += size
         val correctNode: GraphNode? = decl.getGraphNode()
-        if (correctNode != null && !correctNode.isAllocated() && (correctNode.getRegister()) != Register(-1)) {
-            return
-        } else {
-            stackSize += size
-            correctNode?.allocate()
+        if (correctNode != null) {
+            if (correctNode.getRegister() != Register(-1) || correctNode.isAllocated()) {
+                return
+            }
         }
+        stackSize += size
+        correctNode?.allocate()
     }
 
     override fun visitBinOpAST(binop: ExprAST.BinOpAST) {
@@ -108,12 +109,13 @@ class StackSizeVisitor(val graph: InterferenceGraph) : ASTBaseVisitor() {
         val size: Int = ast.getStackSize()
 //        stackSize += size
         val correctNode: GraphNode? = ast.getGraphNode()
-        if (correctNode != null && !correctNode.isAllocated() && (correctNode.getRegister()) != Register(-1)) {
-            return
-        } else {
-            stackSize += size
-            correctNode?.allocate()
+        if (correctNode != null) {
+            if (correctNode.getRegister() != Register(-1) || correctNode.isAllocated()) {
+                return
+            }
         }
+        stackSize += size
+        correctNode?.allocate()
     }
 
 }
