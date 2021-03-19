@@ -1122,7 +1122,9 @@ open class TranslatorVisitor(
                 checkOverflow(Condition.LVS)
             }
             "*" -> {
-                representation.addMainInstr(SMultiplyInstruction(reg, expr1Reg, expr2Reg))
+                val dest2: Operand = binop.getOperand2()
+                val reg2: Register = chooseRegisterFromOperand(dest2)
+                representation.addMainInstr(SMultiplyInstruction(reg, reg2, expr1Reg, expr2Reg))
                 representation.addMainInstr(
                     CompareInstruction(
                         expr2Reg,
@@ -1130,6 +1132,9 @@ open class TranslatorVisitor(
                     )
                 )
                 checkOverflow(Condition.LNE)
+                if (dest2 is AddressingMode) {
+                    popIfNecessary(reg2)
+                }
             }
         }
 
